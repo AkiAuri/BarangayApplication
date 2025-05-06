@@ -1,0 +1,573 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using BarangayApplication.Models;
+using BarangayApplication.Models.Repositories;
+
+namespace BarangayApplication
+{
+    public partial class FormApplication: Form
+    {
+        public FormApplication()
+        {
+            InitializeComponent();
+        }
+        
+        private void ClearPurposeFlags(Residents resident)
+        {
+            resident.PurposeResidency = false;
+            resident.PurposePostalID = false;
+            resident.PurposeLocalEmployment = false;
+            resident.PurposeMarriage = false;
+            resident.PurposeLoan = false;
+            resident.PurposeMeralco = false;
+            resident.PurposeBankTransaction = false;
+            resident.PurposeTravelAbroad = false;
+            resident.PurposeSeniorCitizen = false;
+            resident.PurposeSchool = false;
+            resident.PurposeMedical = false;
+            resident.PurposeBurial = false;
+        }
+        
+        private string GetPurposeText(Residents resident)
+        {
+            if (resident.PurposeResidency) return "Residency";
+            if (resident.PurposePostalID) return "Postal ID";
+            if (resident.PurposeLocalEmployment) return "Local Employment";
+            if (resident.PurposeMarriage) return "Marriage";
+            if (resident.PurposeLoan) return "Loan";
+            if (resident.PurposeMeralco) return "Meralco";
+            if (resident.PurposeBankTransaction) return "Bank Transaction";
+            if (resident.PurposeTravelAbroad) return "Travel Abroad";
+            if (resident.PurposeSeniorCitizen) return "Senior Citizen";
+            if (resident.PurposeSchool) return "School";
+            if (resident.PurposeMedical) return "Medical";
+            if (resident.PurposeBurial) return "Burial";
+            return string.Empty;
+        }
+
+        // This code belongs to a form or control that allows editing the details of a resident.
+        // It populates the form fields with data from the provided Residents object.
+        // TODO CHECK ERROR REGARDING SEX VALUE.
+        // Check the implementation of related methods in Data.cs and ResidentsRepository.cs.
+
+        private int _residentId = 0;
+
+
+        public void EditResident(Residents resident)
+        {
+            // Check if the passed resident object is null.
+            // If null, show an error message and exit the method.
+            if (resident == null)
+            {
+                MessageBox.Show("Resident data is missing.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Set the title of the form to "Edit Resident".
+            this.Text = "Edit Resident";
+
+            // Populate resident basic information into the respective controls.
+            this.txtLname.Text = resident.LastName;
+            this.txtFname.Text = resident.FirstName;
+            this.txtMname.Text = resident.MiddleName;
+            this.txtAdd.Text = resident.Address;
+            this.txtTelCel.Text = resident.TelCelNo;
+            this.cbxSex.Text = resident.Sex;
+
+            // Populate physical and birth details.
+            this.txtHeight.Text = resident.Height.ToString("0.##");
+            this.txtWeight.Text = resident.Weight.ToString("0.##");
+            this.dateTimePicker1.Value = resident.DateOfBirth;
+            this.nudAge.Value = resident.Age;
+            this.txtPoB.Text = resident.PlaceOfBirth;
+            this.cBxCivilStatus.Text = resident.CivilStatus;
+            this.txtVoterIdNo.Text = resident.VoterIdNo;
+            this.txtPoll.Text = resident.PollingPlace;
+
+            // Handle residence type selection and associated payment amount.
+            this.comboBox1.Text = resident.ResidenceType;
+
+            // Populate occupation details.
+            this.txtOccCompany.Text = resident.Company;
+            this.txtOccPos1.Text = resident.Position;
+            this.txtOccLOS1.Text = resident.LengthofService;
+            this.txtOccPrev.Text = resident.PreviousCompany;
+            this.txtOccPos2.Text = resident.PreviousPosition;
+            this.txtOccLOS2.Text = resident.PreviousLengthofService;
+
+            // Populate spouse details.
+            this.txtSpouseName.Text = resident.SpouseName;
+            this.txtSpouseContact.Text = resident.SpousePhone;
+            this.txtSpouseCompany.Text = resident.SpouseCompany;
+            this.txtSpousePos1.Text = resident.SpousePosition;
+            this.txtSpouseLOS1.Text = resident.SpouseLengthOfService;
+            this.txtSpousePrev.Text = resident.SpousePrevCompany;
+            this.txtSpousePos2.Text = resident.SpousePrevPosition;
+            this.txtSpouseLOS2.Text = resident.SpousePrevLengthOfService;
+
+            // Update the purpose of visit toggles based on resident's purpose flags.
+            if (!string.IsNullOrWhiteSpace(resident.PurposeOthers))
+            {
+                this.comboBox2.Text = "Others";
+                this.txtOthers.Text = resident.PurposeOthers;
+                this.txtOthers.Visible = true;
+            }
+            else
+            {
+                this.comboBox2.Text = GetPurposeText(resident); // Helper function to get the purpose text based on flags
+                this.txtOthers.Visible = false;
+            }
+
+            // Store the resident's Id locally for further processing.
+            this._residentId = resident.Id;
+        }
+        
+        private void SetPurposeFlags(Residents resident, string purpose)
+        {
+            resident.PurposeResidency = purpose == "Residency";
+            resident.PurposePostalID = purpose == "Postal ID";
+            resident.PurposeLocalEmployment = purpose == "Local Employment";
+            resident.PurposeMarriage = purpose == "Marriage";
+            resident.PurposeLoan = purpose == "Loan";
+            resident.PurposeMeralco = purpose == "Meralco";
+            resident.PurposeBankTransaction = purpose == "Bank Transaction";
+            resident.PurposeTravelAbroad = purpose == "Travel Abroad";
+            resident.PurposeSeniorCitizen = purpose == "Senior Citizen";
+            resident.PurposeSchool = purpose == "School";
+            resident.PurposeMedical = purpose == "Medical";
+            resident.PurposeBurial = purpose == "Burial";
+        }
+
+        //Ni Hao Fine Shyt, Como Estas cabron
+        private void Finishbtn_Click_1(object sender, EventArgs e)
+        {
+            // Validate required fields. Ensures that all mandatory form inputs have data.
+            /*if (string.IsNullOrWhiteSpace(this.txtLname.Text) || 
+                string.IsNullOrWhiteSpace(this.txtFname.Text) || 
+                string.IsNullOrWhiteSpace(this.txtMname.Text) || 
+                string.IsNullOrWhiteSpace(this.txtAdd.Text) ||
+                string.IsNullOrWhiteSpace(this.txtTelCel.Text) ||
+                this.cbxSex.SelectedItem == null ||
+                !decimal.TryParse(this.txtHeight.Text, out var height) ||
+                !decimal.TryParse(this.txtWeight.Text, out var weight) ||
+                string.IsNullOrWhiteSpace(this.txtPoB.Text) ||
+                this.dateTimePicker1.Value == null ||
+                this.nudAge.Value <= 0 ||
+                string.IsNullOrWhiteSpace(this.cBxCivilStatus.Text) ||
+                (rBtnRent.Checked) ||
+                (rBtnBorderBed.Checked))
+            {
+                MessageBox.Show("Please fill in all required fields.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            */
+
+
+            // Create a new Residents object and populate its properties with form data.
+            Residents resident = new Residents();
+            resident.Id = this._residentId;
+            resident.LastName = this.txtLname.Text;
+            resident.FirstName = this.txtFname.Text;
+            resident.MiddleName = this.txtMname.Text;
+            resident.Address = this.txtAdd.Text;
+            resident.TelCelNo = this.txtTelCel.Text;
+            resident.Sex = this.cbxSex.Text;
+
+
+
+            if (!decimal.TryParse(this.txtHeight.Text, out var height))
+            {
+                MessageBox.Show("Invalid height value. Please enter a valid number.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Exit the method to prevent further execution
+            }
+
+            if (!decimal.TryParse(this.txtWeight.Text, out var weight))
+            {
+                MessageBox.Show("Invalid weight value. Please enter a valid number.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Exit the method to prevent further execution
+            }
+
+            resident.Height = height;
+            resident.Weight = weight;
+            resident.DateOfBirth = this.dateTimePicker1.Value;
+            resident.Age = (int)this.nudAge.Value;
+            resident.PlaceOfBirth = this.txtPoB.Text;
+            resident.CivilStatus = this.cBxCivilStatus.Text;
+            resident.VoterIdNo = this.txtVoterIdNo.Text; // Optional field.
+            resident.PollingPlace = this.txtPoll.Text;    // Optional field.
+            
+
+            // Populate employment details.
+            resident.Company = this.txtOccCompany.Text;
+            resident.Position = this.txtOccPos1.Text;
+            resident.LengthofService = this.txtOccLOS1.Text;
+            resident.PreviousCompany = this.txtOccPrev.Text;
+            resident.PreviousPosition = this.txtOccPos2.Text;
+            resident.PreviousLengthofService = this.txtOccLOS2.Text;
+
+            // Populate spouse details (optional fields).
+            resident.SpouseName = this.txtSpouseName.Text;
+            resident.SpousePhone = this.txtSpouseContact.Text;
+            resident.SpouseCompany = this.txtSpouseCompany.Text;
+            resident.SpousePosition = this.txtSpousePos1.Text;
+            resident.SpouseLengthOfService = this.txtSpouseLOS1.Text;
+            resident.SpousePrevCompany = this.txtSpousePrev.Text;
+            resident.SpousePrevPosition = this.txtSpousePos2.Text;
+            resident.SpousePrevLengthOfService = this.txtSpouseLOS2.Text;
+
+            // Get residence type from comboBox1
+            resident.ResidenceType = this.comboBox1.Text;
+
+            // Get purpose from comboBox2
+            ClearPurposeFlags(resident);
+            if (this.txtOthers.Text != null)
+            {
+                resident.PurposeOthers = this.txtOthers.Text;
+            }
+            else
+            {
+                resident.PurposeOthers = string.Empty;
+                SetPurposeFlags(resident, this.comboBox2.Text);
+            }
+
+            // Create an instance of ResidentsRepository to handle saving the data.
+            var repo = new ResidentsRepository();
+
+            try
+            {
+                // If the resident's Id is 0, it's a new record; otherwise, update the existing record.
+                if (resident.Id == 0)
+                {
+                    repo.CreateResident(resident);
+                }
+                else
+                {
+                    repo.UpdateResident(resident);
+                }
+                
+                // Indicate successful operation and transition to the Finish form.
+                this.DialogResult = System.Windows.Forms.DialogResult.OK;
+                this.Close(); // Close the current form.
+
+                using (Finish finish = new Finish()) // Use 'using' to properly dispose of the form after closing.
+                {
+                    finish.StartPosition = FormStartPosition.CenterParent; // Ensures the dialog appears centered on the parent form.
+                    finish.ShowDialog(this); // Pass 'this' as the owner to make it a modal dialog.
+                }
+            }
+            catch (Exception ex)
+            {
+                // Inform the user of any errors during saving.
+                MessageBox.Show("An error occurred while saving the resident information. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine("Exception: " + ex.ToString());
+            }
+        }
+        
+        private void Cancelbtn_Click_1(object sender, EventArgs e)
+        {
+            using (ExitForms exit = new ExitForms()) // Use 'using' to properly dispose of the form after closing.
+            {
+                exit.StartPosition = FormStartPosition.CenterParent; // Ensures the dialog appears centered on the parent form.
+                exit.ShowDialog(this); // Pass 'this' as the owner to make it a modal dialog.
+            }
+        }
+
+        //QOL ADDITIONS
+        private void txtHeight_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits and one decimal point in the height input.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+            // Allow only one decimal point.
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtWeight_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits and one decimal point in the height input.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+            // Allow only one decimal point.
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtTelCel_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtVoterIdNo_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtSpouseContact_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtRentAmount_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits and one decimal point in the height input.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+            // Allow only one decimal point.
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtBorderBedAmount_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits and one decimal point in the height input.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+            // Allow only one decimal point.
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtRelativeAge1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtRelativeAge2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtRelativeAge3_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtRelativeAge4_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits.
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void rBtnOwned_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void rBtnRent_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void rBtnBorderBed_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        //UNFINISHED
+        //TODO
+        /*private void rdoOthers_CheckedChanged(object sender, EventArgs e)
+        {
+            txtOthers.Enabled = rdoOthers.Checked;
+        }
+
+
+        private void HideSubMenu()
+        {
+            if (PurposeSubMenu.Visible == true)
+                PurposeSubMenu.Visible = false; // Hides the PurposeSubMenu.
+        }
+
+        private void ShowSubMenu(Panel subMenu)
+        {
+            // Simply toggle the visibility of the selected submenu without hiding others.
+            subMenu.Visible = !subMenu.Visible;
+        }
+
+        //Initializes the form and sets up event handlers for the buttons.
+        private void btnPersonal_Click(object sender, EventArgs e)
+        {
+        }
+        private void Purposebtn_Click(object sender, EventArgs e)
+        {
+            ShowSubMenu(PurposeSubMenu); // Shows the PurposeSubMenu.
+        }*/
+
+
+        /// <summary>
+        /// Enables double buffering for a specific control to reduce flickering during rendering.
+        /// Double buffering works by drawing the control's content to an off-screen buffer
+        /// before rendering it to the screen, which prevents partial updates from being visible.
+        /// </summary>
+        /// <param name="control">The control for which double buffering is to be enabled.</param>
+        private void EnableDoubleBuffering(Control control)
+        {
+            // Use reflection to set the "DoubleBuffered" property of the control to true.
+            // This property is protected and not directly accessible for most controls.
+            typeof(Control).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, control, new object[] { true });
+        }
+
+        /// <summary>
+        /// Overrides the CreateParams property to enable double buffering for the entire form.
+        /// The WS_EX_COMPOSITED style ensures that all child controls are drawn to an off-screen
+        /// buffer before being displayed, which eliminates flickering caused by rapid updates.
+        /// </summary>
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+
+                // Add the WS_EX_COMPOSITED extended style to enable double buffering.
+                // This forces the entire form and its child controls to use double buffering.
+                cp.ExStyle |= 0x02000000; // WS_EX_COMPOSITED
+                return cp;
+            }
+        }
+
+        private void PanelBorder(Panel panel)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(0, 0, 20, 20, 180, 90); // Top-left corner
+            path.AddArc(panel.Width - 20, 0, 20, 20, 270, 90); // Top-right corner
+            path.AddArc(panel.Width - 20, panel.Height - 20, 20, 20, 0, 90); // Bottom-right corner
+            path.AddArc(0, panel.Height - 20, 20, 20, 90, 90); // Bottom-left corner
+            path.CloseFigure();
+            panel.Region = new Region(path); // Apply the custom region to make the panel have rounded edges
+        }
+        private void FormApplication_Load(object sender, EventArgs e)
+        {
+            // Apply the rounded edges to the specified panels
+            PanelBorder(panel5);
+            PanelBorder(panel6);
+            PanelBorder(panel7);
+            PanelBorder(panel10);
+            PanelBorder(panel12);
+        }
+
+        //Irrelevant
+        private void btnResidence_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void btnOccupation_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void btnSpouse_Click(object sender, EventArgs e)
+        {
+            
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+        }
+
+
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void lblMname_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtHeight_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+       
+
+        private void panel2_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label18_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void txtLname_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainContainer_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}

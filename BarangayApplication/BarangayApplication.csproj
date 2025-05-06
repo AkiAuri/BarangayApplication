@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3DC5676E-A219-4A38-8ED1-7165349A66C5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>BarangayApplication</RootNamespace>
+    <AssemblyName>BarangayApplication</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Collection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Collection.Designer.cs">
+      <DependentUpon>Collection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormApplication2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormApplication2.Designer.cs">
+      <DependentUpon>FormApplication2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Archive.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Archive.Designer.cs">
+      <DependentUpon>Archive.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Data.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Data.Designer.cs">
+      <DependentUpon>Data.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ExitForms.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExitForms.Designer.cs">
+      <DependentUpon>ExitForms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Finish.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Finish.Designer.cs">
+      <DependentUpon>Finish.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormApplication.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormApplication.Designer.cs">
+      <DependentUpon>FormApplication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Logbook.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Logbook.Designer.cs">
+      <DependentUpon>Logbook.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LoginMenu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoginMenu.Designer.cs">
+      <DependentUpon>LoginMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LogoutConfirm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogoutConfirm.Designer.cs">
+      <DependentUpon>LogoutConfirm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainMenu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainMenu.Designer.cs">
+      <DependentUpon>MainMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainViewForm.Designer.cs">
+      <DependentUpon>MainViewForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ChildRelative.cs" />
+    <Compile Include="Models\Repositories\ResidentsRepository.cs" />
+    <Compile Include="Models\Residents.cs" />
+    <Compile Include="Occupation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Occupation.Designer.cs">
+      <DependentUpon>Occupation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Overview.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Overview.Designer.cs">
+      <DependentUpon>Overview.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Personalinfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Personalinfo.Designer.cs">
+      <DependentUpon>Personalinfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Purpose.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Purpose.Designer.cs">
+      <DependentUpon>Purpose.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Collection.resx">
+      <DependentUpon>Collection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormApplication2.resx">
+      <DependentUpon>FormApplication2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Archive.resx">
+      <DependentUpon>Archive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data.resx">
+      <DependentUpon>Data.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExitForms.resx">
+      <DependentUpon>ExitForms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Finish.resx">
+      <DependentUpon>Finish.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormApplication.resx">
+      <DependentUpon>FormApplication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Logbook.resx">
+      <DependentUpon>Logbook.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoginMenu.resx">
+      <DependentUpon>LoginMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogoutConfirm.resx">
+      <DependentUpon>LogoutConfirm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainMenu.resx">
+      <DependentUpon>MainMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainViewForm.resx">
+      <DependentUpon>MainViewForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Occupation.resx">
+      <DependentUpon>Occupation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Overview.resx">
+      <DependentUpon>Overview.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Personalinfo.resx">
+      <DependentUpon>Personalinfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Purpose.resx">
+      <DependentUpon>Purpose.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Forum.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\user.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\password.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\terms-info.png" />
+    <None Include="Resources\Residence.png" />
+    <None Include="Resources\users-alt.png" />
+    <None Include="Resources\NewOverview.png" />
+    <None Include="Resources\search1.png" />
+    <None Include="Resources\paper1.png" />
+    <None Include="Resources\person1.png" />
+    <None Include="Resources\right-arrow.png" />
+    <None Include="Resources\required-fotor-bg-remover-2025031618524.png" />
+    <None Include="Resources\logo1.png" />
+    <None Include="Resources\warning.png" />
+    <None Include="Resources\next1.png" />
+    <None Include="Resources\next.png" />
+    <None Include="Resources\loupe.png" />
+    <None Include="Resources\search.png" />
+    <None Include="Resources\Overview %281%29.png" />
+    <None Include="Resources\LogoutWithBackground-fotor-bg-remover-2025032222199.png" />
+    <None Include="Resources\Data.png" />
+    <None Include="Resources\Archive.png" />
+    <None Include="Resources\Logbook.png" />
+    <None Include="Resources\back.png" />
+    <None Include="Resources\check.png" />
+    <None Include="Resources\left-arrow.png" />
+    <None Include="Resources\CreateNew.png" />
+    <None Include="Resources\50overview.png" />
+    <None Include="Resources\dashboard-monitor.png" />
+    <None Include="Resources\inbox-full.png" />
+    <None Include="Resources\log-file.png" />
+    <None Include="Resources\album-collection.png" />
+    <None Include="Resources\employee-man.png" />
+    <Content Include="Resources\Logo.png" />
+    <None Include="Resources\Overview.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
