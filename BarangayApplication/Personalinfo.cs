@@ -60,7 +60,7 @@ namespace BarangayApplication
             Age.Text = _resident.Age > 0 ? _resident.Age.ToString() : "";
             txtPoB.Text = _resident.PlaceOfBirth ?? "";
             cBxCivilStatus.Text = _resident.CivilStatus ?? "";
-            txtVoterIdNo.Text = _resident.VoterIdNo ?? "";
+            txtVoterIdNo.Text = _resident.VoterIDNo ?? "";
             txtPoll.Text = _resident.PollingPlace ?? "";
         }
 
@@ -93,7 +93,7 @@ namespace BarangayApplication
 
             _resident.PlaceOfBirth = txtPoB.Text;
             _resident.CivilStatus = cBxCivilStatus.Text;
-            _resident.VoterIdNo = txtVoterIdNo.Text;
+            _resident.VoterIDNo = txtVoterIdNo.Text;
             _resident.PollingPlace = txtPoll.Text;
         }
 

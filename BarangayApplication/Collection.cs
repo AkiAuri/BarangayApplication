@@ -71,11 +71,14 @@ namespace BarangayApplication
         public void LoadFromModel()
         {
             comboBox1.Text = _resident.ResidenceType ?? "";
-            // Purpose flags and others
-            if (!string.IsNullOrWhiteSpace(_resident.PurposeOthers))
+
+            // Use Purposes navigation property
+            var purposes = _resident.Purposes;
+
+            if (purposes != null && !string.IsNullOrWhiteSpace(purposes.PurposeOthers))
             {
                 comboBox2.Text = "OTHER";
-                txtOthers.Text = _resident.PurposeOthers;
+                txtOthers.Text = purposes.PurposeOthers;
                 txtOthers.Visible = true;
                 txtOthers.Enabled = true;
             }
@@ -93,65 +96,75 @@ namespace BarangayApplication
         {
             _resident.ResidenceType = comboBox1.Text;
 
+            // Ensure Purposes exists
+            if (_resident.Purposes == null)
+                _resident.Purposes = new Purposes();
+
             // Clear all flags first
-            ClearPurposeFlags(_resident);
+            ClearPurposeFlags(_resident.Purposes);
 
             if (comboBox2.Text == "OTHER")
             {
-                _resident.PurposeOthers = txtOthers.Text;
+                _resident.Purposes.PurposeOthers = txtOthers.Text;
             }
             else
             {
-                _resident.PurposeOthers = "";
-                SetPurposeFlags(_resident, comboBox2.Text);
+                _resident.Purposes.PurposeOthers = "";
+                SetPurposeFlags(_resident.Purposes, comboBox2.Text);
             }
         }
 
-        // --- Reuse these helpers from your main code ---
-        private void ClearPurposeFlags(Residents resident)
+        // --- Updated helpers to use Purposes ---
+
+        private void ClearPurposeFlags(Purposes purposes)
         {
-            resident.PurposeResidency = false;
-            resident.PurposePostalID = false;
-            resident.PurposeLocalEmployment = false;
-            resident.PurposeMarriage = false;
-            resident.PurposeLoan = false;
-            resident.PurposeMeralco = false;
-            resident.PurposeBankTransaction = false;
-            resident.PurposeTravelAbroad = false;
-            resident.PurposeSeniorCitizen = false;
-            resident.PurposeSchool = false;
-            resident.PurposeMedical = false;
-            resident.PurposeBurial = false;
+            purposes.PurposeResidency = false;
+            purposes.PurposePostalID = false;
+            purposes.PurposeLocalEmployment = false;
+            purposes.PurposeMarriage = false;
+            purposes.PurposeLoan = false;
+            purposes.PurposeMeralco = false;
+            purposes.PurposeBankTransaction = false;
+            purposes.PurposeTravelAbroad = false;
+            purposes.PurposeSeniorCitizen = false;
+            purposes.PurposeSchool = false;
+            purposes.PurposeMedical = false;
+            purposes.PurposeBurial = false;
         }
-        private void SetPurposeFlags(Residents resident, string purpose)
+
+        private void SetPurposeFlags(Purposes purposes, string purpose)
         {
-            resident.PurposeResidency = purpose.ToUpper() == "RESIDENCY";
-            resident.PurposePostalID = purpose.ToUpper() == "POSTAL ID";
-            resident.PurposeLocalEmployment = purpose.ToUpper() == "LOCAL EMPLOYMENT";
-            resident.PurposeMarriage = purpose.ToUpper() == "MARRIAGE";
-            resident.PurposeLoan = purpose.ToUpper() == "LOAN";
-            resident.PurposeMeralco = purpose.ToUpper() == "MERALCO";
-            resident.PurposeBankTransaction = purpose.ToUpper() == "BANK TRANSACTION";
-            resident.PurposeTravelAbroad = purpose.ToUpper() == "TRAVEL ABROAD";
-            resident.PurposeSeniorCitizen = purpose.ToUpper() == "SENIOR CITIZEN";
-            resident.PurposeSchool = purpose.ToUpper() == "SCHOOL";
-            resident.PurposeMedical = purpose.ToUpper() == "MEDICAL";
-            resident.PurposeBurial = purpose.ToUpper() == "BURIAL";
+            var value = purpose.ToUpper();
+            purposes.PurposeResidency = value == "RESIDENCY";
+            purposes.PurposePostalID = value == "POSTAL ID";
+            purposes.PurposeLocalEmployment = value == "LOCAL EMPLOYMENT";
+            purposes.PurposeMarriage = value == "MARRIAGE";
+            purposes.PurposeLoan = value == "LOAN";
+            purposes.PurposeMeralco = value == "MERALCO";
+            purposes.PurposeBankTransaction = value == "BANK TRANSACTION";
+            purposes.PurposeTravelAbroad = value == "TRAVEL ABROAD";
+            purposes.PurposeSeniorCitizen = value == "SENIOR CITIZEN";
+            purposes.PurposeSchool = value == "SCHOOL";
+            purposes.PurposeMedical = value == "MEDICAL";
+            purposes.PurposeBurial = value == "BURIAL";
         }
+
         private string GetPurposeText(Residents resident)
         {
-            if (resident.PurposeResidency) return "RESIDENCY";
-            if (resident.PurposePostalID) return "POSTAL ID";
-            if (resident.PurposeLocalEmployment) return "LOCAL EMPLOYMENT";
-            if (resident.PurposeMarriage) return "MARRIAGE";
-            if (resident.PurposeLoan) return "LOAN";
-            if (resident.PurposeMeralco) return "MERALCO";
-            if (resident.PurposeBankTransaction) return "BANK TRANSACTION";
-            if (resident.PurposeTravelAbroad) return "TRAVEL ABROAD";
-            if (resident.PurposeSeniorCitizen) return "SENIOR CITIZEN";
-            if (resident.PurposeSchool) return "SCHOOL";
-            if (resident.PurposeMedical) return "MEDICAL";
-            if (resident.PurposeBurial) return "BURIAL";
+            var purposes = resident.Purposes;
+            if (purposes == null) return "";
+            if (purposes.PurposeResidency) return "RESIDENCY";
+            if (purposes.PurposePostalID) return "POSTAL ID";
+            if (purposes.PurposeLocalEmployment) return "LOCAL EMPLOYMENT";
+            if (purposes.PurposeMarriage) return "MARRIAGE";
+            if (purposes.PurposeLoan) return "LOAN";
+            if (purposes.PurposeMeralco) return "MERALCO";
+            if (purposes.PurposeBankTransaction) return "BANK TRANSACTION";
+            if (purposes.PurposeTravelAbroad) return "TRAVEL ABROAD";
+            if (purposes.PurposeSeniorCitizen) return "SENIOR CITIZEN";
+            if (purposes.PurposeSchool) return "SCHOOL";
+            if (purposes.PurposeMedical) return "MEDICAL";
+            if (purposes.PurposeBurial) return "BURIAL";
             return "";
         }
     }

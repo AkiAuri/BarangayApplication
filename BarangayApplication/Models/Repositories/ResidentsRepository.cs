@@ -8,7 +8,7 @@ namespace BarangayApplication.Models.Repositories
 {
     public class ResidentsRepository
     {
-        private readonly string _repoconn = "Data Source=.;Initial Catalog=BrgyDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
+        private readonly string _repoconn = "Data Source=localhost,1433;Initial Catalog=Test_SelfInterest;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 
         /// <summary>
         /// Gets the list of applicant residents. This method connects to the database,
@@ -21,21 +21,21 @@ namespace BarangayApplication.Models.Repositories
         public Dictionary<string, int> GetPurposeDistribution()
         {
             var purposeDistribution = new Dictionary<string, int>
-    {
-        { "Residency", 0 },
-        { "Postal ID", 0 },
-        { "Local Employment", 0 },
-        { "Marriage", 0 },
-        { "Loan", 0 },
-        { "Meralco", 0 },
-        { "Bank Transaction", 0 },
-        { "Travel Abroad", 0 },
-        { "Senior Citizen", 0 },
-        { "School", 0 },
-        { "Medical", 0 },
-        { "Burial", 0 },
-        { "Others", 0 }
-    };
+            {
+                { "Residency", 0 },
+                { "Postal ID", 0 },
+                { "Local Employment", 0 },
+                { "Marriage", 0 },
+                { "Loan", 0 },
+                { "Meralco", 0 },
+                { "Bank Transaction", 0 },
+                { "Travel Abroad", 0 },
+                { "Senior Citizen", 0 },
+                { "School", 0 },
+                { "Medical", 0 },
+                { "Burial", 0 },
+                { "Others", 0 }
+            };
 
             try
             {
@@ -43,40 +43,40 @@ namespace BarangayApplication.Models.Repositories
                 {
                     _conn.Open();
                     string sql = @"
-                SELECT 
-                    SUM(CASE WHEN PurposeResidency = 1 THEN 1 ELSE 0 END) AS Residency,
-                    SUM(CASE WHEN PurposePostalID = 1 THEN 1 ELSE 0 END) AS PostalID,
-                    SUM(CASE WHEN PurposeLocalEmployment = 1 THEN 1 ELSE 0 END) AS LocalEmployment,
-                    SUM(CASE WHEN PurposeMarriage = 1 THEN 1 ELSE 0 END) AS Marriage,
-                    SUM(CASE WHEN PurposeLoan = 1 THEN 1 ELSE 0 END) AS Loan,
-                    SUM(CASE WHEN PurposeMeralco = 1 THEN 1 ELSE 0 END) AS Meralco,
-                    SUM(CASE WHEN PurposeBankTransaction = 1 THEN 1 ELSE 0 END) AS BankTransaction,
-                    SUM(CASE WHEN PurposeTravelAbroad = 1 THEN 1 ELSE 0 END) AS TravelAbroad,
-                    SUM(CASE WHEN PurposeSeniorCitizen = 1 THEN 1 ELSE 0 END) AS SeniorCitizen,
-                    SUM(CASE WHEN PurposeSchool = 1 THEN 1 ELSE 0 END) AS School,
-                    SUM(CASE WHEN PurposeMedical = 1 THEN 1 ELSE 0 END) AS Medical,
-                    SUM(CASE WHEN PurposeBurial = 1 THEN 1 ELSE 0 END) AS Burial,
-                    SUM(CASE WHEN PurposeOthers IS NOT NULL AND PurposeOthers != '' THEN 1 ELSE 0 END) AS Others
-                FROM SVResidents";
+                        SELECT 
+                            SUM(CASE WHEN PurposeResidency = 1 THEN 1 ELSE 0 END) AS Residency,
+                            SUM(CASE WHEN PurposePostalID = 1 THEN 1 ELSE 0 END) AS PostalID,
+                            SUM(CASE WHEN PurposeLocalEmployment = 1 THEN 1 ELSE 0 END) AS LocalEmployment,
+                            SUM(CASE WHEN PurposeMarriage = 1 THEN 1 ELSE 0 END) AS Marriage,
+                            SUM(CASE WHEN PurposeLoan = 1 THEN 1 ELSE 0 END) AS Loan,
+                            SUM(CASE WHEN PurposeMeralco = 1 THEN 1 ELSE 0 END) AS Meralco,
+                            SUM(CASE WHEN PurposeBankTransaction = 1 THEN 1 ELSE 0 END) AS BankTransaction,
+                            SUM(CASE WHEN PurposeTravelAbroad = 1 THEN 1 ELSE 0 END) AS TravelAbroad,
+                            SUM(CASE WHEN PurposeSeniorCitizen = 1 THEN 1 ELSE 0 END) AS SeniorCitizen,
+                            SUM(CASE WHEN PurposeSchool = 1 THEN 1 ELSE 0 END) AS School,
+                            SUM(CASE WHEN PurposeMedical = 1 THEN 1 ELSE 0 END) AS Medical,
+                            SUM(CASE WHEN PurposeBurial = 1 THEN 1 ELSE 0 END) AS Burial,
+                            SUM(CASE WHEN PurposeOthers IS NOT NULL AND PurposeOthers != '' THEN 1 ELSE 0 END) AS Others
+                        FROM Purposes";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
                     {
                         if (_reader.Read())
                         {
-                            purposeDistribution["Residency"] = _reader.GetInt32(0);
-                            purposeDistribution["Postal ID"] = _reader.GetInt32(1);
-                            purposeDistribution["Local Employment"] = _reader.GetInt32(2);
-                            purposeDistribution["Marriage"] = _reader.GetInt32(3);
-                            purposeDistribution["Loan"] = _reader.GetInt32(4);
-                            purposeDistribution["Meralco"] = _reader.GetInt32(5);
-                            purposeDistribution["Bank Transaction"] = _reader.GetInt32(6);
-                            purposeDistribution["Travel Abroad"] = _reader.GetInt32(7);
-                            purposeDistribution["Senior Citizen"] = _reader.GetInt32(8);
-                            purposeDistribution["School"] = _reader.GetInt32(9);
-                            purposeDistribution["Medical"] = _reader.GetInt32(10);
-                            purposeDistribution["Burial"] = _reader.GetInt32(11);
-                            purposeDistribution["Others"] = _reader.GetInt32(12);
+                            purposeDistribution["Residency"] = _reader.IsDBNull(0) ? 0 : _reader.GetInt32(0);
+                            purposeDistribution["Postal ID"] = _reader.IsDBNull(1) ? 0 : _reader.GetInt32(1);
+                            purposeDistribution["Local Employment"] = _reader.IsDBNull(2) ? 0 : _reader.GetInt32(2);
+                            purposeDistribution["Marriage"] = _reader.IsDBNull(3) ? 0 : _reader.GetInt32(3);
+                            purposeDistribution["Loan"] = _reader.IsDBNull(4) ? 0 : _reader.GetInt32(4);
+                            purposeDistribution["Meralco"] = _reader.IsDBNull(5) ? 0 : _reader.GetInt32(5);
+                            purposeDistribution["Bank Transaction"] = _reader.IsDBNull(6) ? 0 : _reader.GetInt32(6);
+                            purposeDistribution["Travel Abroad"] = _reader.IsDBNull(7) ? 0 : _reader.GetInt32(7);
+                            purposeDistribution["Senior Citizen"] = _reader.IsDBNull(8) ? 0 : _reader.GetInt32(8);
+                            purposeDistribution["School"] = _reader.IsDBNull(9) ? 0 : _reader.GetInt32(9);
+                            purposeDistribution["Medical"] = _reader.IsDBNull(10) ? 0 : _reader.GetInt32(10);
+                            purposeDistribution["Burial"] = _reader.IsDBNull(11) ? 0 : _reader.GetInt32(11);
+                            purposeDistribution["Others"] = _reader.IsDBNull(12) ? 0 : _reader.GetInt32(12);
                         }
                     }
                 }
@@ -104,7 +104,7 @@ namespace BarangayApplication.Models.Repositories
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
-                    string sql = "SELECT Sex, COUNT(*) AS Count FROM SVResidents GROUP BY Sex";
+                    string sql = "SELECT Sex, COUNT(*) AS Count FROM Residents GROUP BY Sex";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
@@ -155,7 +155,7 @@ namespace BarangayApplication.Models.Repositories
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
-                    string sql = "SELECT Age FROM SVResidents";
+                    string sql = "SELECT Age FROM Residents";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
@@ -192,7 +192,7 @@ namespace BarangayApplication.Models.Repositories
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
-                    string sql = "SELECT accountName FROM users WHERE accountID = @CurrentAccountId";
+                    string sql = "SELECT accountName FROM Users WHERE accountID = @CurrentAccountId";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
@@ -364,302 +364,343 @@ namespace BarangayApplication.Models.Repositories
 
         public List<Residents> GetApplicants()
         {
-            // Initialize the list to hold residents.
             var residents = new List<Residents>();
 
             try
             {
-                // Create a new SqlConnection using the connection string _repoconn.
-                // The 'using' statement ensures that the connection is properly disposed of after use.
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
-                    // Open the connection to the database.
                     _conn.Open();
-                    
-                    // Define the SQL query that selects all columns from the SVResidents table.
-                    // The query orders the results by ApplicantID in descending order.
+
+                    // Query only the Residents table and join Employment, Spouse, and Purposes
                     string sql = @"
-                            SELECT 
-                                ApplicantID, 
-                                LastName, 
-                                FirstName, 
-                                MiddleName, 
-                                Address, 
-                                TelCelNo, 
-                                Sex, 
-                                Height, 
-                                Weight, 
-                                DateOfBirth, 
-                                Age, 
-                                PlaceOfBirth, 
-                                CivilStatus, 
-                                VoterIDNo, 
-                                PollingPlace,
-                                ResidenceType, 
-                                PaymentAmount, 
-                                PaymentFrequency,
-                                Company, 
-                                Position, 
-                                LengthofService, 
-                                PreviousCompany, 
-                                PreviousPosition, 
-                                PreviousLengthofService,
-                                NameOfSpouse, 
-                                SpousePhone, 
-                                SCompany, 
-                                SPosition, 
-                                SLengthOfService, 
-                                SPreviousCompany, 
-                                SPreviousPosition, 
-                                SPreviousLengthofService,
-                                ChildrenRelativeName, 
-                                ChildrenRelativeAge, 
-                                ChildrenRelativeOccupation, 
-                                ChildrenRelativeRelationship,
-                                PurposeResidency, 
-                                PurposePostalID, 
-                                PurposeLocalEmployment, 
-                                PurposeMarriage, 
-                                PurposeLoan, 
-                                PurposeMeralco, 
-                                PurposeBankTransaction, 
-                                PurposeTravelAbroad, 
-                                PurposeSeniorCitizen, 
-                                PurposeSchool, 
-                                PurposeMedical, 
-                                PurposeBurial, 
-                                PurposeOthers
-                            FROM SVResidents
-                            ORDER BY ApplicantID DESC;";
+                        SELECT 
+                            r.ResidentID, 
+                            r.LastName, 
+                            r.FirstName, 
+                            r.MiddleName, 
+                            r.Address, 
+                            r.TelCelNo, 
+                            r.Sex, 
+                            r.Height, 
+                            r.Weight, 
+                            r.DateOfBirth, 
+                            r.Age, 
+                            r.PlaceOfBirth, 
+                            r.CivilStatus, 
+                            r.VoterIDNo, 
+                            r.PollingPlace,
+                            r.ResidenceType, 
+                            r.PaymentAmount, 
+                            r.PaymentFrequency,
 
-                    // Create a SqlCommand object with the SQL query and the open connection.
-                    // The 'using' statement ensures that the SqlCommand is disposed after use.
+                            -- Employment
+                            e.EmploymentID,
+                            e.Company, 
+                            e.Position, 
+                            e.LengthOfService, 
+                            e.PreviousCompany, 
+                            e.PreviousPosition, 
+                            e.PreviousLengthOfService,
+
+                            -- Spouse
+                            s.SpouseID,
+                            s.SpouseName, 
+                            s.SpousePhone, 
+                            s.SpouseCompany, 
+                            s.SpousePosition, 
+                            s.SpouseLengthOfService, 
+                            s.SpousePreviousCompany, 
+                            s.SpousePreviousPosition, 
+                            s.SpousePreviousLengthOfService,
+
+                            -- Purposes
+                            p.PurposeID,
+                            p.PurposeResidency, 
+                            p.PurposePostalID, 
+                            p.PurposeLocalEmployment, 
+                            p.PurposeMarriage, 
+                            p.PurposeLoan, 
+                            p.PurposeMeralco, 
+                            p.PurposeBankTransaction, 
+                            p.PurposeTravelAbroad, 
+                            p.PurposeSeniorCitizen, 
+                            p.PurposeSchool, 
+                            p.PurposeMedical, 
+                            p.PurposeBurial, 
+                            p.PurposeOthers
+
+                        FROM Residents r
+                        LEFT JOIN Employment e ON r.ResidentID = e.ResidentID
+                        LEFT JOIN Spouse s ON r.ResidentID = s.ResidentID
+                        LEFT JOIN Purposes p ON r.ResidentID = p.ResidentID
+                        ORDER BY r.ResidentID DESC;";
+
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    using (SqlDataReader _reader = _cmd.ExecuteReader())
                     {
-                        // Execute the SQL query and retrieve the results using a SqlDataReader.
-                        using (SqlDataReader _reader = _cmd.ExecuteReader())
+                        while (_reader.Read())
                         {
-                            // Loop through each record in the result set.
-                            while (_reader.Read())
+                            var resident = new Residents
                             {
-                                // Create a new Residents object.
-                                Residents resident = new Residents();
+                                ResidentID = _reader.GetInt32(_reader.GetOrdinal("ResidentID")),
+                                LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? "" : _reader.GetString(_reader.GetOrdinal("LastName")),
+                                FirstName = _reader.IsDBNull(_reader.GetOrdinal("FirstName")) ? "" : _reader.GetString(_reader.GetOrdinal("FirstName")),
+                                MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName")),
+                                Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address")),
+                                TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo")),
+                                Sex = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex")),
+                                Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
+                                Weight = _reader.IsDBNull(_reader.GetOrdinal("Weight")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Weight")),
+                                DateOfBirth = _reader.IsDBNull(_reader.GetOrdinal("DateOfBirth")) ? DateTime.MinValue : _reader.GetDateTime(_reader.GetOrdinal("DateOfBirth")),
+                                Age = _reader.IsDBNull(_reader.GetOrdinal("Age")) ? 0 : _reader.GetInt32(_reader.GetOrdinal("Age")),
+                                PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? "" : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth")),
+                                CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? "" : _reader.GetString(_reader.GetOrdinal("CivilStatus")),
+                                VoterIDNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? "" : _reader.GetString(_reader.GetOrdinal("VoterIDNo")),
+                                PollingPlace = _reader.IsDBNull(_reader.GetOrdinal("PollingPlace")) ? "" : _reader.GetString(_reader.GetOrdinal("PollingPlace")),
+                                ResidenceType = _reader.IsDBNull(_reader.GetOrdinal("ResidenceType")) ? "" : _reader.GetString(_reader.GetOrdinal("ResidenceType")),
+                                PaymentAmount = _reader.IsDBNull(_reader.GetOrdinal("PaymentAmount")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("PaymentAmount")),
+                                PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? "" : _reader.GetString(_reader.GetOrdinal("PaymentFrequency")),
+                            };
 
-                                // Map each column to the corresponding property in the Residents object.
-                                // Checks if each column is null using IsDBNull and sets a default value if needed.
-                                resident.Id = _reader.GetInt32(_reader.GetOrdinal("ApplicantID"));
-                                resident.LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? null : _reader.GetString(_reader.GetOrdinal("LastName"));
-                                resident.FirstName = _reader.IsDBNull(_reader.GetOrdinal("FirstName")) ? null : _reader.GetString(_reader.GetOrdinal("FirstName"));
-                                resident.MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName"));
-                                resident.Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? null : _reader.GetString(_reader.GetOrdinal("Address"));
-                                resident.TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? null : _reader.GetString(_reader.GetOrdinal("TelCelNo"));
-                                resident.Sex = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? null : _reader.GetString(_reader.GetOrdinal("Sex"));
-                                resident.Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height"));
-                                resident.Weight = _reader.IsDBNull(_reader.GetOrdinal("Weight")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Weight"));
-                                resident.DateOfBirth = _reader.IsDBNull(_reader.GetOrdinal("DateOfBirth")) ? DateTime.MinValue : _reader.GetDateTime(_reader.GetOrdinal("DateOfBirth"));
-                                resident.Age = _reader.IsDBNull(_reader.GetOrdinal("Age")) ? 0 : _reader.GetInt32(_reader.GetOrdinal("Age"));
-                                resident.PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? null : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth"));
-                                resident.CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? null : _reader.GetString(_reader.GetOrdinal("CivilStatus"));
-                                resident.VoterIdNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? null : _reader.GetString(_reader.GetOrdinal("VoterIDNo"));
-                                resident.PollingPlace = _reader.IsDBNull(_reader.GetOrdinal("PollingPlace")) ? null : _reader.GetString(_reader.GetOrdinal("PollingPlace"));
-                                resident.ResidenceType = _reader.IsDBNull(_reader.GetOrdinal("ResidenceType")) ? null : _reader.GetString(_reader.GetOrdinal("ResidenceType"));
-                                resident.PaymentAmount = _reader.IsDBNull(_reader.GetOrdinal("PaymentAmount")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("PaymentAmount"));
-                                resident.PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? null : _reader.GetString(_reader.GetOrdinal("PaymentFrequency"));
-                                resident.Company = _reader.IsDBNull(_reader.GetOrdinal("Company")) ? null : _reader.GetString(_reader.GetOrdinal("Company"));
-                                resident.Position = _reader.IsDBNull(_reader.GetOrdinal("Position")) ? null : _reader.GetString(_reader.GetOrdinal("Position"));
-                                resident.LengthofService = _reader.IsDBNull(_reader.GetOrdinal("LengthofService")) ? null : _reader.GetString(_reader.GetOrdinal("LengthofService"));
-                                resident.PreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("PreviousCompany")) ? null : _reader.GetString(_reader.GetOrdinal("PreviousCompany"));
-                                resident.PreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("PreviousPosition")) ? null : _reader.GetString(_reader.GetOrdinal("PreviousPosition"));
-                                resident.PreviousLengthofService = _reader.IsDBNull(_reader.GetOrdinal("PreviousLengthofService")) ? null : _reader.GetString(_reader.GetOrdinal("PreviousLengthofService"));
-                                resident.SpouseName = _reader.IsDBNull(_reader.GetOrdinal("NameOfSpouse")) ? null : _reader.GetString(_reader.GetOrdinal("NameOfSpouse"));
-                                resident.SpousePhone = _reader.IsDBNull(_reader.GetOrdinal("SpousePhone")) ? null : _reader.GetString(_reader.GetOrdinal("SpousePhone"));
-                                resident.SpouseCompany = _reader.IsDBNull(_reader.GetOrdinal("SCompany")) ? null : _reader.GetString(_reader.GetOrdinal("SCompany"));
-                                resident.SpousePosition = _reader.IsDBNull(_reader.GetOrdinal("SPosition")) ? null : _reader.GetString(_reader.GetOrdinal("SPosition"));
-                                resident.SpouseLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SLengthOfService")) ? null : _reader.GetString(_reader.GetOrdinal("SLengthOfService"));
-                                resident.SpousePrevCompany = _reader.IsDBNull(_reader.GetOrdinal("SPreviousCompany")) ? null : _reader.GetString(_reader.GetOrdinal("SPreviousCompany"));
-                                resident.SpousePrevPosition = _reader.IsDBNull(_reader.GetOrdinal("SPreviousPosition")) ? null : _reader.GetString(_reader.GetOrdinal("SPreviousPosition"));
-                                resident.SpousePrevLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SPreviousLengthOfService")) ? null : _reader.GetString(_reader.GetOrdinal("SPreviousLengthOfService"));
-                                resident.ChildrenRelativeName = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeName")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeName"));
-                                resident.ChildrenRelativeAge = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeAge")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeAge"));
-                                resident.ChildrenRelativeOccupation = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeOccupation")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeOccupation"));
-                                resident.ChildrenRelativeRelationship = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeRelationship")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeRelationship"));
-                                resident.PurposeResidency = _reader.IsDBNull(_reader.GetOrdinal("PurposeResidency")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeResidency"));
-                                resident.PurposePostalID = _reader.IsDBNull(_reader.GetOrdinal("PurposePostalID")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposePostalID"));
-                                resident.PurposeLocalEmployment = _reader.IsDBNull(_reader.GetOrdinal("PurposeLocalEmployment")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeLocalEmployment"));
-                                resident.PurposeMarriage = _reader.IsDBNull(_reader.GetOrdinal("PurposeMarriage")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeMarriage"));
-                                resident.PurposeLoan = _reader.IsDBNull(_reader.GetOrdinal("PurposeLoan")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeLoan"));
-                                resident.PurposeMeralco = _reader.IsDBNull(_reader.GetOrdinal("PurposeMeralco")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeMeralco"));
-                                resident.PurposeBankTransaction = _reader.IsDBNull(_reader.GetOrdinal("PurposeBankTransaction")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeBankTransaction"));
-                                resident.PurposeTravelAbroad = _reader.IsDBNull(_reader.GetOrdinal("PurposeTravelAbroad")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeTravelAbroad"));
-                                resident.PurposeSeniorCitizen = _reader.IsDBNull(_reader.GetOrdinal("PurposeSeniorCitizen")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeSeniorCitizen"));
-                                resident.PurposeSchool = _reader.IsDBNull(_reader.GetOrdinal("PurposeSchool")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeSchool"));
-                                resident.PurposeMedical = _reader.IsDBNull(_reader.GetOrdinal("PurposeMedical")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeMedical"));
-                                resident.PurposeBurial = _reader.IsDBNull(_reader.GetOrdinal("PurposeBurial")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeBurial"));
-                                resident.PurposeOthers = _reader.IsDBNull(_reader.GetOrdinal("PurposeOthers")) ? null : _reader.GetString(_reader.GetOrdinal("PurposeOthers"));
-
-                                // Add the populated resident object to the residents list.
-                                residents.Add(resident);
+                            // Employment info (may be null)
+                            if (!_reader.IsDBNull(_reader.GetOrdinal("EmploymentID")))
+                            {
+                                resident.Employment = new Employment
+                                {
+                                    EmploymentID = _reader.GetInt32(_reader.GetOrdinal("EmploymentID")),
+                                    ResidentID = resident.ResidentID,
+                                    Company = _reader.IsDBNull(_reader.GetOrdinal("Company")) ? "" : _reader.GetString(_reader.GetOrdinal("Company")),
+                                    Position = _reader.IsDBNull(_reader.GetOrdinal("Position")) ? "" : _reader.GetString(_reader.GetOrdinal("Position")),
+                                    LengthOfService = _reader.IsDBNull(_reader.GetOrdinal("LengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("LengthOfService")),
+                                    PreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("PreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousCompany")),
+                                    PreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("PreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousPosition")),
+                                    PreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("PreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousLengthOfService"))
+                                };
                             }
+
+                            // Spouse info (may be null)
+                            if (!_reader.IsDBNull(_reader.GetOrdinal("SpouseID")))
+                            {
+                                resident.Spouse = new Spouse
+                                {
+                                    SpouseID = _reader.GetInt32(_reader.GetOrdinal("SpouseID")),
+                                    ResidentID = resident.ResidentID,
+                                    SpouseName = _reader.IsDBNull(_reader.GetOrdinal("SpouseName")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseName")),
+                                    SpousePhone = _reader.IsDBNull(_reader.GetOrdinal("SpousePhone")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePhone")),
+                                    SpouseCompany = _reader.IsDBNull(_reader.GetOrdinal("SpouseCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseCompany")),
+                                    SpousePosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePosition")),
+                                    SpouseLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpouseLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseLengthOfService")),
+                                    SpousePreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousCompany")),
+                                    SpousePreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousPosition")),
+                                    SpousePreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousLengthOfService"))
+                                };
+                            }
+
+                            // Purposes info (may be null)
+                            if (!_reader.IsDBNull(_reader.GetOrdinal("PurposeID")))
+                            {
+                                resident.Purposes = new Purposes
+                                {
+                                    PurposeID = _reader.GetInt32(_reader.GetOrdinal("PurposeID")),
+                                    ResidentID = resident.ResidentID,
+                                    PurposeResidency = !_reader.IsDBNull(_reader.GetOrdinal("PurposeResidency")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeResidency")),
+                                    PurposePostalID = !_reader.IsDBNull(_reader.GetOrdinal("PurposePostalID")) && _reader.GetBoolean(_reader.GetOrdinal("PurposePostalID")),
+                                    PurposeLocalEmployment = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLocalEmployment")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLocalEmployment")),
+                                    PurposeMarriage = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMarriage")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMarriage")),
+                                    PurposeLoan = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLoan")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLoan")),
+                                    PurposeMeralco = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMeralco")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMeralco")),
+                                    PurposeBankTransaction = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBankTransaction")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBankTransaction")),
+                                    PurposeTravelAbroad = !_reader.IsDBNull(_reader.GetOrdinal("PurposeTravelAbroad")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeTravelAbroad")),
+                                    PurposeSeniorCitizen = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSeniorCitizen")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSeniorCitizen")),
+                                    PurposeSchool = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSchool")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSchool")),
+                                    PurposeMedical = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMedical")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMedical")),
+                                    PurposeBurial = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBurial")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBurial")),
+                                    PurposeOthers = _reader.IsDBNull(_reader.GetOrdinal("PurposeOthers")) ? "" : _reader.GetString(_reader.GetOrdinal("PurposeOthers"))
+                                };
+                            }
+
+                            residents.Add(resident);
                         }
                     }
                 }
             }
-            // Handle any exceptions that occur during the database operation.
             catch (Exception ex)
             {
-                // Log the exception details to the console.
                 Console.WriteLine("Exception: " + ex.ToString());
-                // Rethrow the exception so higher-level code can handle it as needed.
                 throw;
             }
-            
-            // Return the complete list of residents.
+
             return residents;
         }
         
         /// <summary>
-        /// Retrieves a single applicant resident by the provided applicantId.
-        /// The method connects to the database, executes a SELECT query against the SVResidents table 
-        /// with a filter on ApplicantID, maps the result to a Residents instance, and returns it.
+        /// Retrieves a single applicant resident by the provided residentId.
+        /// The method connects to the database, executes a SELECT query against the Residents table 
+        /// with a filter on ResidentID, joins Employment, Spouse, and Purposes, maps the result to a Residents instance, and returns it.
         /// If no matching record is found, the method returns null.
         /// In case of an exception, the error is logged to the console and rethrown.
         /// </summary>
-        /// <param name="applicantId">The ID of the applicant to be retrieved.</param>
+        /// <param name="residentId">The ID of the resident to be retrieved.</param>
         /// <returns>A Residents object if found; otherwise, null.</returns>
-        public Residents? GetApplicant(int applicantId)
+        public Residents? GetApplicant(int residentId)
         {
             try
             {
-                // Establish a connection to the database using the connection string _repoconn.
-                // The 'using' block ensures that the connection is properly disposed when done.
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
-                    // Open the database connection.
                     _conn.Open();
 
-                    // Define the SQL query to select the applicant record based on the applicantId.
-                    // The query selects all required fields from the SVResidents table.
                     string sql = @"
                         SELECT 
-                            ApplicantID, 
-                            LastName, 
-                            FirstName, 
-                            MiddleName, 
-                            Address, 
-                            TelCelNo, 
-                            Sex, 
-                            Height, 
-                            Weight, 
-                            DateOfBirth, 
-                            Age, 
-                            PlaceOfBirth, 
-                            CivilStatus, 
-                            VoterIDNo, 
-                            PollingPlace,
-                            ResidenceType, 
-                            PaymentAmount, 
-                            PaymentFrequency,
-                            Company, 
-                            Position, 
-                            LengthofService, 
-                            PreviousCompany, 
-                            PreviousPosition, 
-                            PreviousLengthOfService,
-                            NameOfSpouse, 
-                            SpousePhone, 
-                            SCompany, 
-                            SPosition, 
-                            SLengthOfService, 
-                            SPreviousCompany, 
-                            SPreviousPosition, 
-                            SPreviousLengthOfService,
-                            ChildrenRelativeName, 
-                            ChildrenRelativeAge, 
-                            ChildrenRelativeOccupation, 
-                            ChildrenRelativeRelationship,
-                            PurposeResidency, 
-                            PurposePostalID, 
-                            PurposeLocalEmployment, 
-                            PurposeMarriage, 
-                            PurposeLoan, 
-                            PurposeMeralco, 
-                            PurposeBankTransaction, 
-                            PurposeTravelAbroad, 
-                            PurposeSeniorCitizen, 
-                            PurposeSchool, 
-                            PurposeMedical, 
-                            PurposeBurial, 
-                            PurposeOthers
-                        FROM SVResidents
-                        WHERE ApplicantID = @applicantId;";
+                            r.ResidentID, 
+                            r.LastName, 
+                            r.FirstName, 
+                            r.MiddleName, 
+                            r.Address, 
+                            r.TelCelNo, 
+                            r.Sex, 
+                            r.Height, 
+                            r.Weight, 
+                            r.DateOfBirth, 
+                            r.Age, 
+                            r.PlaceOfBirth, 
+                            r.CivilStatus, 
+                            r.VoterIDNo, 
+                            r.PollingPlace,
+                            r.ResidenceType, 
+                            r.PaymentAmount, 
+                            r.PaymentFrequency,
 
-                    // Create a SqlCommand with the SQL query and the connection.
+                            -- Employment
+                            e.EmploymentID,
+                            e.Company, 
+                            e.Position, 
+                            e.LengthOfService, 
+                            e.PreviousCompany, 
+                            e.PreviousPosition, 
+                            e.PreviousLengthOfService,
+
+                            -- Spouse
+                            s.SpouseID,
+                            s.SpouseName, 
+                            s.SpousePhone, 
+                            s.SpouseCompany, 
+                            s.SpousePosition, 
+                            s.SpouseLengthOfService, 
+                            s.SpousePreviousCompany, 
+                            s.SpousePreviousPosition, 
+                            s.SpousePreviousLengthOfService,
+
+                            -- Purposes
+                            p.PurposeID,
+                            p.PurposeResidency, 
+                            p.PurposePostalID, 
+                            p.PurposeLocalEmployment, 
+                            p.PurposeMarriage, 
+                            p.PurposeLoan, 
+                            p.PurposeMeralco, 
+                            p.PurposeBankTransaction, 
+                            p.PurposeTravelAbroad, 
+                            p.PurposeSeniorCitizen, 
+                            p.PurposeSchool, 
+                            p.PurposeMedical, 
+                            p.PurposeBurial, 
+                            p.PurposeOthers
+
+                        FROM Residents r
+                        LEFT JOIN Employment e ON r.ResidentID = e.ResidentID
+                        LEFT JOIN Spouse s ON r.ResidentID = s.ResidentID
+                        LEFT JOIN Purposes p ON r.ResidentID = p.ResidentID
+                        WHERE r.ResidentID = @residentId;";
+
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
-                        // Add the applicantId parameter to the command.
-                        _cmd.Parameters.AddWithValue("@applicantId", applicantId);
+                        _cmd.Parameters.AddWithValue("@residentId", residentId);
 
-                        // Execute the command and use a SqlDataReader to read the results.
                         using (SqlDataReader _reader = _cmd.ExecuteReader())
                         {
-                            // If a record is returned, map the result to a Residents object.
                             if (_reader.Read())
                             {
                                 Residents resident = new Residents();
 
-                                // Map each column from the result set to the corresponding property of the Residents object.
-                                // For each field, a null check is performed using IsDBNull to handle potential nulls.
-                                resident.Id = _reader.GetInt32(_reader.GetOrdinal("ApplicantID"));
-                                resident.LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? null : _reader.GetString(_reader.GetOrdinal("LastName"));
-                                resident.FirstName = _reader.IsDBNull(_reader.GetOrdinal("FirstName")) ? null : _reader.GetString(_reader.GetOrdinal("FirstName"));
+                                // Residents fields
+                                resident.ResidentID = _reader.GetInt32(_reader.GetOrdinal("ResidentID"));
+                                resident.LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? "" : _reader.GetString(_reader.GetOrdinal("LastName"));
+                                resident.FirstName = _reader.IsDBNull(_reader.GetOrdinal("FirstName")) ? "" : _reader.GetString(_reader.GetOrdinal("FirstName"));
                                 resident.MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName"));
-                                resident.Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? null : _reader.GetString(_reader.GetOrdinal("Address"));
-                                resident.TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? null : _reader.GetString(_reader.GetOrdinal("TelCelNo"));
-                                resident.Sex = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? null : _reader.GetString(_reader.GetOrdinal("Sex"));
+                                resident.Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address"));
+                                resident.TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo"));
+                                resident.Sex = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex"));
                                 resident.Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height"));
                                 resident.Weight = _reader.IsDBNull(_reader.GetOrdinal("Weight")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Weight"));
                                 resident.DateOfBirth = _reader.IsDBNull(_reader.GetOrdinal("DateOfBirth")) ? DateTime.MinValue : _reader.GetDateTime(_reader.GetOrdinal("DateOfBirth"));
                                 resident.Age = _reader.IsDBNull(_reader.GetOrdinal("Age")) ? 0 : _reader.GetInt32(_reader.GetOrdinal("Age"));
-                                resident.PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? null : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth"));
-                                resident.CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? null : _reader.GetString(_reader.GetOrdinal("CivilStatus"));
-                                resident.VoterIdNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? null : _reader.GetString(_reader.GetOrdinal("VoterIDNo"));
-                                resident.PollingPlace = _reader.IsDBNull(_reader.GetOrdinal("PollingPlace")) ? null : _reader.GetString(_reader.GetOrdinal("PollingPlace"));
-                                resident.ResidenceType = _reader.IsDBNull(_reader.GetOrdinal("ResidenceType")) ? null : _reader.GetString(_reader.GetOrdinal("ResidenceType"));
+                                resident.PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? "" : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth"));
+                                resident.CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? "" : _reader.GetString(_reader.GetOrdinal("CivilStatus"));
+                                resident.VoterIDNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? "" : _reader.GetString(_reader.GetOrdinal("VoterIDNo"));
+                                resident.PollingPlace = _reader.IsDBNull(_reader.GetOrdinal("PollingPlace")) ? "" : _reader.GetString(_reader.GetOrdinal("PollingPlace"));
+                                resident.ResidenceType = _reader.IsDBNull(_reader.GetOrdinal("ResidenceType")) ? "" : _reader.GetString(_reader.GetOrdinal("ResidenceType"));
                                 resident.PaymentAmount = _reader.IsDBNull(_reader.GetOrdinal("PaymentAmount")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("PaymentAmount"));
-                                resident.PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? null : _reader.GetString(_reader.GetOrdinal("PaymentFrequency"));
-                                resident.Company = _reader.IsDBNull(_reader.GetOrdinal("Company")) ? null : _reader.GetString(_reader.GetOrdinal("Company"));
-                                resident.Position = _reader.IsDBNull(_reader.GetOrdinal("Position")) ? null : _reader.GetString(_reader.GetOrdinal("Position"));
-                                resident.LengthofService = _reader.IsDBNull(_reader.GetOrdinal("LengthofService")) ? null : _reader.GetString(_reader.GetOrdinal("LengthofService"));
-                                resident.PreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("PreviousCompany")) ? null : _reader.GetString(_reader.GetOrdinal("PreviousCompany"));
-                                resident.PreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("PreviousPosition")) ? null : _reader.GetString(_reader.GetOrdinal("PreviousPosition"));
-                                resident.PreviousLengthofService = _reader.IsDBNull(_reader.GetOrdinal("PreviousLengthOfService")) ? null : _reader.GetString(_reader.GetOrdinal("PreviousLengthOfService"));
-                                resident.SpouseName = _reader.IsDBNull(_reader.GetOrdinal("NameOfSpouse")) ? null : _reader.GetString(_reader.GetOrdinal("NameOfSpouse"));
-                                resident.SpousePhone = _reader.IsDBNull(_reader.GetOrdinal("SpousePhone")) ? null : _reader.GetString(_reader.GetOrdinal("SpousePhone"));
-                                resident.SpouseCompany = _reader.IsDBNull(_reader.GetOrdinal("SCompany")) ? null : _reader.GetString(_reader.GetOrdinal("SCompany"));
-                                resident.SpousePosition = _reader.IsDBNull(_reader.GetOrdinal("SPosition")) ? null : _reader.GetString(_reader.GetOrdinal("SPosition"));
-                                resident.SpouseLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SLengthOfService")) ? null : _reader.GetString(_reader.GetOrdinal("SLengthOfService"));
-                                resident.SpousePrevCompany = _reader.IsDBNull(_reader.GetOrdinal("SPreviousCompany")) ? null : _reader.GetString(_reader.GetOrdinal("SPreviousCompany"));
-                                resident.SpousePrevPosition = _reader.IsDBNull(_reader.GetOrdinal("SPreviousPosition")) ? null : _reader.GetString(_reader.GetOrdinal("SPreviousPosition"));
-                                resident.SpousePrevLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SPreviousLengthOfService")) ? null : _reader.GetString(_reader.GetOrdinal("SPreviousLengthOfService"));
-                                resident.ChildrenRelativeName = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeName")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeName"));
-                                resident.ChildrenRelativeAge = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeAge")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeAge"));
-                                resident.ChildrenRelativeOccupation = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeOccupation")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeOccupation"));
-                                resident.ChildrenRelativeRelationship = _reader.IsDBNull(_reader.GetOrdinal("ChildrenRelativeRelationship")) ? null : _reader.GetString(_reader.GetOrdinal("ChildrenRelativeRelationship"));
-                                resident.PurposeResidency = _reader.IsDBNull(_reader.GetOrdinal("PurposeResidency")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeResidency"));
-                                resident.PurposePostalID = _reader.IsDBNull(_reader.GetOrdinal("PurposePostalID")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposePostalID"));
-                                resident.PurposeLocalEmployment = _reader.IsDBNull(_reader.GetOrdinal("PurposeLocalEmployment")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeLocalEmployment"));
-                                resident.PurposeMarriage = _reader.IsDBNull(_reader.GetOrdinal("PurposeMarriage")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeMarriage"));
-                                resident.PurposeLoan = _reader.IsDBNull(_reader.GetOrdinal("PurposeLoan")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeLoan"));
-                                resident.PurposeMeralco = _reader.IsDBNull(_reader.GetOrdinal("PurposeMeralco")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeMeralco"));
-                                resident.PurposeBankTransaction = _reader.IsDBNull(_reader.GetOrdinal("PurposeBankTransaction")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeBankTransaction"));
-                                resident.PurposeTravelAbroad = _reader.IsDBNull(_reader.GetOrdinal("PurposeTravelAbroad")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeTravelAbroad"));
-                                resident.PurposeSeniorCitizen = _reader.IsDBNull(_reader.GetOrdinal("PurposeSeniorCitizen")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeSeniorCitizen"));
-                                resident.PurposeSchool = _reader.IsDBNull(_reader.GetOrdinal("PurposeSchool")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeSchool"));
-                                resident.PurposeMedical = _reader.IsDBNull(_reader.GetOrdinal("PurposeMedical")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeMedical"));
-                                resident.PurposeBurial = _reader.IsDBNull(_reader.GetOrdinal("PurposeBurial")) ? false : _reader.GetBoolean(_reader.GetOrdinal("PurposeBurial"));
-                                resident.PurposeOthers = _reader.IsDBNull(_reader.GetOrdinal("PurposeOthers")) ? null : _reader.GetString(_reader.GetOrdinal("PurposeOthers"));
+                                resident.PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? "" : _reader.GetString(_reader.GetOrdinal("PaymentFrequency"));
 
-                                // Return the populated Residents object.
+                                // Employment (if exists)
+                                if (!_reader.IsDBNull(_reader.GetOrdinal("EmploymentID")))
+                                {
+                                    resident.Employment = new Employment
+                                    {
+                                        EmploymentID = _reader.GetInt32(_reader.GetOrdinal("EmploymentID")),
+                                        ResidentID = resident.ResidentID,
+                                        Company = _reader.IsDBNull(_reader.GetOrdinal("Company")) ? "" : _reader.GetString(_reader.GetOrdinal("Company")),
+                                        Position = _reader.IsDBNull(_reader.GetOrdinal("Position")) ? "" : _reader.GetString(_reader.GetOrdinal("Position")),
+                                        LengthOfService = _reader.IsDBNull(_reader.GetOrdinal("LengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("LengthOfService")),
+                                        PreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("PreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousCompany")),
+                                        PreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("PreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousPosition")),
+                                        PreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("PreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousLengthOfService"))
+                                    };
+                                }
+
+                                // Spouse (if exists)
+                                if (!_reader.IsDBNull(_reader.GetOrdinal("SpouseID")))
+                                {
+                                    resident.Spouse = new Spouse
+                                    {
+                                        SpouseID = _reader.GetInt32(_reader.GetOrdinal("SpouseID")),
+                                        ResidentID = resident.ResidentID,
+                                        SpouseName = _reader.IsDBNull(_reader.GetOrdinal("SpouseName")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseName")),
+                                        SpousePhone = _reader.IsDBNull(_reader.GetOrdinal("SpousePhone")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePhone")),
+                                        SpouseCompany = _reader.IsDBNull(_reader.GetOrdinal("SpouseCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseCompany")),
+                                        SpousePosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePosition")),
+                                        SpouseLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpouseLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseLengthOfService")),
+                                        SpousePreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousCompany")),
+                                        SpousePreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousPosition")),
+                                        SpousePreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousLengthOfService"))
+                                    };
+                                }
+
+                                // Purposes (if exists)
+                                if (!_reader.IsDBNull(_reader.GetOrdinal("PurposeID")))
+                                {
+                                    resident.Purposes = new Purposes
+                                    {
+                                        PurposeID = _reader.GetInt32(_reader.GetOrdinal("PurposeID")),
+                                        ResidentID = resident.ResidentID,
+                                        PurposeResidency = !_reader.IsDBNull(_reader.GetOrdinal("PurposeResidency")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeResidency")),
+                                        PurposePostalID = !_reader.IsDBNull(_reader.GetOrdinal("PurposePostalID")) && _reader.GetBoolean(_reader.GetOrdinal("PurposePostalID")),
+                                        PurposeLocalEmployment = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLocalEmployment")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLocalEmployment")),
+                                        PurposeMarriage = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMarriage")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMarriage")),
+                                        PurposeLoan = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLoan")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLoan")),
+                                        PurposeMeralco = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMeralco")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMeralco")),
+                                        PurposeBankTransaction = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBankTransaction")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBankTransaction")),
+                                        PurposeTravelAbroad = !_reader.IsDBNull(_reader.GetOrdinal("PurposeTravelAbroad")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeTravelAbroad")),
+                                        PurposeSeniorCitizen = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSeniorCitizen")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSeniorCitizen")),
+                                        PurposeSchool = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSchool")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSchool")),
+                                        PurposeMedical = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMedical")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMedical")),
+                                        PurposeBurial = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBurial")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBurial")),
+                                        PurposeOthers = _reader.IsDBNull(_reader.GetOrdinal("PurposeOthers")) ? "" : _reader.GetString(_reader.GetOrdinal("PurposeOthers"))
+                                    };
+                                }
+
                                 return resident;
                             }
                         }
@@ -668,311 +709,410 @@ namespace BarangayApplication.Models.Repositories
             }
             catch (Exception ex)
             {
-                // Log the exception details to the console.
                 Console.WriteLine("Exception: " + ex.ToString());
-                // Rethrow the exception for higher-level error handling.
                 throw;
             }
 
-            // If no record was found, return null.
             return null;
         }
         
         /// <summary>
-        /// Creates a new resident record in the SVResidents table using the data provided in the Residents object.
-        /// This method establishes a database connection, constructs an INSERT SQL command with parameters,
-        /// and executes the command to insert the new record.
-        /// In case of any exception, it logs the error to the console and rethrows it.
+        /// Creates a new resident record in the Residents table and related Employment, Spouse, and Purposes tables
+        /// using the data provided in the Residents object.
+        /// This method establishes a database connection, constructs separate INSERT SQL commands with parameters
+        /// for each relevant table, and executes them within a transaction to ensure data consistency.
+        /// In case of any exception, it logs the error to the console, rolls back the transaction, and rethrows the exception.
         /// </summary>
-        /// <param name="resident">The Residents object containing the data to be inserted.</param>
+        /// <param name="resident">
+        /// The Residents object containing the data to be inserted, including optional Employment, Spouse, and Purposes details.
+        /// </param>
         public void CreateResident(Residents resident)
         {
             try
             {
-                // Establish a connection to the database using the connection string (_repoconn).
-                // The using block ensures that the SqlConnection is automatically disposed of once the operation is complete.
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
-                    // Open the database connection.
                     _conn.Open();
 
-                    // Define the SQL query for inserting a new resident record into the SVResidents table.
-                    // The query uses parameterized values to prevent SQL injection.
-                    string sql = @"
-                        INSERT INTO SVResidents (
-                            LastName, FirstName, MiddleName, Address, TelCelNo, Sex, Height, 
-                            Weight, DateOfBirth, Age, PlaceOfBirth, CivilStatus, VoterIDNo, PollingPlace,
-                            ResidenceType, PaymentAmount, PaymentFrequency, Company, Position, LengthofService, 
-                            PreviousCompany, PreviousPosition, PreviousLengthOfService, NameOfSpouse, SpousePhone, 
-                            SCompany, SPosition, SLengthOfService, SPreviousCompany, SPreviousPosition, SPreviousLengthOfService, 
-                            ChildrenRelativeName, ChildrenRelativeAge, ChildrenRelativeOccupation, ChildrenRelativeRelationship, 
-                            PurposeResidency, PurposePostalID, PurposeLocalEmployment, PurposeMarriage, PurposeLoan, 
-                            PurposeMeralco, PurposeBankTransaction, PurposeTravelAbroad, PurposeSeniorCitizen, PurposeSchool, 
-                            PurposeMedical, PurposeBurial, PurposeOthers
-                        ) VALUES (
-                            @LastName, @FirstName, @MiddleName, @Address, @TelCelNo, @Sex, @Height, 
-                            @Weight, @DateOfBirth, @Age, @PlaceOfBirth, @CivilStatus, @VoterIDNo, @PollingPlace,
-                            @ResidenceType, @PaymentAmount, @PaymentFrequency, @Company, @Position, @LengthofService, 
-                            @PreviousCompany, @PreviousPosition, @PreviousLengthOfService, @NameOfSpouse, @SpousePhone, 
-                            @SCompany, @SPosition, @SLengthOfService, @SPreviousCompany, @SPreviousPosition, @SPreviousLengthOfService, 
-                            @ChildrenRelativeName, @ChildrenRelativeAge, @ChildrenRelativeOccupation, @ChildrenRelativeRelationship, 
-                            @PurposeResidency, @PurposePostalID, @PurposeLocalEmployment, @PurposeMarriage, @PurposeLoan, 
-                            @PurposeMeralco, @PurposeBankTransaction, @PurposeTravelAbroad, @PurposeSeniorCitizen, @PurposeSchool, 
-                            @PurposeMedical, @PurposeBurial, @PurposeOthers
-                        );";
-
-                    // Create a SqlCommand with the SQL insert query and the open connection.
-                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    using (var transaction = _conn.BeginTransaction())
                     {
-                        // Map each property from the resident object to the corresponding SQL parameter.
-                        _cmd.Parameters.AddWithValue("@LastName", resident.LastName);
-                        _cmd.Parameters.AddWithValue("@FirstName", resident.FirstName);
-                        _cmd.Parameters.AddWithValue("@MiddleName", resident.MiddleName);
-                        _cmd.Parameters.AddWithValue("@Address", resident.Address);
-                        _cmd.Parameters.AddWithValue("@TelCelNo", resident.TelCelNo);
-                        _cmd.Parameters.AddWithValue("@Sex", resident.Sex);
-                        _cmd.Parameters.AddWithValue("@Height", resident.Height);
-                        _cmd.Parameters.AddWithValue("@Weight", resident.Weight);
-                        _cmd.Parameters.AddWithValue("@DateOfBirth", resident.DateOfBirth);
-                        _cmd.Parameters.AddWithValue("@Age", resident.Age);
-                        _cmd.Parameters.AddWithValue("@PlaceOfBirth", resident.PlaceOfBirth);
-                        _cmd.Parameters.AddWithValue("@CivilStatus", resident.CivilStatus);
-                        _cmd.Parameters.AddWithValue("@VoterIDNo", resident.VoterIdNo);
-                        _cmd.Parameters.AddWithValue("@PollingPlace", resident.PollingPlace);
-                        _cmd.Parameters.AddWithValue("@ResidenceType", resident.ResidenceType);
-                        _cmd.Parameters.AddWithValue("@PaymentAmount", resident.PaymentAmount);
-                        _cmd.Parameters.AddWithValue("@PaymentFrequency", resident.PaymentFrequency);
-                        _cmd.Parameters.AddWithValue("@Company", resident.Company);
-                        _cmd.Parameters.AddWithValue("@Position", resident.Position);
-                        _cmd.Parameters.AddWithValue("@LengthofService", resident.LengthofService);
-                        _cmd.Parameters.AddWithValue("@PreviousCompany", resident.PreviousCompany);
-                        _cmd.Parameters.AddWithValue("@PreviousPosition", resident.PreviousPosition);
-                        _cmd.Parameters.AddWithValue("@PreviousLengthOfService", resident.PreviousLengthofService);
-                        _cmd.Parameters.AddWithValue("@NameOfSpouse", resident.SpouseName);
-                        _cmd.Parameters.AddWithValue("@SpousePhone", resident.SpousePhone);
-                        _cmd.Parameters.AddWithValue("@SCompany", resident.SpouseCompany);
-                        _cmd.Parameters.AddWithValue("@SPosition", resident.SpousePosition);
-                        _cmd.Parameters.AddWithValue("@SLengthOfService", resident.SpouseLengthOfService);
-                        _cmd.Parameters.AddWithValue("@SPreviousCompany", resident.SpousePrevCompany);
-                        _cmd.Parameters.AddWithValue("@SPreviousPosition", resident.SpousePrevPosition);
-                        _cmd.Parameters.AddWithValue("@SPreviousLengthOfService", resident.SpousePrevLengthOfService);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeName", resident.ChildrenRelativeName);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeAge", resident.ChildrenRelativeAge);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeOccupation", resident.ChildrenRelativeOccupation);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeRelationship", resident.ChildrenRelativeRelationship);
-                        _cmd.Parameters.AddWithValue("@PurposeResidency", resident.PurposeResidency);
-                        _cmd.Parameters.AddWithValue("@PurposePostalID", resident.PurposePostalID);
-                        _cmd.Parameters.AddWithValue("@PurposeLocalEmployment", resident.PurposeLocalEmployment);
-                        _cmd.Parameters.AddWithValue("@PurposeMarriage", resident.PurposeMarriage);
-                        _cmd.Parameters.AddWithValue("@PurposeLoan", resident.PurposeLoan);
-                        _cmd.Parameters.AddWithValue("@PurposeMeralco", resident.PurposeMeralco);
-                        _cmd.Parameters.AddWithValue("@PurposeBankTransaction", resident.PurposeBankTransaction);
-                        _cmd.Parameters.AddWithValue("@PurposeTravelAbroad", resident.PurposeTravelAbroad);
-                        _cmd.Parameters.AddWithValue("@PurposeSeniorCitizen", resident.PurposeSeniorCitizen);
-                        _cmd.Parameters.AddWithValue("@PurposeSchool", resident.PurposeSchool);
-                        _cmd.Parameters.AddWithValue("@PurposeMedical", resident.PurposeMedical);
-                        _cmd.Parameters.AddWithValue("@PurposeBurial", resident.PurposeBurial);
-                        _cmd.Parameters.AddWithValue("@PurposeOthers", resident.PurposeOthers);
+                        try
+                        {
+                            // 1. Insert into Residents table
+                            string sqlResidents = @"
+                                INSERT INTO Residents (
+                                    LastName, FirstName, MiddleName, Address, TelCelNo, Sex, Height, 
+                                    Weight, DateOfBirth, Age, PlaceOfBirth, CivilStatus, VoterIDNo, PollingPlace,
+                                    ResidenceType, PaymentAmount, PaymentFrequency
+                                ) VALUES (
+                                    @LastName, @FirstName, @MiddleName, @Address, @TelCelNo, @Sex, @Height, 
+                                    @Weight, @DateOfBirth, @Age, @PlaceOfBirth, @CivilStatus, @VoterIDNo, @PollingPlace,
+                                    @ResidenceType, @PaymentAmount, @PaymentFrequency
+                                );
+                                SELECT SCOPE_IDENTITY();";
 
-                        // Execute the command to insert the new record into the database.
-                        _cmd.ExecuteNonQuery();
+                            int residentId;
+                            using (SqlCommand cmd = new SqlCommand(sqlResidents, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@LastName", resident.LastName);
+                                cmd.Parameters.AddWithValue("@FirstName", resident.FirstName);
+                                cmd.Parameters.AddWithValue("@MiddleName", (object?)resident.MiddleName ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Address", resident.Address);
+                                cmd.Parameters.AddWithValue("@TelCelNo", resident.TelCelNo);
+                                cmd.Parameters.AddWithValue("@Sex", resident.Sex);
+                                cmd.Parameters.AddWithValue("@Height", resident.Height);
+                                cmd.Parameters.AddWithValue("@Weight", resident.Weight);
+                                cmd.Parameters.AddWithValue("@DateOfBirth", resident.DateOfBirth);
+                                cmd.Parameters.AddWithValue("@Age", resident.Age);
+                                cmd.Parameters.AddWithValue("@PlaceOfBirth", resident.PlaceOfBirth);
+                                cmd.Parameters.AddWithValue("@CivilStatus", resident.CivilStatus);
+                                cmd.Parameters.AddWithValue("@VoterIDNo", resident.VoterIDNo);
+                                cmd.Parameters.AddWithValue("@PollingPlace", resident.PollingPlace);
+                                cmd.Parameters.AddWithValue("@ResidenceType", resident.ResidenceType);
+                                cmd.Parameters.AddWithValue("@PaymentAmount", resident.PaymentAmount);
+                                cmd.Parameters.AddWithValue("@PaymentFrequency", resident.PaymentFrequency);
+
+                                residentId = Convert.ToInt32(cmd.ExecuteScalar());
+                            }
+
+                            // 2. Insert into Employment table (if data provided)
+                            if (resident.Employment != null)
+                            {
+                                string sqlEmployment = @"
+                                    INSERT INTO Employment (
+                                        ResidentID, Company, Position, LengthOfService, PreviousCompany, PreviousPosition, PreviousLengthOfService
+                                    ) VALUES (
+                                        @ResidentID, @Company, @Position, @LengthOfService, @PreviousCompany, @PreviousPosition, @PreviousLengthOfService
+                                    );";
+                                using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                    cmd.Parameters.AddWithValue("@Company", resident.Employment.Company);
+                                    cmd.Parameters.AddWithValue("@Position", resident.Employment.Position);
+                                    cmd.Parameters.AddWithValue("@LengthOfService", resident.Employment.LengthOfService);
+                                    cmd.Parameters.AddWithValue("@PreviousCompany", resident.Employment.PreviousCompany);
+                                    cmd.Parameters.AddWithValue("@PreviousPosition", resident.Employment.PreviousPosition);
+                                    cmd.Parameters.AddWithValue("@PreviousLengthOfService", resident.Employment.PreviousLengthOfService);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // 3. Insert into Spouse table (if data provided)
+                            if (resident.Spouse != null)
+                            {
+                                string sqlSpouse = @"
+                                    INSERT INTO Spouse (
+                                        ResidentID, SpouseName, SpousePhone, SpouseCompany, SpousePosition, SpouseLengthOfService,
+                                        SpousePreviousCompany, SpousePreviousPosition, SpousePreviousLengthOfService
+                                    ) VALUES (
+                                        @ResidentID, @SpouseName, @SpousePhone, @SpouseCompany, @SpousePosition, @SpouseLengthOfService,
+                                        @SpousePreviousCompany, @SpousePreviousPosition, @SpousePreviousLengthOfService
+                                    );";
+                                using (SqlCommand cmd = new SqlCommand(sqlSpouse, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                    cmd.Parameters.AddWithValue("@SpouseName", resident.Spouse.SpouseName);
+                                    cmd.Parameters.AddWithValue("@SpousePhone", resident.Spouse.SpousePhone);
+                                    cmd.Parameters.AddWithValue("@SpouseCompany", resident.Spouse.SpouseCompany);
+                                    cmd.Parameters.AddWithValue("@SpousePosition", resident.Spouse.SpousePosition);
+                                    cmd.Parameters.AddWithValue("@SpouseLengthOfService", resident.Spouse.SpouseLengthOfService);
+                                    cmd.Parameters.AddWithValue("@SpousePreviousCompany", resident.Spouse.SpousePreviousCompany);
+                                    cmd.Parameters.AddWithValue("@SpousePreviousPosition", resident.Spouse.SpousePreviousPosition);
+                                    cmd.Parameters.AddWithValue("@SpousePreviousLengthOfService", resident.Spouse.SpousePreviousLengthOfService);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // 4. Insert into Purposes table (if data provided)
+                            if (resident.Purposes != null)
+                            {
+                                string sqlPurposes = @"
+                                    INSERT INTO Purposes (
+                                        ResidentID, PurposeResidency, PurposePostalID, PurposeLocalEmployment, PurposeMarriage,
+                                        PurposeLoan, PurposeMeralco, PurposeBankTransaction, PurposeTravelAbroad, PurposeSeniorCitizen,
+                                        PurposeSchool, PurposeMedical, PurposeBurial, PurposeOthers
+                                    ) VALUES (
+                                        @ResidentID, @PurposeResidency, @PurposePostalID, @PurposeLocalEmployment, @PurposeMarriage,
+                                        @PurposeLoan, @PurposeMeralco, @PurposeBankTransaction, @PurposeTravelAbroad, @PurposeSeniorCitizen,
+                                        @PurposeSchool, @PurposeMedical, @PurposeBurial, @PurposeOthers
+                                    );";
+                                using (SqlCommand cmd = new SqlCommand(sqlPurposes, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                    cmd.Parameters.AddWithValue("@PurposeResidency", resident.Purposes.PurposeResidency);
+                                    cmd.Parameters.AddWithValue("@PurposePostalID", resident.Purposes.PurposePostalID);
+                                    cmd.Parameters.AddWithValue("@PurposeLocalEmployment", resident.Purposes.PurposeLocalEmployment);
+                                    cmd.Parameters.AddWithValue("@PurposeMarriage", resident.Purposes.PurposeMarriage);
+                                    cmd.Parameters.AddWithValue("@PurposeLoan", resident.Purposes.PurposeLoan);
+                                    cmd.Parameters.AddWithValue("@PurposeMeralco", resident.Purposes.PurposeMeralco);
+                                    cmd.Parameters.AddWithValue("@PurposeBankTransaction", resident.Purposes.PurposeBankTransaction);
+                                    cmd.Parameters.AddWithValue("@PurposeTravelAbroad", resident.Purposes.PurposeTravelAbroad);
+                                    cmd.Parameters.AddWithValue("@PurposeSeniorCitizen", resident.Purposes.PurposeSeniorCitizen);
+                                    cmd.Parameters.AddWithValue("@PurposeSchool", resident.Purposes.PurposeSchool);
+                                    cmd.Parameters.AddWithValue("@PurposeMedical", resident.Purposes.PurposeMedical);
+                                    cmd.Parameters.AddWithValue("@PurposeBurial", resident.Purposes.PurposeBurial);
+                                    cmd.Parameters.AddWithValue("@PurposeOthers", resident.Purposes.PurposeOthers);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
                     }
                 }
                 AddUserLog(CurrentUser.AccountID, "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
-
             }
             catch (Exception ex)
             {
-                // Log the exception details to the console.
                 Console.WriteLine("Exception: " + ex.ToString());
-                // Rethrow the exception to allow higher-level error handling.
                 throw;
             }
         }
         
         /// <summary>
-        /// Updates an existing resident record in the SVResidents table using the data provided in the Residents object.
-        /// The method establishes a database connection, constructs an UPDATE SQL command with parameters,
-        /// and executes the command to modify the record identified by the ApplicantID.
+        /// Updates an existing resident record in the Residents table and related Employment, Spouse, and Purposes tables
+        /// using the data provided in the Residents object.
+        /// This method establishes a database connection, constructs individual UPDATE SQL commands with parameters
+        /// for each relevant table, and executes them within a transaction to ensure data consistency.
+        /// The record to update is identified by ResidentID.
+        /// In case of any exception, it logs the error to the console, rolls back the transaction, and rethrows the exception.
         /// </summary>
-        /// <param name="resident">The Residents object containing the updated data, including the ApplicantID.</param>
+        /// <param name="resident">
+        /// The Residents object containing the updated data, including the ResidentID, and optional updated Employment, Spouse, and Purposes details.
+        /// </param>
         public void UpdateResident(Residents resident)
         {
             try
             {
-                // Establish a connection to the database using the connection string (_repoconn).
-                // The using block ensures that the connection is automatically disposed when the operation is complete.
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
-                    // Open the database connection.
                     _conn.Open();
-
-                    // Define the SQL query for updating an existing resident record in the SVResidents table.
-                    // The query updates each column with a corresponding parameter value.
-                    // The record to update is identified by the ApplicantID.
-                    string sql = @"
-                        UPDATE SVResidents
-                        SET
-                            LastName = @LastName,
-                            FirstName = @FirstName,
-                            MiddleName = @MiddleName,
-                            Address = @Address,
-                            TelCelNo = @TelCelNo,
-                            Sex = @Sex,
-                            Height = @Height,
-                            Weight = @Weight,
-                            DateOfBirth = @DateOfBirth,
-                            Age = @Age,
-                            PlaceOfBirth = @PlaceOfBirth,
-                            CivilStatus = @CivilStatus,
-                            VoterIDNo = @VoterIDNo,
-                            PollingPlace = @PollingPlace,
-                            ResidenceType = @ResidenceType,
-                            PaymentAmount = @PaymentAmount,
-                            PaymentFrequency = @PaymentFrequency,
-                            Company = @Company,
-                            Position = @Position,
-                            LengthofService = @LengthofService,
-                            PreviousCompany = @PreviousCompany,
-                            PreviousPosition = @PreviousPosition,
-                            PreviousLengthofService = @PreviousLengthofService,
-                            NameOfSpouse = @NameOfSpouse,
-                            SpousePhone = @SpousePhone,
-                            SCompany = @SCompany,
-                            SPosition = @SPosition,
-                            SLengthOfService = @SLengthOfService,
-                            SPreviousCompany = @SPreviousCompany,
-                            SPreviousPosition = @SPreviousPosition,
-                            SPreviousLengthOfService = @SPreviousLengthOfService,
-                            ChildrenRelativeName = @ChildrenRelativeName,
-                            ChildrenRelativeAge = @ChildrenRelativeAge,
-                            ChildrenRelativeOccupation = @ChildrenRelativeOccupation,
-                            ChildrenRelativeRelationship = @ChildrenRelativeRelationship,
-                            PurposeResidency = @PurposeResidency,
-                            PurposePostalID = @PurposePostalID,
-                            PurposeLocalEmployment = @PurposeLocalEmployment,
-                            PurposeMarriage = @PurposeMarriage,
-                            PurposeLoan = @PurposeLoan,
-                            PurposeMeralco = @PurposeMeralco,
-                            PurposeBankTransaction = @PurposeBankTransaction,
-                            PurposeTravelAbroad = @PurposeTravelAbroad,
-                            PurposeSeniorCitizen = @PurposeSeniorCitizen,
-                            PurposeSchool = @PurposeSchool,
-                            PurposeMedical = @PurposeMedical,
-                            PurposeBurial = @PurposeBurial,
-                            PurposeOthers = @PurposeOthers
-                        WHERE ApplicantID = @ApplicantID;
-                    ";
-
-                    // Create a SqlCommand with the SQL update query and the open connection.
-                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    using (var transaction = _conn.BeginTransaction())
                     {
-                        // Map each property from the resident object to the corresponding SQL parameter.
-                        _cmd.Parameters.AddWithValue("@ApplicantID", resident.Id);
-                        _cmd.Parameters.AddWithValue("@LastName", resident.LastName);
-                        _cmd.Parameters.AddWithValue("@FirstName", resident.FirstName);
-                        _cmd.Parameters.AddWithValue("@MiddleName", resident.MiddleName);
-                        _cmd.Parameters.AddWithValue("@Address", resident.Address);
-                        _cmd.Parameters.AddWithValue("@TelCelNo", resident.TelCelNo);
-                        _cmd.Parameters.AddWithValue("@Sex", resident.Sex);
-                        _cmd.Parameters.AddWithValue("@Height", resident.Height);
-                        _cmd.Parameters.AddWithValue("@Weight", resident.Weight);
-                        _cmd.Parameters.AddWithValue("@DateOfBirth", resident.DateOfBirth);
-                        _cmd.Parameters.AddWithValue("@Age", resident.Age);
-                        _cmd.Parameters.AddWithValue("@PlaceOfBirth", resident.PlaceOfBirth);
-                        _cmd.Parameters.AddWithValue("@CivilStatus", resident.CivilStatus);
-                        _cmd.Parameters.AddWithValue("@VoterIDNo", resident.VoterIdNo);
-                        _cmd.Parameters.AddWithValue("@PollingPlace", resident.PollingPlace);
-                        _cmd.Parameters.AddWithValue("@ResidenceType", resident.ResidenceType);
-                        _cmd.Parameters.AddWithValue("@PaymentAmount", resident.PaymentAmount);
-                        _cmd.Parameters.AddWithValue("@PaymentFrequency", resident.PaymentFrequency);
-                        _cmd.Parameters.AddWithValue("@Company", resident.Company);
-                        _cmd.Parameters.AddWithValue("@Position", resident.Position);
-                        _cmd.Parameters.AddWithValue("@LengthofService", resident.LengthofService);
-                        _cmd.Parameters.AddWithValue("@PreviousCompany", resident.PreviousCompany);
-                        _cmd.Parameters.AddWithValue("@PreviousPosition", resident.PreviousPosition);
-                        _cmd.Parameters.AddWithValue("@PreviousLengthofService", resident.PreviousLengthofService);
-                        _cmd.Parameters.AddWithValue("@NameOfSpouse", resident.SpouseName);
-                        _cmd.Parameters.AddWithValue("@SpousePhone", resident.SpousePhone);
-                        _cmd.Parameters.AddWithValue("@SCompany", resident.SpouseCompany);
-                        _cmd.Parameters.AddWithValue("@SPosition", resident.SpousePosition);
-                        _cmd.Parameters.AddWithValue("@SLengthOfService", resident.SpouseLengthOfService);
-                        _cmd.Parameters.AddWithValue("@SPreviousCompany", resident.SpousePrevCompany);
-                        _cmd.Parameters.AddWithValue("@SPreviousPosition", resident.SpousePrevPosition);
-                        _cmd.Parameters.AddWithValue("@SPreviousLengthOfService", resident.SpousePrevLengthOfService);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeName", resident.ChildrenRelativeName);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeAge", resident.ChildrenRelativeAge);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeOccupation", resident.ChildrenRelativeOccupation);
-                        _cmd.Parameters.AddWithValue("@ChildrenRelativeRelationship", resident.ChildrenRelativeRelationship);
-                        _cmd.Parameters.AddWithValue("@PurposeResidency", resident.PurposeResidency);
-                        _cmd.Parameters.AddWithValue("@PurposePostalID", resident.PurposePostalID);
-                        _cmd.Parameters.AddWithValue("@PurposeLocalEmployment", resident.PurposeLocalEmployment);
-                        _cmd.Parameters.AddWithValue("@PurposeMarriage", resident.PurposeMarriage);
-                        _cmd.Parameters.AddWithValue("@PurposeLoan", resident.PurposeLoan);
-                        _cmd.Parameters.AddWithValue("@PurposeMeralco", resident.PurposeMeralco);
-                        _cmd.Parameters.AddWithValue("@PurposeBankTransaction", resident.PurposeBankTransaction);
-                        _cmd.Parameters.AddWithValue("@PurposeTravelAbroad", resident.PurposeTravelAbroad);
-                        _cmd.Parameters.AddWithValue("@PurposeSeniorCitizen", resident.PurposeSeniorCitizen);
-                        _cmd.Parameters.AddWithValue("@PurposeSchool", resident.PurposeSchool);
-                        _cmd.Parameters.AddWithValue("@PurposeMedical", resident.PurposeMedical);
-                        _cmd.Parameters.AddWithValue("@PurposeBurial", resident.PurposeBurial);
-                        _cmd.Parameters.AddWithValue("@PurposeOthers", resident.PurposeOthers);
+                        try
+                        {
+                            // 1. Update Residents
+                            string sqlResidents = @"
+                                UPDATE Residents SET
+                                    LastName = @LastName,
+                                    FirstName = @FirstName,
+                                    MiddleName = @MiddleName,
+                                    Address = @Address,
+                                    TelCelNo = @TelCelNo,
+                                    Sex = @Sex,
+                                    Height = @Height,
+                                    Weight = @Weight,
+                                    DateOfBirth = @DateOfBirth,
+                                    Age = @Age,
+                                    PlaceOfBirth = @PlaceOfBirth,
+                                    CivilStatus = @CivilStatus,
+                                    VoterIDNo = @VoterIDNo,
+                                    PollingPlace = @PollingPlace,
+                                    ResidenceType = @ResidenceType,
+                                    PaymentAmount = @PaymentAmount,
+                                    PaymentFrequency = @PaymentFrequency
+                                WHERE ResidentID = @ResidentID;
+                            ";
+                            using (var cmd = new SqlCommand(sqlResidents, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                cmd.Parameters.AddWithValue("@LastName", resident.LastName);
+                                cmd.Parameters.AddWithValue("@FirstName", resident.FirstName);
+                                cmd.Parameters.AddWithValue("@MiddleName", (object?)resident.MiddleName ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Address", resident.Address);
+                                cmd.Parameters.AddWithValue("@TelCelNo", resident.TelCelNo);
+                                cmd.Parameters.AddWithValue("@Sex", resident.Sex);
+                                cmd.Parameters.AddWithValue("@Height", resident.Height);
+                                cmd.Parameters.AddWithValue("@Weight", resident.Weight);
+                                cmd.Parameters.AddWithValue("@DateOfBirth", resident.DateOfBirth);
+                                cmd.Parameters.AddWithValue("@Age", resident.Age);
+                                cmd.Parameters.AddWithValue("@PlaceOfBirth", resident.PlaceOfBirth);
+                                cmd.Parameters.AddWithValue("@CivilStatus", resident.CivilStatus);
+                                cmd.Parameters.AddWithValue("@VoterIDNo", resident.VoterIDNo);
+                                cmd.Parameters.AddWithValue("@PollingPlace", resident.PollingPlace);
+                                cmd.Parameters.AddWithValue("@ResidenceType", resident.ResidenceType);
+                                cmd.Parameters.AddWithValue("@PaymentAmount", resident.PaymentAmount);
+                                cmd.Parameters.AddWithValue("@PaymentFrequency", resident.PaymentFrequency);
+                                cmd.ExecuteNonQuery();
+                            }
 
-                        // Execute the command to update the record in the database.
-                        _cmd.ExecuteNonQuery();
+                            // 2. Update Employment (if provided)
+                            if (resident.Employment != null)
+                            {
+                                string sqlEmployment = @"
+                                    UPDATE Employment SET
+                                        Company = @Company,
+                                        Position = @Position,
+                                        LengthOfService = @LengthOfService,
+                                        PreviousCompany = @PreviousCompany,
+                                        PreviousPosition = @PreviousPosition,
+                                        PreviousLengthOfService = @PreviousLengthOfService
+                                    WHERE ResidentID = @ResidentID;
+                                ";
+                                using (var cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                    cmd.Parameters.AddWithValue("@Company", resident.Employment.Company);
+                                    cmd.Parameters.AddWithValue("@Position", resident.Employment.Position);
+                                    cmd.Parameters.AddWithValue("@LengthOfService", resident.Employment.LengthOfService);
+                                    cmd.Parameters.AddWithValue("@PreviousCompany", resident.Employment.PreviousCompany);
+                                    cmd.Parameters.AddWithValue("@PreviousPosition", resident.Employment.PreviousPosition);
+                                    cmd.Parameters.AddWithValue("@PreviousLengthOfService", resident.Employment.PreviousLengthOfService);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // 3. Update Spouse (if provided)
+                            if (resident.Spouse != null)
+                            {
+                                string sqlSpouse = @"
+                                    UPDATE Spouse SET
+                                        SpouseName = @SpouseName,
+                                        SpousePhone = @SpousePhone,
+                                        SpouseCompany = @SpouseCompany,
+                                        SpousePosition = @SpousePosition,
+                                        SpouseLengthOfService = @SpouseLengthOfService,
+                                        SpousePreviousCompany = @SpousePreviousCompany,
+                                        SpousePreviousPosition = @SpousePreviousPosition,
+                                        SpousePreviousLengthOfService = @SpousePreviousLengthOfService
+                                    WHERE ResidentID = @ResidentID;
+                                ";
+                                using (var cmd = new SqlCommand(sqlSpouse, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                    cmd.Parameters.AddWithValue("@SpouseName", resident.Spouse.SpouseName);
+                                    cmd.Parameters.AddWithValue("@SpousePhone", resident.Spouse.SpousePhone);
+                                    cmd.Parameters.AddWithValue("@SpouseCompany", resident.Spouse.SpouseCompany);
+                                    cmd.Parameters.AddWithValue("@SpousePosition", resident.Spouse.SpousePosition);
+                                    cmd.Parameters.AddWithValue("@SpouseLengthOfService", resident.Spouse.SpouseLengthOfService);
+                                    cmd.Parameters.AddWithValue("@SpousePreviousCompany", resident.Spouse.SpousePreviousCompany);
+                                    cmd.Parameters.AddWithValue("@SpousePreviousPosition", resident.Spouse.SpousePreviousPosition);
+                                    cmd.Parameters.AddWithValue("@SpousePreviousLengthOfService", resident.Spouse.SpousePreviousLengthOfService);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // 4. Update Purposes (if provided)
+                            if (resident.Purposes != null)
+                            {
+                                string sqlPurposes = @"
+                                    UPDATE Purposes SET
+                                        PurposeResidency = @PurposeResidency,
+                                        PurposePostalID = @PurposePostalID,
+                                        PurposeLocalEmployment = @PurposeLocalEmployment,
+                                        PurposeMarriage = @PurposeMarriage,
+                                        PurposeLoan = @PurposeLoan,
+                                        PurposeMeralco = @PurposeMeralco,
+                                        PurposeBankTransaction = @PurposeBankTransaction,
+                                        PurposeTravelAbroad = @PurposeTravelAbroad,
+                                        PurposeSeniorCitizen = @PurposeSeniorCitizen,
+                                        PurposeSchool = @PurposeSchool,
+                                        PurposeMedical = @PurposeMedical,
+                                        PurposeBurial = @PurposeBurial,
+                                        PurposeOthers = @PurposeOthers
+                                    WHERE ResidentID = @ResidentID;
+                                ";
+                                using (var cmd = new SqlCommand(sqlPurposes, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                    cmd.Parameters.AddWithValue("@PurposeResidency", resident.Purposes.PurposeResidency);
+                                    cmd.Parameters.AddWithValue("@PurposePostalID", resident.Purposes.PurposePostalID);
+                                    cmd.Parameters.AddWithValue("@PurposeLocalEmployment", resident.Purposes.PurposeLocalEmployment);
+                                    cmd.Parameters.AddWithValue("@PurposeMarriage", resident.Purposes.PurposeMarriage);
+                                    cmd.Parameters.AddWithValue("@PurposeLoan", resident.Purposes.PurposeLoan);
+                                    cmd.Parameters.AddWithValue("@PurposeMeralco", resident.Purposes.PurposeMeralco);
+                                    cmd.Parameters.AddWithValue("@PurposeBankTransaction", resident.Purposes.PurposeBankTransaction);
+                                    cmd.Parameters.AddWithValue("@PurposeTravelAbroad", resident.Purposes.PurposeTravelAbroad);
+                                    cmd.Parameters.AddWithValue("@PurposeSeniorCitizen", resident.Purposes.PurposeSeniorCitizen);
+                                    cmd.Parameters.AddWithValue("@PurposeSchool", resident.Purposes.PurposeSchool);
+                                    cmd.Parameters.AddWithValue("@PurposeMedical", resident.Purposes.PurposeMedical);
+                                    cmd.Parameters.AddWithValue("@PurposeBurial", resident.Purposes.PurposeBurial);
+                                    cmd.Parameters.AddWithValue("@PurposeOthers", resident.Purposes.PurposeOthers);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
                     }
                 }
                 AddUserLog(CurrentUser.AccountID, "Edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
-
             }
             catch (Exception ex)
             {
-                // Log the exception details to the console for debugging purposes.
                 Console.WriteLine("Exception: " + ex.ToString());
-                // Rethrow the exception to allow higher-level error handling.
                 throw;
             }
         }
         
         /// <summary>
-        /// Deletes a resident record from the SVResidents table based on the provided applicantId.
-        /// The method establishes a database connection, creates a DELETE SQL command with a parameter,
-        /// and executes the command to remove the corresponding record.
+        /// Deletes a resident record and all related Employment, Spouse, and Purposes records from the database based on the provided residentId.
+        /// The method establishes a database connection, creates DELETE SQL commands with parameters for each related table,
+        /// and executes the commands within a transaction to ensure referential integrity.
         /// </summary>
-        /// <param name="applicantId">The unique identifier of the applicant to be deleted.</param>
-        public void DeleteResident(int applicantId)
+        /// <param name="residentId">The unique identifier of the resident to be deleted.</param>
+        public void DeleteResident(int residentId)
         {
             try
             {
-                // Establish a connection to the database using the connection string (_repoconn).
-                // The using statement ensures the SqlConnection is disposed of correctly after use.
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
-                    // Open the database connection.
                     _conn.Open();
-            
-                    // Define the SQL query that deletes a record from the SVResidents table 
-                    // where the ApplicantID matches the specified parameter.
-                    string sql = "DELETE FROM SVResidents WHERE ApplicantID = @ApplicantID;";
-            
-                    // Create a SqlCommand object with the defined SQL query and connection.
-                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    using (var transaction = _conn.BeginTransaction())
                     {
-                        // Add the parameter for ApplicantID using the provided applicantId.
-                        _cmd.Parameters.AddWithValue("@ApplicantID", applicantId);
-                
-                        // Execute the command to delete the record from the database.
-                        _cmd.ExecuteNonQuery();
+                        try
+                        {
+                            // Delete from child tables first, then from Residents
+                            string sqlEmployment = "DELETE FROM Employment WHERE ResidentID = @ResidentID;";
+                            string sqlSpouse = "DELETE FROM Spouse WHERE ResidentID = @ResidentID;";
+                            string sqlPurposes = "DELETE FROM Purposes WHERE ResidentID = @ResidentID;";
+                            string sqlResident = "DELETE FROM Residents WHERE ResidentID = @ResidentID;";
+
+                            using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            using (SqlCommand cmd = new SqlCommand(sqlSpouse, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            using (SqlCommand cmd = new SqlCommand(sqlPurposes, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            using (SqlCommand cmd = new SqlCommand(sqlResident, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            transaction.Commit();
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
                     }
                 }
-                AddUserLog(CurrentUser.AccountID, "Archived", $"Archived resident with ID: {applicantId}");
-
+                AddUserLog(CurrentUser.AccountID, "Archived", $"Archived resident with ID: {residentId}");
             }
             catch (Exception ex)
             {
-                // Log the exception details to the console.
                 Console.WriteLine("Exception: " + ex.ToString());
-                // Rethrow the exception for handling at a higher level.
                 throw;
             }
         }

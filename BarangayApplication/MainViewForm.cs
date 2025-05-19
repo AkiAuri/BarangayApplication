@@ -137,7 +137,7 @@ namespace BarangayApplication
             var repo = new ResidentsRepository();
             try
             {
-                if (_resident.Id == 0)
+                if (_resident.ResidentID == 0)
                     repo.CreateResident(_resident);
                 else
                     repo.UpdateResident(_resident);

@@ -106,7 +106,7 @@ namespace BarangayApplication
             foreach (var resident in residents)
             {
                 var row = dt.NewRow();
-                row["ID"] = resident.Id;
+                row["ID"] = resident.ResidentID;
                 row["Last Name"] = resident.LastName;
                 row["First Name"] = resident.FirstName;
                 row["Middle Name"] = resident.MiddleName;
@@ -127,20 +127,23 @@ namespace BarangayApplication
 
         private string GetPurposeText(Residents resident)
         {
-            if (!string.IsNullOrWhiteSpace(resident.PurposeOthers))
-                return resident.PurposeOthers;
-            if (resident.PurposeResidency) return "Residency";
-            if (resident.PurposePostalID) return "Postal ID";
-            if (resident.PurposeLocalEmployment) return "Local Employment";
-            if (resident.PurposeMarriage) return "Marriage";
-            if (resident.PurposeLoan) return "Loan";
-            if (resident.PurposeMeralco) return "Meralco";
-            if (resident.PurposeBankTransaction) return "Bank Transaction";
-            if (resident.PurposeTravelAbroad) return "Travel Abroad";
-            if (resident.PurposeSeniorCitizen) return "Senior Citizen";
-            if (resident.PurposeSchool) return "School";
-            if (resident.PurposeMedical) return "Medical";
-            if (resident.PurposeBurial) return "Burial";
+            var purposes = resident.Purposes;
+            if (purposes == null) return "";
+
+            if (!string.IsNullOrWhiteSpace(purposes.PurposeOthers))
+                return purposes.PurposeOthers;
+            if (purposes.PurposeResidency) return "Residency";
+            if (purposes.PurposePostalID) return "Postal ID";
+            if (purposes.PurposeLocalEmployment) return "Local Employment";
+            if (purposes.PurposeMarriage) return "Marriage";
+            if (purposes.PurposeLoan) return "Loan";
+            if (purposes.PurposeMeralco) return "Meralco";
+            if (purposes.PurposeBankTransaction) return "Bank Transaction";
+            if (purposes.PurposeTravelAbroad) return "Travel Abroad";
+            if (purposes.PurposeSeniorCitizen) return "Senior Citizen";
+            if (purposes.PurposeSchool) return "School";
+            if (purposes.PurposeMedical) return "Medical";
+            if (purposes.PurposeBurial) return "Burial";
             return "";
         }
 
@@ -298,7 +301,7 @@ namespace BarangayApplication
             foreach (var resident in filtered)
             {
                 var row = dt.NewRow();
-                row["ID"] = resident.Id;
+                row["ID"] = resident.ResidentID;
                 row["Last Name"] = resident.LastName;
                 row["First Name"] = resident.FirstName;
                 row["Middle Name"] = resident.MiddleName;

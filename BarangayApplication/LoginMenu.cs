@@ -46,7 +46,7 @@ namespace BarangayApplication
 
         // Creates a SqlConnection to the SQL Server database.
         // Update the connection string as needed for your environment.
-        SqlConnection _conn = new SqlConnection(@"Data Source=.;Initial Catalog=BrgyDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
+        SqlConnection _conn = new SqlConnection(@"Data Source=localhost,1433;Initial Catalog=Test_SelfInterest;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
 
         // Event handler for the checkbox that toggles password visibility.
         private void checkBox1_CheckedChanged(object sender, EventArgs e)

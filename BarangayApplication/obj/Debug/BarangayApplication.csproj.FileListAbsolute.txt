@@ -541,3 +541,28 @@ C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025]\BarangayApplication
 C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025]\BarangayApplication [May 13, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.CoreCompileInputs.cache
 C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025]\BarangayApplication [May 13, 2025]\BarangayApplication\obj\Debug\BarangayApplication.exe
 C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025]\BarangayApplication [May 13, 2025]\BarangayApplication\obj\Debug\BarangayApplication.pdb
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BarangayApplication.exe.config
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BarangayApplication.exe
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BarangayApplication.pdb
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.AssemblyReference.cache
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Collection.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.FormApplication2.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Archive.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Data.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.ExitForms.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Finish.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.FormApplication.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Logbook.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.LoginMenu.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.LogoutConfirm.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.MainMenu.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.MainViewForm.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Occupation.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Overview.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Personalinfo.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Properties.Resources.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Purpose.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.GenerateResource.cache
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.CoreCompileInputs.cache
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.exe
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.pdb
