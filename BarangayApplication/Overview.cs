@@ -129,7 +129,7 @@ namespace BarangayApplication
             chartOverview.Titles.Add("Age Group Distribution");
             chartOverview.Legends.Clear();
 
-            UpdateLabelsFromChart("AgeGroups", new[] { lblData1, lblData2, lblData3, lblData4, lblData5, lblData6 });
+            UpdateLabelsFromChart("AgeGroups", new[] { lblData1, lblData2, lblData3, lblData4, lblData5, lblData6, lblData7, lblData8, lblData9, lblData10, lblData11, lblData12, lblData13 });
         }
 
         private void LoadGenderDistributionChart()
@@ -167,7 +167,7 @@ namespace BarangayApplication
             // Hide the legend
             chartOverview.Legends.Clear();
 
-            UpdateLabelsFromChart("GenderDistribution", new[] { lblData1, lblData2, lblData3, lblData4, lblData5, lblData6 });
+            UpdateLabelsFromChart("GenderDistribution", new[] { lblData1, lblData2, lblData3, lblData4, lblData5, lblData6, lblData7, lblData8, lblData9, lblData10, lblData11, lblData12, lblData13 });
         }
 
         private void LoadPurposeDistributionChart()
@@ -204,7 +204,7 @@ namespace BarangayApplication
             // Hide the legend
             chartOverview.Legends.Clear();
 
-            UpdateLabelsFromChart("PurposeDistribution", new[] { lblData1, lblData2, lblData3, lblData4, lblData5, lblData6 });
+            UpdateLabelsFromChart("PurposeDistribution", new[] { lblData1, lblData2, lblData3, lblData4, lblData5, lblData6, lblData7, lblData8, lblData9, lblData10, lblData11, lblData12, lblData13 });
         }
         
         /// <summary>
@@ -216,6 +216,7 @@ namespace BarangayApplication
         private void UpdateResidentAndApplicationCounters()
         {
             var repo = new ResidentsRepository();
+
             var residents = repo.GetApplicants();
 
             // 1. Unique residents by full name (case-insensitive)
@@ -268,20 +269,15 @@ namespace BarangayApplication
                 {
                     // Update label text with legend and value
                     labels[i].Text = $"{series.Points[i].AxisLabel}: {series.Points[i].YValues[0]}";
-                    labels[i].Visible = true; // Ensure the label is visible
+                    labels[i].Visible = true;
                 }
                 else
                 {
-                    // Hide excess labels
+                    //hide excess labels
                     labels[i].Visible = false;
                 }
             }
         }
-
-
-
-
-
 
         private void Overview_Load(object sender, EventArgs e)
         {

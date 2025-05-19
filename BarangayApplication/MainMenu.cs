@@ -118,7 +118,8 @@ namespace BarangayApplication
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
-
+            // Automatically load the Overview form into the MainPanel when MainMenu is opened
+            loadform(new Overview());
         }
 
         private void Sidebar_Paint(object sender, PaintEventArgs e)

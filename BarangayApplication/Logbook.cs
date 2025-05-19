@@ -16,11 +16,13 @@ namespace BarangayApplication
     {
         private int currentPage = 1;
         private int totalPages = 0;
-        private const int rowsPerPage = 50;
+        private const int rowsPerPage = 30;
+        private bool isLogUpdateInProgress = false;
 
         public Logbook()
         {
             InitializeComponent();
+            cBxFilterByAction.SelectedIndexChanged += cBxFilterByAction_SelectedIndexChanged;
         }
 
         private void LoadDataForPage(int page)
@@ -31,12 +33,22 @@ namespace BarangayApplication
             // Fetch logs for the current page
             var logs = repo.GetLogsForPage(offset, rowsPerPage);
 
-            // Bind logs to the DataGridView
+            //bind data to dgv
             dgvLog.DataSource = logs;
 
-            // Update pagination labels (if any)
+            //for the paging text label
             lblPageInfo.Text = $"Page {currentPage} of {totalPages}";
         }
+        private void LoadFilteredLogs(string action)
+        {
+            var repo = new ResidentsRepository();
+            var logs = repo.GetFilteredLogs(action);
+
+            dgvLog.DataSource = logs;
+            lblPageInfo.Text = $"Filtered by: {action}";
+        }
+
+
         private void CalculateTotalPages()
         {
             var repo = new ResidentsRepository();
@@ -46,10 +58,11 @@ namespace BarangayApplication
 
         private void Logbook_Load(object sender, EventArgs e)
         {
-            Bar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right; // Ensure the Bar panel resizes its width
+            Bar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             CalculateTotalPages();
-            LoadDataForPage(currentPage);
+            LoadDataForPage(currentPage); // Load all logs initially
         }
+
 
         private void btnFirst_Click(object sender, EventArgs e)
         {
@@ -59,18 +72,24 @@ namespace BarangayApplication
 
         private void btnPrevious_Click(object sender, EventArgs e)
         {
-            if (currentPage > 1){
-                currentPage--;
-                LoadDataForPage(currentPage);
-            }
+            PerformLogUpdate(() =>
+            {
+                if (currentPage > 1){
+                    currentPage--;
+                    LoadDataForPage(currentPage);
+                }
+            });
         }
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            if (currentPage < totalPages){
-                currentPage++;
-                LoadDataForPage(currentPage);
-            }
+            PerformLogUpdate(() =>
+            {
+                if (currentPage < totalPages){
+                    currentPage++;
+                    LoadDataForPage(currentPage);
+                }
+            });
         }
 
         private void btnLast_Click(object sender, EventArgs e)
@@ -78,10 +97,39 @@ namespace BarangayApplication
             currentPage = totalPages;
             LoadDataForPage(currentPage);
         }
-
-        private void dgvLog_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void cBxFilterByAction_SelectedIndexChanged(object sender, EventArgs e)
         {
+            string selectedAction = cBxFilterByAction.SelectedItem?.ToString();
+            if (!string.IsNullOrEmpty(selectedAction))
+            {
+                LoadFilteredLogs(selectedAction);
+            }
+        }
+        private void llClearFilter_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // Reload all logs
+            LoadDataForPage(currentPage);
 
+            // Clear the comboBox selection
+            cBxFilterByAction.SelectedIndex = -1;
+
+            // Optionally reset the comboBox text
+            cBxFilterByAction.Text = "Select Action";
+        }
+
+        private void PerformLogUpdate(Action logAction)
+        {
+            if (isLogUpdateInProgress) return;
+
+            try
+            {
+                isLogUpdateInProgress = true;
+                logAction();
+            }
+            finally
+            {
+                isLogUpdateInProgress = false;
+            }
         }
     }
 }

@@ -34,19 +34,15 @@
             this.label1 = new System.Windows.Forms.Label();
             this.panelLogbook = new System.Windows.Forms.Panel();
             this.dgvLog = new System.Windows.Forms.DataGridView();
-            this.date = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.user = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.action = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnFirst = new System.Windows.Forms.Button();
             this.btnPrevious = new System.Windows.Forms.Button();
             this.btnNext = new System.Windows.Forms.Button();
             this.btnLast = new System.Windows.Forms.Button();
             this.lblPageInfo = new System.Windows.Forms.Label();
-            this.cBxFilterByUser = new System.Windows.Forms.ComboBox();
+            this.cBxFilterByAction = new System.Windows.Forms.ComboBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
+            this.llClearFilter = new System.Windows.Forms.LinkLabel();
             this.panelLogbook.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvLog)).BeginInit();
             this.panel1.SuspendLayout();
@@ -94,22 +90,16 @@
             this.dgvLog.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Bold);
             dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvLog.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvLog.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.date,
-            this.time,
-            this.user,
-            this.action,
-            this.description});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Century Gothic", 10.2F);
             dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
@@ -118,48 +108,13 @@
             this.dgvLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvLog.Location = new System.Drawing.Point(0, 0);
             this.dgvLog.Name = "dgvLog";
+            this.dgvLog.ReadOnly = true;
             this.dgvLog.RowHeadersVisible = false;
             this.dgvLog.RowHeadersWidth = 51;
             this.dgvLog.RowTemplate.Height = 24;
             this.dgvLog.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvLog.Size = new System.Drawing.Size(1030, 500);
             this.dgvLog.TabIndex = 0;
-            this.dgvLog.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvLog_CellContentClick);
-            // 
-            // date
-            // 
-            this.date.HeaderText = "DATE";
-            this.date.MinimumWidth = 6;
-            this.date.Name = "date";
-            this.date.ReadOnly = true;
-            // 
-            // time
-            // 
-            this.time.HeaderText = "TIME";
-            this.time.MinimumWidth = 6;
-            this.time.Name = "time";
-            this.time.ReadOnly = true;
-            // 
-            // user
-            // 
-            this.user.HeaderText = "USER";
-            this.user.MinimumWidth = 6;
-            this.user.Name = "user";
-            this.user.ReadOnly = true;
-            // 
-            // action
-            // 
-            this.action.HeaderText = "ACTION";
-            this.action.MinimumWidth = 6;
-            this.action.Name = "action";
-            this.action.ReadOnly = true;
-            // 
-            // description
-            // 
-            this.description.HeaderText = "DESCRIPTION";
-            this.description.MinimumWidth = 6;
-            this.description.Name = "description";
-            this.description.ReadOnly = true;
             // 
             // btnFirst
             // 
@@ -218,33 +173,33 @@
             this.lblPageInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lblPageInfo.AutoSize = true;
             this.lblPageInfo.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPageInfo.Location = new System.Drawing.Point(898, 637);
+            this.lblPageInfo.Location = new System.Drawing.Point(869, 637);
             this.lblPageInfo.Name = "lblPageInfo";
             this.lblPageInfo.Size = new System.Drawing.Size(114, 23);
             this.lblPageInfo.TabIndex = 10;
             this.lblPageInfo.Text = "(Page X of Y)";
             // 
-            // cBxFilterByUser
+            // cBxFilterByAction
             // 
-            this.cBxFilterByUser.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cBxFilterByUser.FormattingEnabled = true;
-            this.cBxFilterByUser.Items.AddRange(new object[] {
+            this.cBxFilterByAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cBxFilterByAction.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cBxFilterByAction.FormattingEnabled = true;
+            this.cBxFilterByAction.Items.AddRange(new object[] {
             "ADD",
             "EDIT",
-            "ARCHIVED"});
-            this.cBxFilterByUser.Location = new System.Drawing.Point(139, 5);
-            this.cBxFilterByUser.Name = "cBxFilterByUser";
-            this.cBxFilterByUser.Size = new System.Drawing.Size(130, 31);
-            this.cBxFilterByUser.TabIndex = 11;
+            "ARCHIVE"});
+            this.cBxFilterByAction.Location = new System.Drawing.Point(157, 4);
+            this.cBxFilterByAction.Name = "cBxFilterByAction";
+            this.cBxFilterByAction.Size = new System.Drawing.Size(130, 31);
+            this.cBxFilterByAction.TabIndex = 11;
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.label2);
-            this.panel1.Controls.Add(this.cBxFilterByUser);
-            this.panel1.Location = new System.Drawing.Point(763, 73);
+            this.panel1.Controls.Add(this.cBxFilterByAction);
+            this.panel1.Location = new System.Drawing.Point(11, 71);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(275, 39);
+            this.panel1.Size = new System.Drawing.Size(290, 39);
             this.panel1.TabIndex = 12;
             // 
             // label2
@@ -257,11 +212,24 @@
             this.label2.TabIndex = 12;
             this.label2.Text = "Filter by Action:";
             // 
+            // llClearFilter
+            // 
+            this.llClearFilter.AutoSize = true;
+            this.llClearFilter.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.llClearFilter.Location = new System.Drawing.Point(307, 82);
+            this.llClearFilter.Name = "llClearFilter";
+            this.llClearFilter.Size = new System.Drawing.Size(91, 23);
+            this.llClearFilter.TabIndex = 13;
+            this.llClearFilter.TabStop = true;
+            this.llClearFilter.Text = "Clear Filter";
+            this.llClearFilter.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llClearFilter_LinkClicked);
+            // 
             // Logbook
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1050, 686);
+            this.Controls.Add(this.llClearFilter);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.lblPageInfo);
             this.Controls.Add(this.btnLast);
@@ -291,18 +259,14 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panelLogbook;
         private System.Windows.Forms.DataGridView dgvLog;
-        private System.Windows.Forms.DataGridViewTextBoxColumn date;
-        private System.Windows.Forms.DataGridViewTextBoxColumn time;
-        private System.Windows.Forms.DataGridViewTextBoxColumn user;
-        private System.Windows.Forms.DataGridViewTextBoxColumn action;
-        private System.Windows.Forms.DataGridViewTextBoxColumn description;
         private System.Windows.Forms.Button btnFirst;
         private System.Windows.Forms.Button btnPrevious;
         private System.Windows.Forms.Button btnNext;
         private System.Windows.Forms.Button btnLast;
         private System.Windows.Forms.Label lblPageInfo;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.ComboBox cBxFilterByUser;
+        private System.Windows.Forms.ComboBox cBxFilterByAction;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.LinkLabel llClearFilter;
     }
 }

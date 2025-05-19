@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using BarangayApplication.Models;
-
+using static BarangayApplication.LoginMenu;
 namespace BarangayApplication.Models.Repositories
 {
     public class ResidentsRepository
     {
-        private readonly string _repoconn = "Data Source=localhost,1433;Initial Catalog=Test_SelfInterest;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
-
-
+        private readonly string _repoconn = "Data Source=.;Initial Catalog=BrgyDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 
         /// <summary>
         /// Gets the list of applicant residents. This method connects to the database,
@@ -145,14 +144,11 @@ namespace BarangayApplication.Models.Repositories
         public Dictionary<string, int> GetAgeGroupCounts()
         {
             var ageGroups = new Dictionary<string, int>
-    {
-        { "Infants (0-4)", 0 },
-        { "Children (5-14)", 0 },
-        { "Youth (15-24)", 0 },
-        { "Young to Mid Adults (25-44)", 0 },
-        { "Older Adults (45-64)", 0 },
-        { "Seniors (65+)", 0 }
-    };
+            {
+                { "Youth (18-30)", 0 },
+                { "Adults (31-59)", 0 },
+                { "Seniors (60+)", 0 }
+            };
 
             try
             {
@@ -168,17 +164,11 @@ namespace BarangayApplication.Models.Repositories
                         {
                             int age = _reader.IsDBNull(0) ? 0 : _reader.GetInt32(0);
 
-                            if (age >= 0 && age <= 4)
-                                ageGroups["Infants (0-4)"]++;
-                            else if (age >= 5 && age <= 14)
-                                ageGroups["Children (5-14)"]++;
-                            else if (age >= 15 && age <= 24)
-                                ageGroups["Youth (15-24)"]++;
-                            else if (age >= 25 && age <= 44)
-                                ageGroups["Young to Mid Adults (25-44)"]++;
-                            else if (age >= 45 && age <= 64)
-                                ageGroups["Older Adults (45-64)"]++;
-                            else if (age >= 65)
+                            if (age >= 0 && age <= 30)
+                                ageGroups["Youth (18-30)"]++;
+                            else if (age >= 31 && age <= 59)
+                                ageGroups["Adults (31-59)"]++;
+                            else if (age >= 60)
                                 ageGroups["Seniors (65+)"]++;
                         }
                     }
@@ -192,46 +182,59 @@ namespace BarangayApplication.Models.Repositories
 
             return ageGroups;
         }
-        //for logbook codes
-        public class UserLog
-        {
-            public string UserName { get; set; }
-            public string Action { get; set; }
-            public string Description { get; set; }
-            public DateTime Timestamp { get; set; }
-        }
-        public List<UserLog> GetLogsForPage(int offset, int rowsPerPage)
-        {
-            var logs = new List<UserLog>();
+        // ...existing code...
 
+        // Method to get the logged-in user's account name based on accountID
+        private string GetLoggedInUserName(string currentAccountId)
+        {
+            try
+            {
+                using (SqlConnection _conn = new SqlConnection(_repoconn))
+                {
+                    _conn.Open();
+                    string sql = "SELECT accountName FROM users WHERE accountID = @CurrentAccountId";
+
+                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    {
+                        _cmd.Parameters.AddWithValue("@CurrentAccountId", currentAccountId);
+
+                        object result = _cmd.ExecuteScalar();
+                        return result != null ? result.ToString() : "Unknown User";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception while fetching logged-in user: " + ex.ToString());
+                throw;
+            }
+        }
+        //for filtering logs by action
+        public DataTable GetFilteredLogs(string action)
+        {
+            var dataTable = new DataTable();
             try
             {
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
                     string sql = @"
-                SELECT UserName, Action, Description, Timestamp
-                FROM UserLogs
-                ORDER BY Timestamp DESC
-                OFFSET @Offset ROWS FETCH NEXT @RowsPerPage ROWS ONLY";
+                        SELECT 
+                            FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                            UserName AS [USER], 
+                            Action AS [ACTION], 
+                            Description AS [DESCRIPTION]
+                        FROM UserLogs
+                        WHERE Action = @Action
+                        ORDER BY Timestamp DESC";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
-                        _cmd.Parameters.AddWithValue("@Offset", offset);
-                        _cmd.Parameters.AddWithValue("@RowsPerPage", rowsPerPage);
+                        _cmd.Parameters.AddWithValue("@Action", action);
 
-                        using (SqlDataReader _reader = _cmd.ExecuteReader())
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(_cmd))
                         {
-                            while (_reader.Read())
-                            {
-                                logs.Add(new UserLog
-                                {
-                                    UserName = _reader.GetString(0),
-                                    Action = _reader.GetString(1),
-                                    Description = _reader.GetString(2),
-                                    Timestamp = _reader.GetDateTime(3)
-                                });
-                            }
+                            adapter.Fill(dataTable);
                         }
                     }
                 }
@@ -242,10 +245,101 @@ namespace BarangayApplication.Models.Repositories
                 throw;
             }
 
-            return logs;
+            return dataTable;
         }
 
-        public int GetTotalLogCount()
+        // Method to add a user log entry with accountName
+        public void AddUserLog(string currentAccountId, string action, string description)
+        {
+            try
+            {
+                string accountName = GetLoggedInUserName(currentAccountId);
+
+                using (SqlConnection _conn = new SqlConnection(_repoconn))
+                {
+                    _conn.Open();
+
+                    // Check if a similar log entry already exists to prevent duplication
+                    string checkSql = @"
+                        SELECT COUNT(*) 
+                        FROM UserLogs 
+                        WHERE UserName = @UserName AND Action = @Action AND Description = @Description AND DATEDIFF(SECOND, Timestamp, @Timestamp) < 5";
+
+                    using (SqlCommand checkCmd = new SqlCommand(checkSql, _conn))
+                    {
+                        checkCmd.Parameters.AddWithValue("@UserName", accountName);
+                        checkCmd.Parameters.AddWithValue("@Action", action);
+                        checkCmd.Parameters.AddWithValue("@Description", description);
+                        checkCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+
+                        int existingCount = (int)checkCmd.ExecuteScalar();
+                        if (existingCount > 0)
+                        {
+                            // Log entry already exists, skip adding
+                            return;
+                        }
+                    }
+
+                    // Insert the new log entry
+                    string insertSql = @"
+                       INSERT INTO UserLogs (UserName, Action, Description, Timestamp)
+                       VALUES (@UserName, @Action, @Description, @Timestamp)";
+
+                    using (SqlCommand insertCmd = new SqlCommand(insertSql, _conn))
+                    {
+                        insertCmd.Parameters.AddWithValue("@UserName", accountName);
+                        insertCmd.Parameters.AddWithValue("@Action", action);
+                        insertCmd.Parameters.AddWithValue("@Description", description);
+                        insertCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+
+                        insertCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.ToString());
+                throw;
+            }
+        }
+        public DataTable GetLogsForPage(int offset, int rowsPerPage) //for populating the logbook
+        {
+            var dataTable = new DataTable();
+            try
+            {
+                using (SqlConnection _conn = new SqlConnection(_repoconn))
+                {
+                    _conn.Open();
+                    string sql = @"
+                SELECT TOP (@RowsPerPage)
+                    FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                    UserName AS [USER], 
+                    Action AS [ACTION], 
+                    Description AS [DESCRIPTION]
+                FROM UserLogs
+                ORDER BY Timestamp DESC";
+
+                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    {
+                        _cmd.Parameters.AddWithValue("@RowsPerPage", rowsPerPage);
+
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(_cmd))
+                        {
+                            adapter.Fill(dataTable);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.ToString());
+                throw;
+            }
+
+            return dataTable;
+        }
+
+        public int GetTotalLogCount() //for log counts
         {
             try
             {
@@ -317,7 +411,7 @@ namespace BarangayApplication.Models.Repositories
                                 SLengthOfService, 
                                 SPreviousCompany, 
                                 SPreviousPosition, 
-                                SPreviousLengthOfService,
+                                SPreviousLengthofService,
                                 ChildrenRelativeName, 
                                 ChildrenRelativeAge, 
                                 ChildrenRelativeOccupation, 
@@ -684,6 +778,8 @@ namespace BarangayApplication.Models.Repositories
                         _cmd.ExecuteNonQuery();
                     }
                 }
+                AddUserLog(CurrentUser.AccountID, "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
+
             }
             catch (Exception ex)
             {
@@ -826,6 +922,8 @@ namespace BarangayApplication.Models.Repositories
                         _cmd.ExecuteNonQuery();
                     }
                 }
+                AddUserLog(CurrentUser.AccountID, "Edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
+
             }
             catch (Exception ex)
             {
@@ -867,6 +965,8 @@ namespace BarangayApplication.Models.Repositories
                         _cmd.ExecuteNonQuery();
                     }
                 }
+                AddUserLog(CurrentUser.AccountID, "Archived", $"Archived resident with ID: {applicantId}");
+
             }
             catch (Exception ex)
             {

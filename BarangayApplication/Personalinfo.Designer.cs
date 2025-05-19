@@ -227,7 +227,7 @@
             this.cBxCivilStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.cBxCivilStatus.BackColor = System.Drawing.SystemColors.Window;
             this.cBxCivilStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cBxCivilStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cBxCivilStatus.Font = new System.Drawing.Font("Segoe UI Semibold", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cBxCivilStatus.FormattingEnabled = true;
             this.cBxCivilStatus.Items.AddRange(new object[] {
             "SINGLE",
@@ -237,7 +237,7 @@
             this.cBxCivilStatus.Location = new System.Drawing.Point(145, 343);
             this.cBxCivilStatus.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cBxCivilStatus.Name = "cBxCivilStatus";
-            this.cBxCivilStatus.Size = new System.Drawing.Size(247, 28);
+            this.cBxCivilStatus.Size = new System.Drawing.Size(247, 31);
             this.cBxCivilStatus.TabIndex = 201;
             // 
             // lblDob
@@ -309,7 +309,7 @@
             // 
             this.dateTimePicker1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.dateTimePicker1.CalendarFont = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dateTimePicker1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dateTimePicker1.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dateTimePicker1.Location = new System.Drawing.Point(523, 121);
             this.dateTimePicker1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -405,7 +405,7 @@
             this.txtTelCel.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
             this.txtTelCel.MaxLength = 11;
             this.txtTelCel.Name = "txtTelCel";
-            this.txtTelCel.Size = new System.Drawing.Size(425, 27);
+            this.txtTelCel.Size = new System.Drawing.Size(421, 27);
             this.txtTelCel.TabIndex = 10;
             // 
             // lblSex
@@ -432,7 +432,7 @@
             this.cbxSex.Items.AddRange(new object[] {
             "MALE",
             "FEMALE"});
-            this.cbxSex.Location = new System.Drawing.Point(464, 343);
+            this.cbxSex.Location = new System.Drawing.Point(460, 343);
             this.cbxSex.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cbxSex.Name = "cbxSex";
             this.cbxSex.Size = new System.Drawing.Size(105, 28);

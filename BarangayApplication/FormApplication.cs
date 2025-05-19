@@ -62,10 +62,6 @@ namespace BarangayApplication
             // Ensure the Data form is loaded into MainContainer when FormApplication is opened
             loadform(new Data());
         }
-
-
-
-
         private void MainContainer_Paint_1(object sender, PaintEventArgs e)
         {
         }
