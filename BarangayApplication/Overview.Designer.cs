@@ -63,6 +63,13 @@
             this.tipSearch = new System.Windows.Forms.ToolTip(this.components);
             this.Box1 = new System.Windows.Forms.Panel();
             this.Box2 = new System.Windows.Forms.Panel();
+            this.lblData13 = new System.Windows.Forms.Label();
+            this.lblData7 = new System.Windows.Forms.Label();
+            this.lblData12 = new System.Windows.Forms.Label();
+            this.lblData8 = new System.Windows.Forms.Label();
+            this.lblData11 = new System.Windows.Forms.Label();
+            this.lblData9 = new System.Windows.Forms.Label();
+            this.lblData10 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chartOverview)).BeginInit();
             this.pnlChart.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picNext)).BeginInit();
@@ -112,10 +119,10 @@
             // 
             this.lblDateTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDateTime.AutoSize = true;
-            this.lblDateTime.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDateTime.Location = new System.Drawing.Point(1064, 62);
+            this.lblDateTime.Font = new System.Drawing.Font("Segoe UI", 13.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDateTime.Location = new System.Drawing.Point(1130, 69);
             this.lblDateTime.Name = "lblDateTime";
-            this.lblDateTime.Size = new System.Drawing.Size(153, 38);
+            this.lblDateTime.Size = new System.Drawing.Size(122, 30);
             this.lblDateTime.TabIndex = 3;
             this.lblDateTime.Text = "[date-time]";
             // 
@@ -144,7 +151,7 @@
             // 
             this.lblChartTopic.AutoSize = true;
             this.lblChartTopic.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblChartTopic.Location = new System.Drawing.Point(49, 39);
+            this.lblChartTopic.Location = new System.Drawing.Point(38, 29);
             this.lblChartTopic.Name = "lblChartTopic";
             this.lblChartTopic.Size = new System.Drawing.Size(182, 41);
             this.lblChartTopic.TabIndex = 7;
@@ -194,7 +201,7 @@
             // 
             this.lblData1.AutoSize = true;
             this.lblData1.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblData1.Location = new System.Drawing.Point(56, 103);
+            this.lblData1.Location = new System.Drawing.Point(40, 103);
             this.lblData1.Name = "lblData1";
             this.lblData1.Size = new System.Drawing.Size(74, 25);
             this.lblData1.TabIndex = 9;
@@ -204,7 +211,7 @@
             // 
             this.lblData2.AutoSize = true;
             this.lblData2.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblData2.Location = new System.Drawing.Point(56, 138);
+            this.lblData2.Location = new System.Drawing.Point(40, 138);
             this.lblData2.Name = "lblData2";
             this.lblData2.Size = new System.Drawing.Size(77, 25);
             this.lblData2.TabIndex = 10;
@@ -214,7 +221,7 @@
             // 
             this.lblData3.AutoSize = true;
             this.lblData3.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblData3.Location = new System.Drawing.Point(56, 174);
+            this.lblData3.Location = new System.Drawing.Point(40, 174);
             this.lblData3.Name = "lblData3";
             this.lblData3.Size = new System.Drawing.Size(77, 25);
             this.lblData3.TabIndex = 11;
@@ -224,7 +231,7 @@
             // 
             this.lblData4.AutoSize = true;
             this.lblData4.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblData4.Location = new System.Drawing.Point(56, 208);
+            this.lblData4.Location = new System.Drawing.Point(40, 208);
             this.lblData4.Name = "lblData4";
             this.lblData4.Size = new System.Drawing.Size(77, 25);
             this.lblData4.TabIndex = 12;
@@ -234,7 +241,7 @@
             // 
             this.lblData5.AutoSize = true;
             this.lblData5.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblData5.Location = new System.Drawing.Point(56, 244);
+            this.lblData5.Location = new System.Drawing.Point(40, 244);
             this.lblData5.Name = "lblData5";
             this.lblData5.Size = new System.Drawing.Size(77, 25);
             this.lblData5.TabIndex = 13;
@@ -244,7 +251,7 @@
             // 
             this.lblData6.AutoSize = true;
             this.lblData6.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblData6.Location = new System.Drawing.Point(56, 279);
+            this.lblData6.Location = new System.Drawing.Point(40, 276);
             this.lblData6.Name = "lblData6";
             this.lblData6.Size = new System.Drawing.Size(77, 25);
             this.lblData6.TabIndex = 14;
@@ -348,7 +355,7 @@
             this.lblQuickShortcuts.AutoSize = true;
             this.lblQuickShortcuts.BackColor = System.Drawing.Color.Transparent;
             this.lblQuickShortcuts.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblQuickShortcuts.Location = new System.Drawing.Point(99, 5);
+            this.lblQuickShortcuts.Location = new System.Drawing.Point(96, 5);
             this.lblQuickShortcuts.Name = "lblQuickShortcuts";
             this.lblQuickShortcuts.Size = new System.Drawing.Size(320, 54);
             this.lblQuickShortcuts.TabIndex = 17;
@@ -399,6 +406,13 @@
             // Box2
             // 
             this.Box2.BackColor = System.Drawing.SystemColors.Window;
+            this.Box2.Controls.Add(this.lblData13);
+            this.Box2.Controls.Add(this.lblData7);
+            this.Box2.Controls.Add(this.lblData12);
+            this.Box2.Controls.Add(this.lblData8);
+            this.Box2.Controls.Add(this.lblData11);
+            this.Box2.Controls.Add(this.lblData9);
+            this.Box2.Controls.Add(this.lblData10);
             this.Box2.Controls.Add(this.lblChartTopic);
             this.Box2.Controls.Add(this.lblData1);
             this.Box2.Controls.Add(this.lblData6);
@@ -411,6 +425,76 @@
             this.Box2.Name = "Box2";
             this.Box2.Size = new System.Drawing.Size(497, 482);
             this.Box2.TabIndex = 21;
+            // 
+            // lblData13
+            // 
+            this.lblData13.AutoSize = true;
+            this.lblData13.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData13.Location = new System.Drawing.Point(279, 170);
+            this.lblData13.Name = "lblData13";
+            this.lblData13.Size = new System.Drawing.Size(84, 25);
+            this.lblData13.TabIndex = 21;
+            this.lblData13.Text = "[Data 13]";
+            // 
+            // lblData7
+            // 
+            this.lblData7.AutoSize = true;
+            this.lblData7.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData7.Location = new System.Drawing.Point(40, 314);
+            this.lblData7.Name = "lblData7";
+            this.lblData7.Size = new System.Drawing.Size(77, 25);
+            this.lblData7.TabIndex = 15;
+            this.lblData7.Text = "[Data 7]";
+            // 
+            // lblData12
+            // 
+            this.lblData12.AutoSize = true;
+            this.lblData12.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData12.Location = new System.Drawing.Point(279, 138);
+            this.lblData12.Name = "lblData12";
+            this.lblData12.Size = new System.Drawing.Size(84, 25);
+            this.lblData12.TabIndex = 20;
+            this.lblData12.Text = "[Data 12]";
+            // 
+            // lblData8
+            // 
+            this.lblData8.AutoSize = true;
+            this.lblData8.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData8.Location = new System.Drawing.Point(40, 352);
+            this.lblData8.Name = "lblData8";
+            this.lblData8.Size = new System.Drawing.Size(77, 25);
+            this.lblData8.TabIndex = 16;
+            this.lblData8.Text = "[Data 8]";
+            // 
+            // lblData11
+            // 
+            this.lblData11.AutoSize = true;
+            this.lblData11.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData11.Location = new System.Drawing.Point(279, 103);
+            this.lblData11.Name = "lblData11";
+            this.lblData11.Size = new System.Drawing.Size(81, 25);
+            this.lblData11.TabIndex = 19;
+            this.lblData11.Text = "[Data 11]";
+            // 
+            // lblData9
+            // 
+            this.lblData9.AutoSize = true;
+            this.lblData9.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData9.Location = new System.Drawing.Point(40, 388);
+            this.lblData9.Name = "lblData9";
+            this.lblData9.Size = new System.Drawing.Size(77, 25);
+            this.lblData9.TabIndex = 17;
+            this.lblData9.Text = "[Data 9]";
+            // 
+            // lblData10
+            // 
+            this.lblData10.AutoSize = true;
+            this.lblData10.Font = new System.Drawing.Font("Segoe UI Semibold", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblData10.Location = new System.Drawing.Point(40, 425);
+            this.lblData10.Name = "lblData10";
+            this.lblData10.Size = new System.Drawing.Size(84, 25);
+            this.lblData10.TabIndex = 18;
+            this.lblData10.Text = "[Data 10]";
             // 
             // Overview
             // 
@@ -485,5 +569,12 @@
         private System.Windows.Forms.ToolTip tipSearch;
         private System.Windows.Forms.Panel Box1;
         private System.Windows.Forms.Panel Box2;
+        private System.Windows.Forms.Label lblData13;
+        private System.Windows.Forms.Label lblData7;
+        private System.Windows.Forms.Label lblData12;
+        private System.Windows.Forms.Label lblData8;
+        private System.Windows.Forms.Label lblData11;
+        private System.Windows.Forms.Label lblData9;
+        private System.Windows.Forms.Label lblData10;
     }
 }

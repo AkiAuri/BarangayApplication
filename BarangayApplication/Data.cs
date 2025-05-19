@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BarangayApplication.Models;
 using BarangayApplication.Models.Repositories;
+using static BarangayApplication.LoginMenu;
 
 namespace BarangayApplication
 {
@@ -155,6 +156,9 @@ namespace BarangayApplication
             MainViewForm Form = new MainViewForm();
             if (Form.ShowDialog() == DialogResult.OK)
             {
+                var repo = new ResidentsRepository();
+                repo.AddUserLog(CurrentUser.AccountID, "Add", "Added a new resident."); //logbook code
+
                 ReadResidents();
                 SetupSearchBarAutocomplete(); // Refresh suggestions after add
             }
@@ -190,6 +194,8 @@ namespace BarangayApplication
             MainViewForm editForm = new MainViewForm(applicant);
             if (editForm.ShowDialog() == DialogResult.OK)
             {
+                repo.AddUserLog(CurrentUser.AccountID, "Edit", $"Edited resident: {applicant.FirstName} {applicant.LastName}"); //logbook code
+
                 ReadResidents();
                 SetupSearchBarAutocomplete(); // Refresh suggestions after edit
             }
@@ -217,9 +223,12 @@ namespace BarangayApplication
             var repo = new ResidentsRepository();
             repo.DeleteResident(applicantId);
 
+            repo.AddUserLog(CurrentUser.AccountID, "Archive", $"Archived resident with ID: {applicantId}"); //logbook code
+
             ReadResidents();
             SetupSearchBarAutocomplete(); // Refresh suggestions after delete
         }
+
 
         private void Viewbtn_Click(object sender, EventArgs e)
         {

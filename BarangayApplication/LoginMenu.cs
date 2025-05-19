@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Data.Sql;
 using System.Runtime.InteropServices;
+using BarangayApplication.Models.Repositories;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace BarangayApplication
 {
@@ -44,7 +46,7 @@ namespace BarangayApplication
 
         // Creates a SqlConnection to the SQL Server database.
         // Update the connection string as needed for your environment.
-        SqlConnection _conn = new SqlConnection(@"Data Source=.;Initial Catalog=BarangayDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
+        SqlConnection _conn = new SqlConnection(@"Data Source=.;Initial Catalog=BrgyDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
 
         // Event handler for the checkbox that toggles password visibility.
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -63,52 +65,54 @@ namespace BarangayApplication
             }
         }
 
-        // Event handler for the Login button click.
-        // Validates user credentials and navigates to the MainMenu if successful.
+        // Fix for CS0103: The name 'CurrentUser' does not exist in the current context
+        // Fix for CS0103: The name 'username' does not exist in the current context
+
+        // Assuming 'CurrentUser' is a static class that holds the current user's information,
+        // and 'UserName' is a property of that class. If this class does not exist, it needs to be created.
+        // Additionally, 'username' should be retrieved from the database query result.
+        public static class CurrentUser
+        {
+            public static string AccountID { get; set; }
+        }
         private void BtnLogin_Click(object sender, EventArgs e)
         {
-            // Retrieve the entered account ID and password.
             String accountID, passwordHash;
             accountID = AccountID.Text;
             passwordHash = Password.Text;
 
             try
             {
-                _conn.Open(); // Opens the database connection.
+                _conn.Open();
 
-                // SQL query to select the user matching the provided credentials.
-                string _query = "select * from Users where accountID = @accountID and passwordHash = @passwordHash";
-
-                // Create a SqlDataAdapter to execute the query.
+                string _query = "SELECT * FROM users WHERE accountID = @accountID and passwordHash = @passwordHash";
                 SqlDataAdapter _da = new SqlDataAdapter(_query, _conn);
-
-                // Add parameters to the adapter to prevent SQL injection.
                 _da.SelectCommand.Parameters.AddWithValue("@accountID", accountID);
                 _da.SelectCommand.Parameters.AddWithValue("@passwordHash", passwordHash);
-
-                // Create a DataTable to hold the query results.
+                
+                //for logbook username
                 DataTable _UserTable = new DataTable();
-                _da.Fill(_UserTable); // Fill the DataTable with data.
-
-                // Check if any matching user exists.
+                _da.Fill(_UserTable);
+                
                 if (_UserTable.Rows.Count > 0)
                 {
-                    // Successful login: Show the MainMenu form and hide the LoginMenu form.
+                    CurrentUser.AccountID = _UserTable.Rows[0]["accountID"].ToString();
+                    string accountName = _UserTable.Rows[0]["accountName"].ToString();
+
                     mainMenu.Show();
                     this.Hide();
                 }
                 else
                 {
-                    // Failed login: Alert user and clear the credentials input fields.
                     MessageBox.Show("Account ID or password is incorrect.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     AccountID.Clear();
                     Password.Clear();
-                    AccountID.Focus(); // Set focus back to the AccountID textbox.
-                }
+                    AccountID.Focus();
+                } //until here
             }
+
             catch (Exception ex)
             {
-                // If an error occurs, display an error message and clear input fields.
                 MessageBox.Show("Something went wrong, please try again later or call CS for assistance." + ex,
                     "Error - 101", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 AccountID.Clear();
@@ -117,7 +121,7 @@ namespace BarangayApplication
             }
             finally
             {
-                _conn.Close(); // Ensures the database connection is closed, even if an exception occurs.
+                _conn.Close();
             }
         }
 
@@ -128,5 +132,6 @@ namespace BarangayApplication
             mainMenu.Show(); // Display the MainMenu form.
             this.Hide();     // Hide the LoginMenu form.
         }
+
     }
 }
