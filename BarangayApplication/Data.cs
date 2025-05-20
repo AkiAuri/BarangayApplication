@@ -155,7 +155,6 @@ namespace BarangayApplication
             if (Form.ShowDialog() == DialogResult.OK)
             {
                 var repo = new ResidentsRepository();
-                repo.AddUserLog(CurrentUser.AccountID, "Add", "Added a new resident."); //logbook code
 
                 ReadResidents();
                 SetupSearchBarAutocomplete(); // Refresh suggestions after add
@@ -192,7 +191,6 @@ namespace BarangayApplication
             MainViewForm editForm = new MainViewForm(applicant);
             if (editForm.ShowDialog() == DialogResult.OK)
             {
-                repo.AddUserLog(CurrentUser.AccountID, "Edit", $"Edited resident: {applicant.FirstName} {applicant.LastName}"); //logbook code
 
                 ReadResidents();
                 SetupSearchBarAutocomplete(); // Refresh suggestions after edit

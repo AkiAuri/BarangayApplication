@@ -1371,7 +1371,6 @@ namespace BarangayApplication.Models.Repositories
                         }
                     }
                 }
-                AddUserLog(CurrentUser.AccountID, "Archived", $"Archived resident with ID: {residentId}");
                 AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)

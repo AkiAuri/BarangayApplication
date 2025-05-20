@@ -163,6 +163,22 @@ namespace BarangayApplication
             }
         }
         
+        public bool CheckRequiredFields(out string missing)
+        {
+            var missingFields = new System.Collections.Generic.List<string>();
+
+            if (string.IsNullOrWhiteSpace(comboBox1.Text))
+                missingFields.Add("Residence Type");
+
+            if (string.IsNullOrWhiteSpace(comboBox2.Text))
+                missingFields.Add("Purpose");
+            else if (comboBox2.Text == "OTHER" && string.IsNullOrWhiteSpace(txtOthers.Text))
+                missingFields.Add("Specify Purpose (Others)");
+
+            missing = string.Join(", ", missingFields);
+            return missingFields.Count == 0;
+        }
+        
         //Removing this somehow breaks the thing, so I'm just keeping it, lol.
         private void Collection_Load(object sender, EventArgs e)
         {

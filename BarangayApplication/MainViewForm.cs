@@ -129,6 +129,30 @@ namespace BarangayApplication
         // "Save" button
         private void button1_Click(object sender, EventArgs e)
         {
+            // Validate personal info first
+            if (!_personalForm.CheckRequiredFields(out string personalMissing))
+            {
+                MessageBox.Show(
+                    "Please fill in the following required field(s):\n" + personalMissing,
+                    "Missing Information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return; // Prevent save if incomplete
+            }
+
+            // Validate collection (residence and purpose)
+            if (!_collectionForm.CheckRequiredFields(out string collectionMissing))
+            {
+                MessageBox.Show(
+                    "Please fill in the following required field(s):\n" + collectionMissing,
+                    "Missing Information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return; // Prevent save if incomplete
+            }
+            
             // Update model from all subforms
             _personalForm.ApplyToModel();
             _collectionForm.ApplyToModel();

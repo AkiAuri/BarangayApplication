@@ -106,7 +106,8 @@ namespace BarangayApplication
 
         private void LetterOnly_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar))
+            // Allow control chars (backspace, etc.), letters, and spaces
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                 e.Handled = true;
         }
 
@@ -150,7 +151,7 @@ namespace BarangayApplication
         }
         
         // TODO: ERROR X.XX only does X.X, FIX SOON.
-        // --- Height: X.XX format (max 1 digit before, 2 after) ---
+        // Height: X.XX format (max 1 digit before, 2 after)
         private void txtHeight_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox tb = sender as TextBox;
@@ -174,12 +175,13 @@ namespace BarangayApplication
             // 2 digits after decimal for height
             if (hasDecimal && selectionStart > tb.Text.IndexOf("."))
             {
-                if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && afterDecimal >= 3)
+                if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && afterDecimal >= 2)
                     e.Handled = true;
             }
         }
-        // TODO: ERROR XXX.XX only does XXX.XX, FIX SOON.
-        // --- Weight: XXX.XX format (max 3 digits before, 2 after) ---
+        
+        // TODO: ERROR XXX.XX only does XXX.X, FIX SOON.
+        // Weight: XXX.XX format (max 3 digits before, 2 after)
         private void txtWeight_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox tb = sender as TextBox;
@@ -215,6 +217,40 @@ namespace BarangayApplication
             int age = today.Year - dob.Year;
             if (dob > today.AddYears(-age)) age--;
             Age.Text = Math.Max(age, 0).ToString();
+        }
+        
+        public bool CheckRequiredFields(out string missing)
+        {
+            var missingFields = new System.Collections.Generic.List<string>();
+
+            if (string.IsNullOrWhiteSpace(txtLname.Text))
+                missingFields.Add("Last Name");
+            if (string.IsNullOrWhiteSpace(txtFname.Text))
+                missingFields.Add("First Name");
+            if (string.IsNullOrWhiteSpace(txtMname.Text))
+                missingFields.Add("Middle Name");
+            if (string.IsNullOrWhiteSpace(txtAdd.Text))
+                missingFields.Add("Address");
+            if (string.IsNullOrWhiteSpace(txtTelCel.Text))
+                missingFields.Add("Tel/Cel No.");
+            if (string.IsNullOrWhiteSpace(cbxSex.Text))
+                missingFields.Add("Sex");
+            if (string.IsNullOrWhiteSpace(txtPoB.Text))
+                missingFields.Add("Place of Birth");
+
+            // Date of Birth: Check if it is not min/today and 18+
+            var dob = dateTimePicker1.Value;
+            if (dob == DateTime.MinValue || dob == DateTime.Today)
+                missingFields.Add("Date of Birth");
+            else
+            {
+                int age = CalculateAge(dob);
+                if (age < 18)
+                    missingFields.Add("Date of Birth (Must be at least 18 years old)");
+            }
+
+            missing = string.Join(", ", missingFields);
+            return missingFields.Count == 0;
         }
 
         private void txtPoll_TextChanged(object sender, EventArgs e)
