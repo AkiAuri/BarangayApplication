@@ -208,7 +208,7 @@ namespace BarangayApplication.Models.Repositories
         }
 
         // Method to get the logged-in user's account name based on accountID
-        private string GetLoggedInUserName(string currentAccountId)
+        public string GetLoggedInUserName(string currentAccountId)
         {
             try
             {
@@ -241,19 +241,33 @@ namespace BarangayApplication.Models.Repositories
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
-                    string sql = @"
-                        SELECT 
-                            FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
-                            UserName AS [USER], 
-                            Action AS [ACTION], 
-                            Description AS [DESCRIPTION]
-                        FROM UserLogs
-                        WHERE Action = @Action
-                        ORDER BY Timestamp DESC";
+                    string sql;
+                    // Always compare in uppercase for consistency with dropdown
+                    string upperAction = action.ToUpper();
+
+                    if (upperAction == "ARCHIVE" || upperAction == "ARCHIVED")
+                        sql = @"SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                                       UserName AS [USER], Action AS [ACTION], Description AS [DESCRIPTION]
+                                FROM UserLogs
+                                WHERE UPPER(Action) LIKE 'ARCHIVE%'
+                                ORDER BY Timestamp DESC";
+                    else if (upperAction == "RESTORE" || upperAction == "RESTORED")
+                        sql = @"SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                                       UserName AS [USER], Action AS [ACTION], Description AS [DESCRIPTION]
+                                FROM UserLogs
+                                WHERE UPPER(Action) LIKE 'RESTORE%'
+                                ORDER BY Timestamp DESC";
+                    else
+                        sql = @"SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                                       UserName AS [USER], Action AS [ACTION], Description AS [DESCRIPTION]
+                                FROM UserLogs
+                                WHERE UPPER(Action) = @Action
+                                ORDER BY Timestamp DESC";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
-                        _cmd.Parameters.AddWithValue("@Action", action);
+                        if (!(upperAction == "ARCHIVE" || upperAction == "ARCHIVED" || upperAction == "RESTORE" || upperAction == "RESTORED"))
+                            _cmd.Parameters.AddWithValue("@Action", upperAction);
 
                         using (SqlDataAdapter adapter = new SqlDataAdapter(_cmd))
                         {
@@ -331,7 +345,7 @@ namespace BarangayApplication.Models.Repositories
                 throw;
             }
         }
-        public DataTable GetLogsForPage(int offset, int rowsPerPage) //for populating the logbook
+        public DataTable GetLogsForPage(int offset, int rowsPerPage)
         {
             var dataTable = new DataTable();
             try
@@ -340,16 +354,18 @@ namespace BarangayApplication.Models.Repositories
                 {
                     _conn.Open();
                     string sql = @"
-                SELECT TOP (@RowsPerPage)
+                SELECT
                     FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
                     UserName AS [USER], 
                     Action AS [ACTION], 
                     Description AS [DESCRIPTION]
                 FROM UserLogs
-                ORDER BY Timestamp DESC";
+                ORDER BY Timestamp DESC
+                OFFSET @Offset ROWS FETCH NEXT @RowsPerPage ROWS ONLY"; // <-- Paging!
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
+                        _cmd.Parameters.AddWithValue("@Offset", offset);
                         _cmd.Parameters.AddWithValue("@RowsPerPage", rowsPerPage);
 
                         using (SqlDataAdapter adapter = new SqlDataAdapter(_cmd))
@@ -390,6 +406,40 @@ namespace BarangayApplication.Models.Repositories
             }
         }
         // end of logbook codes
+        
+        //small overview code
+        
+        public int GetMonthlyResidentAddCount()
+        {
+            try
+            {
+                using (SqlConnection _conn = new SqlConnection(_repoconn))
+                {
+                    _conn.Open();
+                    string sql = @"
+                SELECT COUNT(*)
+                FROM UserLogs
+                WHERE UPPER(Action) = 'ADD'
+                  AND MONTH(Timestamp) = @Month
+                  AND YEAR(Timestamp) = @Year";
+
+                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    {
+                        _cmd.Parameters.AddWithValue("@Month", DateTime.Now.Month);
+                        _cmd.Parameters.AddWithValue("@Year", DateTime.Now.Year);
+
+                        return (int)_cmd.ExecuteScalar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.ToString());
+                throw;
+            }
+        }
+        
+        //not really cause i am tired, it's 3:38am...
 
         public List<Resident> GetApplicants()
         {

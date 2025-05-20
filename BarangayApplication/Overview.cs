@@ -24,8 +24,10 @@ namespace BarangayApplication
         private List<Action> _chartLoaders;
         private List<string> _chartTopics;
 
-        public Overview()
+        private string _currentAccountId;
+        public Overview(string currentAccountId)
         {
+            _currentAccountId = currentAccountId; // Store account ID for greeting
             InitializeComponent();
             SetGreetingMessage();
             InitializeDateTimeTimer();
@@ -51,6 +53,18 @@ namespace BarangayApplication
             else {
                 greeting = "Good Evening";
             }
+
+            // Get the user name from the repository
+            string userName = "";
+            if (!string.IsNullOrEmpty(_currentAccountId))
+            {
+                var repo = new ResidentsRepository();
+                userName = repo.GetLoggedInUserName(_currentAccountId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(userName) && userName != "Unknown User")
+                greeting += $" {userName}";
+
             lblGreeting.Text = greeting;
         }
         private void InitializeDateTimeTimer()
@@ -223,25 +237,23 @@ namespace BarangayApplication
             var uniqueNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var r in residents)
             {
-                // Use a combination of names for uniqueness
                 string fullName = $"{r.LastName ?? ""},{r.FirstName ?? ""},{r.MiddleName ?? ""}".Trim();
                 if (!string.IsNullOrWhiteSpace(fullName))
                     uniqueNames.Add(fullName);
             }
             lblTotalResApplied.Text = uniqueNames.Count.ToString();
 
-            // 2. Applications this month (with duplicates!)
-            var now = DateTime.Now;
-            int year = now.Year, month = now.Month;
-            int totalThisMonth = residents.Count(r =>
-                r.DateOfBirth != DateTime.MinValue && // assuming DateOfBirth is used as "application date"
-                r.DateOfBirth.Year == year &&
-                r.DateOfBirth.Month == month);
-
+            // 2. Applications added this month, using logbook (not DateOfBirth)
+            int totalThisMonth = repo.GetMonthlyResidentAddCount();
             lblTotalAppMonth.Text = totalThisMonth.ToString();
 
             // 3. Update label2 with the actual month name
+            int month = DateTime.Now.Month;
             label2.Text = $"TOTAL APPLICATIONS THIS {CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month).ToUpper()}";
+
+            // (Optional) If you want a separate label for "residents added this month" via logs
+            // lblMonthlyResidentAddCount.Text = totalThisMonth.ToString();
+            // lblMonthlyResidentAddTitle.Text = "RESIDENTS ADDED THIS " + CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month).ToUpper();
         }
         
         private void picNext_Click(object sender, EventArgs e)

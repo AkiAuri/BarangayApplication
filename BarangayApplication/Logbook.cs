@@ -16,13 +16,23 @@ namespace BarangayApplication
     {
         private int currentPage = 1;
         private int totalPages = 0;
-        private const int rowsPerPage = 30;
+        private const int rowsPerPage = 37;
         private bool isLogUpdateInProgress = false;
 
         public Logbook()
         {
             InitializeComponent();
             cBxFilterByAction.SelectedIndexChanged += cBxFilterByAction_SelectedIndexChanged;
+
+            // Set filter options in ALL UPPERCASE
+            cBxFilterByAction.Items.Clear();
+            cBxFilterByAction.Items.AddRange(new string[] {
+                "ADD",
+                "EDIT",
+                "ARCHIVE",
+                "RESTORE",
+                "LOGIN"
+            });
         }
 
         private void LoadDataForPage(int page)
@@ -38,6 +48,10 @@ namespace BarangayApplication
 
             //for the paging text label
             lblPageInfo.Text = $"Page {currentPage} of {totalPages}";
+
+            // Enable/disable navigation buttons as appropriate
+            btnFirst.Enabled = btnPrevious.Enabled = (currentPage > 1);
+            btnNext.Enabled = btnLast.Enabled = (currentPage < totalPages);
         }
         private void LoadFilteredLogs(string action)
         {
@@ -46,6 +60,9 @@ namespace BarangayApplication
 
             dgvLog.DataSource = logs;
             lblPageInfo.Text = $"Filtered by: {action}";
+
+            // Disable navigation buttons during filter
+            btnFirst.Enabled = btnPrevious.Enabled = btnNext.Enabled = btnLast.Enabled = false;
         }
 
 

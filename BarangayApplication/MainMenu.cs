@@ -53,7 +53,7 @@ namespace BarangayApplication
         // Event handler for the Overview button click event.
         private void button1_Click(object sender, EventArgs e)
         {
-            loadform(new Overview()); // Load the Overview form into the MainPanel.
+            loadform(new Overview(LoginMenu.CurrentUser.AccountID));
         }
 
         // Event handler for the Data button click event.
@@ -136,8 +136,7 @@ namespace BarangayApplication
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
-            // Automatically load the Overview form into the MainPanel when MainMenu is opened
-            loadform(new Overview());
+            loadform(new Overview(LoginMenu.CurrentUser.AccountID));
 
             // Hide settings controls by default
             settingsLogo.Visible = false;
