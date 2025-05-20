@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using BarangayApplication.Models;
 
@@ -7,6 +8,11 @@ namespace BarangayApplication
     public partial class Personalinfo : Form
     {
         private Resident _resident;
+
+        // Height: 1 digit before, up to 2 after decimal
+        private static readonly Regex HeightRegex = new Regex(@"^\d?(\.\d{0,2})?$");
+        // Weight: up to 3 digits before, up to 2 after decimal
+        private static readonly Regex WeightRegex = new Regex(@"^\d{0,3}(\.\d{0,2})?$");
 
         // Constructor accepts the shared Resident object
         public Personalinfo(Resident resident)
@@ -149,65 +155,38 @@ namespace BarangayApplication
                 txtVoterIdNo.Text = txtVoterIdNo.Text.Substring(0, 10);
             txtVoterIdNo.SelectionStart = txtVoterIdNo.Text.Length;
         }
-        
-        // TODO: ERROR X.XX only does X.X, FIX SOON.
+
+        // --- HEIGHT AND WEIGHT WITH REGEX ---
+        private static bool IsInputValid(TextBox tb, KeyPressEventArgs e, Regex regex)
+        {
+            // Allow control keys (e.g., Backspace)
+            if (char.IsControl(e.KeyChar))
+                return true;
+
+            // Simulate the result if this key is accepted
+            string text = tb.Text;
+            int selStart = tb.SelectionStart;
+            int selLength = tb.SelectionLength;
+
+            // Replace selected text with the new char
+            string newText = text.Substring(0, selStart) + e.KeyChar + text.Substring(selStart + selLength);
+
+            // Test against regex
+            return regex.IsMatch(newText);
+        }
+
         // Height: X.XX format (max 1 digit before, 2 after)
         private void txtHeight_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
-                e.Handled = true;
-
-            // Only one decimal point allowed
-            if (e.KeyChar == '.' && tb.Text.Contains("."))
-                e.Handled = true;
-
-            string[] parts = tb.Text.Split('.');
-            int selectionStart = tb.SelectionStart;
-            int beforeDecimal = parts.Length > 0 ? parts[0].Length : 0;
-            int afterDecimal = parts.Length > 1 ? parts[1].Length : 0;
-            bool hasDecimal = tb.Text.Contains(".");
-
-            // 1 digit before decimal for height
-            if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && (!hasDecimal && beforeDecimal >= 1 && selectionStart <= beforeDecimal))
-                e.Handled = true;
-
-            // 2 digits after decimal for height
-            if (hasDecimal && selectionStart > tb.Text.IndexOf("."))
-            {
-                if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && afterDecimal >= 2)
-                    e.Handled = true;
-            }
+            e.Handled = !IsInputValid(tb, e, HeightRegex);
         }
-        
-        // TODO: ERROR XXX.XX only does XXX.X, FIX SOON.
+
         // Weight: XXX.XX format (max 3 digits before, 2 after)
         private void txtWeight_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
-                e.Handled = true;
-
-            // Only one decimal point allowed
-            if (e.KeyChar == '.' && tb.Text.Contains("."))
-                e.Handled = true;
-
-            string[] parts = tb.Text.Split('.');
-            int selectionStart = tb.SelectionStart;
-            int beforeDecimal = parts.Length > 0 ? parts[0].Length : 0;
-            int afterDecimal = parts.Length > 1 ? parts[1].Length : 0;
-            bool hasDecimal = tb.Text.Contains(".");
-
-            // 3 digits before decimal for weight
-            if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && (!hasDecimal && beforeDecimal >= 3 && selectionStart <= beforeDecimal))
-                e.Handled = true;
-
-            // 2 digits after decimal for weight
-            if (hasDecimal && selectionStart > tb.Text.IndexOf("."))
-            {
-                if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && afterDecimal >= 2)
-                    e.Handled = true;
-            }
+            e.Handled = !IsInputValid(tb, e, WeightRegex);
         }
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
