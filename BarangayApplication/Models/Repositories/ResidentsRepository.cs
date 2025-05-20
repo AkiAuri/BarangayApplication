@@ -1454,5 +1454,15 @@ namespace BarangayApplication.Models.Repositories
             }
             return residents;
         }
+        public void RestoreResident(int residentId)
+        {
+            using (var conn = new SqlConnection(_repoconn))
+            using (var cmd = new SqlCommand("UPDATE Residents SET isArchived = 0 WHERE ResidentID = @ID", conn))
+            {
+                cmd.Parameters.AddWithValue("@ID", residentId);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }

@@ -256,5 +256,48 @@ namespace BarangayApplication
                 SearchBar.Width = this.Width - SearchBar.Left - 20;
             }
         }
+
+        private void btnRestore_Click(object sender, EventArgs e)
+        {
+            if (this.dataGridView1.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a resident to restore.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var val = this.dataGridView1.SelectedRows[0].Cells["ID"].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(val))
+                return;
+
+            var lastName = this.dataGridView1.SelectedRows[0].Cells["Last Name"].Value?.ToString();
+            var firstName = this.dataGridView1.SelectedRows[0].Cells["First Name"].Value?.ToString();
+            var fullName = $"{firstName} {lastName}".Trim();
+
+            int residentId;
+            if (!int.TryParse(val, out residentId))
+            {
+                MessageBox.Show("Invalid resident ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Show Reason form
+            using (var reasonForm = new Reason())
+            {
+                if (reasonForm.ShowDialog() == DialogResult.OK)
+                {
+                    string restoreReason = reasonForm.ArchiveReason;
+
+                    var repo = new ResidentsRepository();
+                    repo.RestoreResident(residentId); // You must implement this method!
+
+                    // Log the action
+                    repo.AddUserLog(LoginMenu.CurrentUser.AccountID, "Restored",
+                        $"Restored resident: {fullName}. Reason: {restoreReason}");
+
+                    ReadArchivedResidents();
+                    SetupSearchBarAutocomplete();
+                }
+            }
+        }
     }
 }
