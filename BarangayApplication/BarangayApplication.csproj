@@ -155,6 +155,12 @@
     <Compile Include="Purpose.Designer.cs">
       <DependentUpon>Purpose.cs</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Settings.Designer.cs">
+      <DependentUpon>Settings.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Collection.resx">
       <DependentUpon>Collection.cs</DependentUpon>
     </EmbeddedResource>
@@ -208,6 +214,9 @@
     <EmbeddedResource Include="Purpose.resx">
       <DependentUpon>Purpose.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Settings.resx">
+      <DependentUpon>Settings.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -231,6 +240,10 @@
     <None Include="Resources\password.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\time-past.png" />
+    <None Include="Resources\secure-backup.png" />
+    <None Include="Resources\settings %281%29.png" />
+    <None Include="Resources\settings.png" />
     <None Include="Resources\terms-info.png" />
     <None Include="Resources\Residence.png" />
     <None Include="Resources\users-alt.png" />
@@ -261,6 +274,7 @@
     <None Include="Resources\log-file.png" />
     <None Include="Resources\album-collection.png" />
     <None Include="Resources\employee-man.png" />
+    <None Include="Resources\circle-ellipsis.png" />
     <Content Include="Resources\Logo.png" />
     <None Include="Resources\Overview.png" />
   </ItemGroup>

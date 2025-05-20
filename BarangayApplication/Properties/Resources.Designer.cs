@@ -113,6 +113,16 @@ namespace BarangayApplication.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap circle_ellipsis {
+            get {
+                object obj = ResourceManager.GetObject("circle-ellipsis", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap CreateNew {
             get {
                 object obj = ResourceManager.GetObject("CreateNew", resourceCulture);
@@ -363,6 +373,36 @@ namespace BarangayApplication.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap secure_backup {
+            get {
+                object obj = ResourceManager.GetObject("secure-backup", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap settings {
+            get {
+                object obj = ResourceManager.GetObject("settings", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap settings__1_ {
+            get {
+                object obj = ResourceManager.GetObject("settings (1)", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap TEMP_SUN_VALLEY_removebg_preview {
             get {
                 object obj = ResourceManager.GetObject("TEMP-SUN-VALLEY-removebg-preview", resourceCulture);
@@ -376,6 +416,16 @@ namespace BarangayApplication.Properties {
         internal static System.Drawing.Bitmap terms_info {
             get {
                 object obj = ResourceManager.GetObject("terms-info", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap time_past {
+            get {
+                object obj = ResourceManager.GetObject("time-past", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using BarangayApplication.Properties;
 
 namespace BarangayApplication
 {
@@ -69,6 +70,14 @@ namespace BarangayApplication
         private void button4_Click(object sender, EventArgs e)
         {
             loadform(new Logbook()); // Load the Logbook form into the MainPanel.
+        }
+        private void settingsLogo_Click(object sender, EventArgs e)
+        {
+            loadform(new Settings()); // Load the Settings form into the MainPanel.
+        }
+        private void settings_Click(object sender, EventArgs e)
+        {
+            loadform(new Settings()); // Load the Settings form into the MainPanel.
         }
 
         private void button1_MouseHover(object sender, EventArgs e)
@@ -169,5 +178,7 @@ namespace BarangayApplication
         {
             
         }
+
+        
     }
 }
