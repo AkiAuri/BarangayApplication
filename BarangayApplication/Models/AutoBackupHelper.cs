@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 
 namespace BarangayApplication.Helpers
 {
@@ -51,6 +52,29 @@ namespace BarangayApplication.Helpers
                 File.WriteAllText(ChangeCountFile, "0");
             }
         }
+        
+        private static void EnforceMaxBackups(string backupDirectory, int maxBackups = 20)
+        {
+            var files = Directory.GetFiles(backupDirectory, "*.bak")
+                .Select(f => new FileInfo(f))
+                .OrderBy(f => f.CreationTime)
+                .ToList();
+
+            while (files.Count > maxBackups)
+            {
+                try
+                {
+                    files[0].Delete();
+                    files.RemoveAt(0);
+                }
+                catch (Exception ex)
+                {
+                    // Optionally log deletion error
+                    File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to delete old backup: {ex.Message}\n");
+                    break; // Stop if unable to delete, avoid infinite loop
+                }
+            }
+        }
 
         private static void PerformAutoBackup(string reason)
         {
@@ -73,12 +97,13 @@ namespace BarangayApplication.Helpers
                         conn.Open();
                         cmd.ExecuteNonQuery();
                         SaveLastBackup(DateTime.Now);
-                        // Optionally: log reason
                         File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {reason}\n");
+
+                        // Enforce maximum backup files
+                        EnforceMaxBackups(backupDirectory, 20);
                     }
                     catch (Exception ex)
                     {
-                        // Optionally: log error
                         File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Auto-backup failed: {ex.Message}\n");
                     }
                 }

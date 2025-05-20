@@ -284,6 +284,94 @@ namespace BarangayApplication.Models.Repositories
 
             return dataTable;
         }
+        
+        public DataTable GetLogsByUser(string userName)
+        {
+            var dataTable = new DataTable();
+            try
+            {
+                using (SqlConnection _conn = new SqlConnection(_repoconn))
+                {
+                    _conn.Open();
+                    string sql = @"
+                SELECT
+                    FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                    UserName AS [USER], 
+                    Action AS [ACTION], 
+                    Description AS [DESCRIPTION]
+                FROM UserLogs
+                WHERE UserName = @UserName
+                ORDER BY Timestamp DESC";
+
+                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    {
+                        _cmd.Parameters.AddWithValue("@UserName", userName);
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(_cmd))
+                        {
+                            adapter.Fill(dataTable);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.ToString());
+                throw;
+            }
+
+            return dataTable;
+        }
+        public DataTable GetLogsByUserAndAction(string userName, string action)
+        {
+            var dataTable = new DataTable();
+            try
+            {
+                using (var conn = new SqlConnection(_repoconn))
+                {
+                    conn.Open();
+                    string sql;
+                    string upperAction = action.ToUpper();
+
+                    if ((upperAction == "ARCHIVE" || upperAction == "ARCHIVED") && !string.IsNullOrEmpty(userName))
+                        sql = @"SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                                       UserName AS [USER], Action AS [ACTION], Description AS [DESCRIPTION]
+                                FROM UserLogs
+                                WHERE UPPER(Action) LIKE 'ARCHIVE%' AND UserName = @UserName
+                                ORDER BY Timestamp DESC";
+                    else if ((upperAction == "RESTORE" || upperAction == "RESTORED") && !string.IsNullOrEmpty(userName))
+                        sql = @"SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                                       UserName AS [USER], Action AS [ACTION], Description AS [DESCRIPTION]
+                                FROM UserLogs
+                                WHERE UPPER(Action) LIKE 'RESTORE%' AND UserName = @UserName
+                                ORDER BY Timestamp DESC";
+                    else
+                        sql = @"SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                                       UserName AS [USER], Action AS [ACTION], Description AS [DESCRIPTION]
+                                FROM UserLogs
+                                WHERE UPPER(Action) = @Action AND UserName = @UserName
+                                ORDER BY Timestamp DESC";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserName", userName);
+                        if (!(upperAction == "ARCHIVE" || upperAction == "ARCHIVED" || upperAction == "RESTORE" || upperAction == "RESTORED"))
+                            cmd.Parameters.AddWithValue("@Action", upperAction);
+
+                        using (var adapter = new SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(dataTable);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.ToString());
+                throw;
+            }
+
+            return dataTable;
+        }
 
         // Method to add a user log entry with accountName
         public void AddUserLog(string currentAccountId, string action, string description)
@@ -404,6 +492,54 @@ namespace BarangayApplication.Models.Repositories
                 Console.WriteLine("Exception: " + ex.ToString());
                 throw;
             }
+        }
+        
+        public List<Tuple<int, int>> GetAvailableLogMonths()
+        {
+            var result = new List<Tuple<int, int>>();
+            using (var conn = new SqlConnection(_repoconn))
+            {
+                conn.Open();
+                string sql = @"SELECT DISTINCT YEAR(Timestamp) AS Y, MONTH(Timestamp) AS M FROM UserLogs ORDER BY Y, M";
+                using (var cmd = new SqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int year = reader.GetInt32(0);
+                        int month = reader.GetInt32(1);
+                        result.Add(new Tuple<int, int>(year, month));
+                    }
+                }
+            }
+            return result;
+        }
+        
+        public DataTable GetLogsForMonth(int year, int month)
+        {
+            var table = new DataTable();
+            using (var conn = new SqlConnection(_repoconn))
+            {
+                conn.Open();
+                string sql = @"
+                    SELECT FORMAT(Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                           UserName AS [USER], 
+                           Action AS [ACTION], 
+                           Description AS [DESCRIPTION]
+                    FROM UserLogs
+                    WHERE YEAR(Timestamp) = @Year AND MONTH(Timestamp) = @Month
+                    ORDER BY Timestamp ASC";
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Year", year);
+                    cmd.Parameters.AddWithValue("@Month", month);
+                    using (var adapter = new SqlDataAdapter(cmd))
+                    {
+                        adapter.Fill(table);
+                    }
+                }
+            }
+            return table;
         }
         // end of logbook codes
         

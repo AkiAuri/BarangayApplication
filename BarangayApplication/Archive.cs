@@ -9,11 +9,14 @@ using BarangayApplication.Models.Repositories;
 
 namespace BarangayApplication
 {
-    /// <summary>
-    /// The Archive form displays all archived residents with the same look and feel as the Data form.
-    /// </summary>
     public partial class Archive : Form
     {
+        // --- PAGINATION FIELDS ---
+        private int currentPage = 1;
+        private int totalPages = 0;
+        private const int rowsPerPage = 37; // You can adjust this if you want
+        private List<Resident> archivedResidentsCache = null; // For paging/filtering
+
         public Archive()
         {
             InitializeComponent();
@@ -22,9 +25,17 @@ namespace BarangayApplication
 
             // Set alternating row color for DataGridView
             dataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.LightGray;
-
-            // Attach the CellFormatting event for ALL CAPS
             dataGridView1.CellFormatting += DataGridView1_CellFormatting;
+
+            // --- PAGING BUTTON HOOKUP ---
+            if (this.Controls.ContainsKey("btnFirst"))
+                this.Controls["btnFirst"].Click += btnFirst_Click;
+            if (this.Controls.ContainsKey("btnPrevious"))
+                this.Controls["btnPrevious"].Click += btnPrevious_Click;
+            if (this.Controls.ContainsKey("btnNext"))
+                this.Controls["btnNext"].Click += btnNext_Click;
+            if (this.Controls.ContainsKey("btnLast"))
+                this.Controls["btnLast"].Click += btnLast_Click;
         }
 
         // ALL CAPS for all displayed cell data
@@ -40,11 +51,9 @@ namespace BarangayApplication
         private void SetupSearchBarAutocomplete()
         {
             AutoCompleteStringCollection autoCompleteCollection = new AutoCompleteStringCollection();
-
             var repo = new ResidentsRepository();
             var residents = repo.GetArchivedResidents();
 
-            // Add name-based suggestions
             foreach (var r in residents)
             {
                 if (!string.IsNullOrWhiteSpace(r.LastName))
@@ -54,14 +63,10 @@ namespace BarangayApplication
                 if (!string.IsNullOrWhiteSpace(r.MiddleName))
                     autoCompleteCollection.Add("N:" + r.MiddleName);
             }
-
-            // Add age-based suggestions (all unique ages)
             foreach (var age in residents.Select(r => r.DateOfBirth != DateTime.MinValue ? CalculateAge(r.DateOfBirth) : (int?)null).Where(a => a.HasValue).Select(a => a.Value).Distinct())
             {
                 autoCompleteCollection.Add("A:" + age);
             }
-
-            // Add purposes (show all unique purpose names)
             var allPurposeNames = residents
                 .SelectMany(r => (r.Purposes != null) ? r.Purposes.Select(p => GetPurposeText(p)) : new List<string>())
                 .Where(p => !string.IsNullOrWhiteSpace(p))
@@ -70,11 +75,8 @@ namespace BarangayApplication
             {
                 autoCompleteCollection.Add("P:" + purpose);
             }
-
-            // Remove duplicates
             var unique = autoCompleteCollection.Cast<string>().Distinct().ToArray();
 
-            // Attach to the SearchBar (make sure searchBar exists in the designer)
             if (this.Controls.ContainsKey("SearchBar"))
             {
                 var SearchBar = this.Controls["SearchBar"] as TextBox;
@@ -82,6 +84,7 @@ namespace BarangayApplication
                 SearchBar.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 SearchBar.AutoCompleteCustomSource = new AutoCompleteStringCollection();
                 SearchBar.AutoCompleteCustomSource.AddRange(unique);
+                SearchBar.TextChanged -= SearchBar_TextChanged; // Prevent double-event
                 SearchBar.TextChanged += SearchBar_TextChanged;
             }
         }
@@ -92,6 +95,27 @@ namespace BarangayApplication
         /// </summary>
         private void ReadArchivedResidents()
         {
+            var repo = new ResidentsRepository();
+            archivedResidentsCache = repo.GetArchivedResidents();
+            CalculateTotalPages();
+            LoadDataForPage(1);
+        }
+
+        // --- PAGINATION SUPPORT ---
+
+        private void CalculateTotalPages()
+        {
+            int totalRows = archivedResidentsCache?.Count ?? 0;
+            totalPages = (int)Math.Ceiling((double)totalRows / rowsPerPage);
+            if (totalPages == 0) totalPages = 1;
+        }
+
+        private void LoadDataForPage(int page)
+        {
+            if (archivedResidentsCache == null) ReadArchivedResidents();
+            int offset = (page - 1) * rowsPerPage;
+            var pageResidents = archivedResidentsCache.Skip(offset).Take(rowsPerPage).ToList();
+
             DataTable dt = new DataTable();
             dt.Columns.Add("ID");
             dt.Columns.Add("Last Name");
@@ -101,10 +125,7 @@ namespace BarangayApplication
             dt.Columns.Add("Contact Number");
             dt.Columns.Add("Purpose");
 
-            var repo = new ResidentsRepository();
-            var residents = repo.GetArchivedResidents();
-
-            foreach (var resident in residents)
+            foreach (var resident in pageResidents)
             {
                 var row = dt.NewRow();
                 row["ID"] = resident.ResidentID;
@@ -123,9 +144,139 @@ namespace BarangayApplication
             if (dataGridView1.Columns["ID"] != null)
                 dataGridView1.Columns["ID"].Visible = false;
 
-            // Make header ALL CAPS
             foreach (DataGridViewColumn col in dataGridView1.Columns)
                 col.HeaderText = col.HeaderText.ToUpper();
+
+            UpdatePagingButtons();
+            UpdatePageLabel();
+        }
+
+        private void UpdatePagingButtons()
+        {
+            if (this.Controls.ContainsKey("btnFirst") && this.Controls.ContainsKey("btnPrevious") &&
+                this.Controls.ContainsKey("btnNext") && this.Controls.ContainsKey("btnLast"))
+            {
+                this.Controls["btnFirst"].Enabled = this.Controls["btnPrevious"].Enabled = (currentPage > 1);
+                this.Controls["btnNext"].Enabled = this.Controls["btnLast"].Enabled = (currentPage < totalPages);
+            }
+        }
+
+        private void UpdatePageLabel()
+        {
+            if (this.Controls.ContainsKey("lblPageInfo"))
+            {
+                var lbl = this.Controls["lblPageInfo"] as Label;
+                lbl.Text = $"Page {currentPage} of {totalPages}";
+            }
+        }
+
+        // --- PAGINATION BUTTON EVENTS ---
+
+        private void btnFirst_Click(object sender, EventArgs e)
+        {
+            currentPage = 1;
+            LoadDataForPage(currentPage);
+        }
+
+        private void btnPrevious_Click(object sender, EventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage--;
+                LoadDataForPage(currentPage);
+            }
+        }
+
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            if (currentPage < totalPages)
+            {
+                currentPage++;
+                LoadDataForPage(currentPage);
+            }
+        }
+
+        private void btnLast_Click(object sender, EventArgs e)
+        {
+            currentPage = totalPages;
+            LoadDataForPage(currentPage);
+        }
+
+        // --- FILTERING SUPPORT ---
+
+        private void Archive_Load(object sender, EventArgs e)
+        {
+            ReadArchivedResidents();
+            SetupSearchBarAutocomplete();
+        }
+
+        private void SearchBar_TextChanged(object sender, EventArgs e)
+        {
+            var SearchBar = sender as TextBox;
+            string query = SearchBar.Text.Trim();
+            if (archivedResidentsCache == null)
+            {
+                var repo = new ResidentsRepository();
+                archivedResidentsCache = repo.GetArchivedResidents();
+            }
+
+            List<Resident> baseResidents = archivedResidentsCache;
+            IEnumerable<Resident> filtered = baseResidents;
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                // Show all with paging
+                CalculateTotalPages();
+                currentPage = 1;
+                LoadDataForPage(currentPage);
+                return;
+            }
+
+            if (query.StartsWith("N:", StringComparison.OrdinalIgnoreCase))
+            {
+                string namePart = query.Substring(2).Trim().ToLower();
+                filtered = baseResidents.Where(r =>
+                    (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(namePart)) ||
+                    (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(namePart)) ||
+                    (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(namePart))
+                );
+            }
+            else if (query.StartsWith("A:", StringComparison.OrdinalIgnoreCase))
+            {
+                string agePart = query.Substring(2).Trim();
+                if (int.TryParse(agePart, out int age))
+                {
+                    filtered = baseResidents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age);
+                }
+                else
+                {
+                    filtered = baseResidents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(agePart));
+                }
+            }
+            else if (query.StartsWith("P:", StringComparison.OrdinalIgnoreCase))
+            {
+                string purposePart = query.Substring(2).Trim().ToLower();
+                filtered = baseResidents.Where(r =>
+                    r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(purposePart))
+                );
+            }
+            else
+            {
+                string lower = query.ToLower();
+                filtered = baseResidents.Where(r =>
+                      (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(lower))
+                   || (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(lower))
+                   || (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(lower))
+                   || (r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(lower))
+                   || (r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(lower)))
+                );
+            }
+
+            // For paging: update cache, recalculate pages, show page 1
+            archivedResidentsCache = filtered.ToList();
+            CalculateTotalPages();
+            currentPage = 1;
+            LoadDataForPage(currentPage);
         }
 
         private string GetPurposeText(ResidentPurpose purpose)
@@ -138,99 +289,6 @@ namespace BarangayApplication
             return "";
         }
 
-        private void Archive_Load(object sender, EventArgs e)
-        {
-            ReadArchivedResidents();
-            SetupSearchBarAutocomplete();
-        }
-
-        private void SearchBar_TextChanged(object sender, EventArgs e)
-        {
-            var SearchBar = sender as TextBox;
-            string query = SearchBar.Text.Trim();
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                ReadArchivedResidents();
-                return;
-            }
-
-            var repo = new ResidentsRepository();
-            var residents = repo.GetArchivedResidents();
-            IEnumerable<Resident> filtered = residents;
-
-            if (query.StartsWith("N:", StringComparison.OrdinalIgnoreCase))
-            {
-                string namePart = query.Substring(2).Trim().ToLower();
-                filtered = residents.Where(r =>
-                    (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(namePart)) ||
-                    (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(namePart)) ||
-                    (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(namePart))
-                );
-            }
-            else if (query.StartsWith("A:", StringComparison.OrdinalIgnoreCase))
-            {
-                string agePart = query.Substring(2).Trim();
-                if (int.TryParse(agePart, out int age))
-                {
-                    filtered = residents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age);
-                }
-                else
-                {
-                    filtered = residents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(agePart));
-                }
-            }
-            else if (query.StartsWith("P:", StringComparison.OrdinalIgnoreCase))
-            {
-                string purposePart = query.Substring(2).Trim().ToLower();
-                filtered = residents.Where(r =>
-                    r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(purposePart))
-                );
-            }
-            else
-            {
-                string lower = query.ToLower();
-                filtered = residents.Where(r =>
-                      (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(lower))
-                   || (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(lower))
-                   || (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(lower))
-                   || (r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(lower))
-                   || (r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(lower)))
-                );
-            }
-
-            DataTable dt = new DataTable();
-            dt.Columns.Add("ID");
-            dt.Columns.Add("Last Name");
-            dt.Columns.Add("First Name");
-            dt.Columns.Add("Middle Name");
-            dt.Columns.Add("Age");
-            dt.Columns.Add("Contact Number");
-            dt.Columns.Add("Purpose");
-
-            foreach (var resident in filtered)
-            {
-                var row = dt.NewRow();
-                row["ID"] = resident.ResidentID;
-                row["Last Name"] = resident.LastName;
-                row["First Name"] = resident.FirstName;
-                row["Middle Name"] = resident.MiddleName;
-                row["Age"] = resident.DateOfBirth != DateTime.MinValue ? CalculateAge(resident.DateOfBirth) : 0;
-                row["Contact Number"] = resident.TelCelNo;
-                row["Purpose"] = resident.Purposes != null && resident.Purposes.Count > 0
-                    ? string.Join(", ", resident.Purposes.Select(GetPurposeText))
-                    : "";
-                dt.Rows.Add(row);
-            }
-
-            dataGridView1.DataSource = dt;
-            if (dataGridView1.Columns["ID"] != null)
-                dataGridView1.Columns["ID"].Visible = false;
-
-            // Make header ALL CAPS
-            foreach (DataGridViewColumn col in dataGridView1.Columns)
-                col.HeaderText = col.HeaderText.ToUpper();
-        }
-
         private int CalculateAge(DateTime dateOfBirth)
         {
             var now = DateTime.Now;
@@ -241,7 +299,6 @@ namespace BarangayApplication
 
         public void AdjustLayoutForFormApplication()
         {
-            // Example to match Data form: hide buttons and extend SearchBar if you have them
             if (this.Controls.ContainsKey("Addbtn"))
                 this.Controls["Addbtn"].Visible = false;
             if (this.Controls.ContainsKey("btnEdit"))
@@ -280,20 +337,15 @@ namespace BarangayApplication
                 return;
             }
 
-            // Show Reason form
             using (var reasonForm = new Reason())
             {
                 if (reasonForm.ShowDialog() == DialogResult.OK)
                 {
                     string restoreReason = reasonForm.ArchiveReason;
-
                     var repo = new ResidentsRepository();
-                    repo.RestoreResident(residentId); // You must implement this method!
-
-                    // Log the action
+                    repo.RestoreResident(residentId);
                     repo.AddUserLog(LoginMenu.CurrentUser.AccountID, "Restored",
                         $"Restored resident: {fullName}. Reason: {restoreReason}");
-
                     ReadArchivedResidents();
                     SetupSearchBarAutocomplete();
                 }

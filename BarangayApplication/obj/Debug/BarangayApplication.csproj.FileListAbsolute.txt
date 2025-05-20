@@ -552,7 +552,6 @@ D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayAppli
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.ExitForms.resources
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Finish.resources
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.FormApplication.resources
-D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Logbook.resources
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.LoginMenu.resources
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.LogoutConfirm.resources
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.MainMenu.resources
@@ -646,3 +645,4 @@ D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayAppli
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Document.NET.dll
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Drawing.NET.dll
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Words.NET.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.AccountItem.resources

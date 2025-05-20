@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using BCrypt.Net;
 
@@ -14,7 +15,7 @@ namespace BarangayApplication
         private const string BackupLocationFile = "backup_location.txt";
         private const string DatabaseName = "sybau_database";
         private const string ServerName = @"localhost,1433";
-        private const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog="+ DatabaseName + ";Integrated Security=True";
+        public const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog="+ DatabaseName + ";Integrated Security=True";
 
         public Settings()
         {
@@ -71,6 +72,29 @@ namespace BarangayApplication
                 }
             }
         }
+        
+        private void EnforceMaxBackups(string backupDirectory, int maxBackups = 20)
+        {
+            var files = Directory.GetFiles(backupDirectory, "*.bak")
+                .Select(f => new FileInfo(f))
+                .OrderBy(f => f.CreationTime)
+                .ToList();
+
+            while (files.Count > maxBackups)
+            {
+                try
+                {
+                    files[0].Delete();
+                    files.RemoveAt(0);
+                }
+                catch (Exception ex)
+                {
+                    // Optionally log deletion error
+                    File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to delete old backup: {ex.Message}\n");
+                    break;
+                }
+            }
+        }
 
         private void btnBackup_Click(object sender, EventArgs e)
         {
@@ -94,6 +118,9 @@ namespace BarangayApplication
                         cmd.ExecuteNonQuery();
                         MessageBox.Show($"Backup successful!\nSaved to: {backupFile}");
                         SaveLastBackup(DateTime.Now); // Save and update the label
+
+                        // Enforce maximum backup files after backup
+                        EnforceMaxBackups(backupDirectory, 20);
                     }
                     catch (Exception ex)
                     {
