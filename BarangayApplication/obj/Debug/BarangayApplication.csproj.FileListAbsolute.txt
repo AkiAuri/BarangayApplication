@@ -643,3 +643,6 @@ C:\Users\Creigh\Downloads\BarangayApplication [May 20, 2025] - Midnight Patch\Ba
 C:\Users\Creigh\Downloads\BarangayApplication [May 20, 2025] - Midnight Patch\BarangayApplication\obj\Debug\BarangayApplication.pdb
 C:\Users\Creigh\Downloads\BarangayApplication [May 20, 2025] - Midnight Patch\BarangayApplication\obj\Debug\BarangayApplication.Reason.resources
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Reason.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Document.NET.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Drawing.NET.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Words.NET.dll

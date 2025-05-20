@@ -10,6 +10,9 @@ using System.Windows.Forms;
 using BarangayApplication.Models;
 using BarangayApplication.Models.Repositories;
 using static BarangayApplication.LoginMenu;
+using System.IO;
+using Xceed.Document.NET;
+using Xceed.Words.NET;
 
 namespace BarangayApplication
 {
@@ -242,7 +245,119 @@ namespace BarangayApplication
 
         private void Viewbtn_Click(object sender, EventArgs e)
         {
-            // For viewing/printing details of a resident
+            if (this.DataGrid.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a resident to view/print.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var selectedRow = this.DataGrid.SelectedRows[0];
+            var idVal = selectedRow.Cells["ID"].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(idVal))
+            {
+                MessageBox.Show("Invalid resident ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            int residentId;
+            if (!int.TryParse(idVal, out residentId))
+            {
+                MessageBox.Show("Invalid resident ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var repo = new ResidentsRepository();
+            var resident = repo.GetApplicant(residentId);
+            if (resident == null)
+            {
+                MessageBox.Show("Resident not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Get first purpose (or ask user if multiple)
+            string purposeType = "";
+            if (resident.Purposes != null && resident.Purposes.Count > 0)
+                purposeType = GetPurposeText(resident.Purposes[0]); // or ask user if ambiguity matters
+
+            string address = resident.Address ?? "(Address not specified)";
+            string clearanceNo = resident.ResidentID.ToString();
+            string printDate = DateTime.Now.ToString("MMMM dd, yyyy");
+            string lastName = resident.LastName ?? "";
+            string firstName = resident.FirstName ?? "";
+            string middleName = resident.MiddleName ?? "";
+
+            // Prompt user where to save
+            using (var saveDlg = new SaveFileDialog())
+            {
+                saveDlg.Filter = "Word Document (*.docx)|*.docx";
+                saveDlg.FileName = $"{lastName}_{firstName}_Clearance.docx";
+                if (saveDlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                string filename = saveDlg.FileName;
+
+                // Create docx
+                var doc = DocX.Create(filename);
+
+                // Header: Clearance No. and Date
+                var para1 = doc.InsertParagraph();
+                para1.Append("Clearance No.: ").FontSize(12);
+                para1.Append(clearanceNo).Bold().FontSize(12);
+                para1.SpacingAfter(5);
+
+                doc.InsertParagraph(printDate)
+                    .FontSize(12)
+                    .SpacingAfter(20);
+
+                // Centered clearance type header
+                string clearanceHeader = $"{purposeType} Clearance";
+                doc.InsertParagraph(clearanceHeader)
+                    .FontSize(14)
+                    .Bold()
+                    .Alignment = Alignment.center;
+
+                doc.InsertParagraph(new string('=', 30) + clearanceHeader + new string('=', 30))
+                    .FontSize(10)
+                    .SpacingAfter(20)
+                    .Alignment = Alignment.center;
+
+                // Body
+                var p = doc.InsertParagraph();
+                p.Append("To Whom this may Concern,\n\n").FontSize(12);
+
+                p.Append("This certifies that the bearer ").FontSize(12)
+                 .Append(lastName).Bold().FontSize(12)
+                 .Append(", ").FontSize(12)
+                 .Append(firstName).Bold().FontSize(12)
+                 .Append(" ").FontSize(12)
+                 .Append(middleName).Bold().FontSize(12)
+                 .Append(" of ").FontSize(12)
+                 .Append(address).Bold().FontSize(12)
+                 .Append(" has been issued a ").FontSize(12)
+                 .Append(purposeType).Bold().FontSize(12)
+                 .Append(" Clearance.").FontSize(12);
+
+                p.SpacingAfter(25);
+
+                // Footer/Signature
+                doc.InsertParagraph("______________________________")
+                    .FontSize(12)
+                    .SpacingBefore(40)
+                    .Alignment = Alignment.right;
+                doc.InsertParagraph("Authorized Officer")
+                    .FontSize(12)
+                    .Alignment = Alignment.right;
+
+                doc.Save();
+
+                MessageBox.Show("Clearance document generated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Optionally, open the file automatically
+                if (MessageBox.Show("Open the generated document?", "Open Document", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(filename);
+                }
+            }
         }
 
         private void SearchBar_TextChanged(object sender, EventArgs e)
