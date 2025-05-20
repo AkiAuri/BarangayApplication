@@ -592,3 +592,15 @@ C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025] - Reworked Jeane\Ba
 C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025] - Reworked Jeane\BarangayApplication\obj\Debug\BarangayApplication.csproj.CoreCompileInputs.cache
 C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025] - Reworked Jeane\BarangayApplication\obj\Debug\BarangayApplication.exe
 C:\Users\Creigh\Downloads\BarangayApplication [May 19, 2025] - Reworked Jeane\BarangayApplication\obj\Debug\BarangayApplication.pdb
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Settings.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BCrypt.Net-Next.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Buffers.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Memory.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Numerics.Vectors.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BCrypt.Net-Next.xml
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Buffers.xml
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Memory.xml
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Numerics.Vectors.xml
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\Barangay.88A64B8F.Up2Date

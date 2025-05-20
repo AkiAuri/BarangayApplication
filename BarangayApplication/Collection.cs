@@ -162,5 +162,11 @@ namespace BarangayApplication
                 default: return null;
             }
         }
+        
+        //Removing this somehow breaks the thing, so I'm just keeping it, lol.
+        private void Collection_Load(object sender, EventArgs e)
+        {
+            // Optional: your startup logic
+        }
     }
 }

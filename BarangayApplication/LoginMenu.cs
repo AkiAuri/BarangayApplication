@@ -6,6 +6,7 @@ using System.Data.Sql;
 using System.Runtime.InteropServices;
 using BarangayApplication.Models.Repositories;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using BCrypt.Net;
 
 namespace BarangayApplication
 {
@@ -27,7 +28,6 @@ namespace BarangayApplication
             int nHeightEllipse // width of ellipse
         );
 
-
         // Instance of the MainMenu form that is shown after a successful login.
         MainMenu mainMenu = new MainMenu();
 
@@ -46,7 +46,7 @@ namespace BarangayApplication
 
         // Creates a SqlConnection to the SQL Server database.
         // Update the connection string as needed for your environment.
-        SqlConnection _conn = new SqlConnection(@"Data Source=.;Initial Catalog=BarangayDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
+        SqlConnection _conn = new SqlConnection(@"Data Source=localhost,1433;Initial Catalog=sybau_database;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
 
         // Event handler for the checkbox that toggles password visibility.
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -65,52 +65,79 @@ namespace BarangayApplication
             }
         }
 
-        // Fix for CS0103: The name 'CurrentUser' does not exist in the current context
-        // Fix for CS0103: The name 'username' does not exist in the current context
-
-        // Assuming 'CurrentUser' is a static class that holds the current user's information,
-        // and 'UserName' is a property of that class. If this class does not exist, it needs to be created.
-        // Additionally, 'username' should be retrieved from the database query result.
+        // Static class to hold current user's information.
         public static class CurrentUser
         {
             public static string AccountID { get; set; }
+            public static string AccountName { get; set; }
+            public static int RoleID { get; set; }
+            public static string RoleName { get; set; }
         }
+
         private void BtnLogin_Click(object sender, EventArgs e)
         {
-            String accountID, passwordHash;
-            accountID = AccountID.Text;
-            passwordHash = Password.Text;
+            string accountName = AccountID.Text.Trim(); // Use AccountID textbox for username
+            string password = Password.Text;     // This is the password entered by the user
+
+            if (string.IsNullOrEmpty(accountName) || string.IsNullOrEmpty(password))
+            {
+                MessageBox.Show("Please enter your Account ID and Password.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                AccountID.Focus();
+                return;
+            }
 
             try
             {
                 _conn.Open();
 
-                string _query = "SELECT * FROM users WHERE accountID = @accountID and passwordHash = @passwordHash";
-                SqlDataAdapter _da = new SqlDataAdapter(_query, _conn);
-                _da.SelectCommand.Parameters.AddWithValue("@accountID", accountID);
-                _da.SelectCommand.Parameters.AddWithValue("@passwordHash", passwordHash);
+                // Query user by username only (do not check password in SQL)
+                string _query = @"SELECT users.accountID, users.accountName, users.roleID, users.passwordHash, UserRoles.roleName
+                                  FROM users 
+                                  INNER JOIN UserRoles ON users.roleID = UserRoles.roleID
+                                  WHERE users.accountName = @accountName";
                 
-                //for logbook username
+                SqlDataAdapter _da = new SqlDataAdapter(_query, _conn);
+                _da.SelectCommand.Parameters.AddWithValue("@accountName", accountName);
+                
                 DataTable _UserTable = new DataTable();
                 _da.Fill(_UserTable);
-                
+
                 if (_UserTable.Rows.Count > 0)
                 {
-                    CurrentUser.AccountID = _UserTable.Rows[0]["accountID"].ToString();
-                    string accountName = _UserTable.Rows[0]["accountName"].ToString();
+                    string storedHash = _UserTable.Rows[0]["passwordHash"].ToString();
+                    // BCrypt password verification
+                    if (BCrypt.Net.BCrypt.Verify(password, storedHash))
+                    {
+                        // Save current user info
+                        CurrentUser.AccountID = _UserTable.Rows[0]["accountID"].ToString();
+                        CurrentUser.AccountName = _UserTable.Rows[0]["accountName"].ToString();
+                        CurrentUser.RoleID = Convert.ToInt32(_UserTable.Rows[0]["roleID"]);
+                        CurrentUser.RoleName = _UserTable.Rows[0]["roleName"].ToString();
 
-                    mainMenu.Show();
-                    this.Hide();
+                        // Log successful login in UserLogs table
+                        string logQuery = @"INSERT INTO UserLogs (Timestamp, UserName, Action, Description)
+                                            VALUES (@Timestamp, @UserName, @Action, @Description)";
+                        using (SqlCommand logCmd = new SqlCommand(logQuery, _conn))
+                        {
+                            logCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+                            logCmd.Parameters.AddWithValue("@UserName", CurrentUser.AccountName);
+                            logCmd.Parameters.AddWithValue("@Action", "Login");
+                            logCmd.Parameters.AddWithValue("@Description", $"User '{CurrentUser.AccountName}' logged in successfully with role '{CurrentUser.RoleName}'.");
+                            logCmd.ExecuteNonQuery();
+                        }
+
+                        mainMenu.Show();
+                        this.Hide();
+                        return;
+                    }
                 }
-                else
-                {
-                    MessageBox.Show("Account ID or password is incorrect.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    AccountID.Clear();
-                    Password.Clear();
-                    AccountID.Focus();
-                } //until here
-            }
 
+                // If we reach here, either Account ID doesn't exist or password is incorrect
+                MessageBox.Show("Invalid Account ID or Password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                AccountID.Clear();
+                Password.Clear();
+                AccountID.Focus();
+            }
             catch (Exception ex)
             {
                 MessageBox.Show("Something went wrong, please try again later or call CS for assistance." + ex,
@@ -132,6 +159,5 @@ namespace BarangayApplication
             mainMenu.Show(); // Display the MainMenu form.
             this.Hide();     // Hide the LoginMenu form.
         }
-
     }
 }
