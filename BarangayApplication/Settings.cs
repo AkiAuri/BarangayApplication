@@ -117,7 +117,8 @@ namespace BarangayApplication
             string restoreQuery = $"RESTORE DATABASE [{DatabaseName}] FROM DISK = '{backupFile}' WITH REPLACE";
             string setMultiUser = $"ALTER DATABASE [{DatabaseName}] SET MULTI_USER";
 
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            string restoreConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
+            using (SqlConnection conn = new SqlConnection(restoreConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand())
                 {
@@ -145,7 +146,6 @@ namespace BarangayApplication
         }
         
         //Account shit.
-        //Account functions
         private void PopulateAdminAccountIDs()
         {
             using (var conn = new SqlConnection(ConnectionString))
