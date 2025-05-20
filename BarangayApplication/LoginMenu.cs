@@ -5,8 +5,8 @@ using System.Data.SqlClient;
 using System.Data.Sql;
 using System.Runtime.InteropServices;
 using BarangayApplication.Models.Repositories;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using BCrypt.Net;
+using BarangayApplication.Helpers; // <-- Add this for AutoBackupHelper
 
 namespace BarangayApplication
 {
@@ -45,7 +45,6 @@ namespace BarangayApplication
         }
 
         // Creates a SqlConnection to the SQL Server database.
-        // Update the connection string as needed for your environment.
         SqlConnection _conn = new SqlConnection(@"Data Source=localhost,1433;Initial Catalog=sybau_database;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
 
         // Event handler for the checkbox that toggles password visibility.
@@ -125,6 +124,13 @@ namespace BarangayApplication
                             logCmd.Parameters.AddWithValue("@Description", $"User '{CurrentUser.AccountName}' logged in successfully with role '{CurrentUser.RoleName}'.");
                             logCmd.ExecuteNonQuery();
                         }
+
+                        // --- AUTO-BACKUP ON LOGIN ---
+                        AutoBackupHelper.CheckAutoBackupOnLogin(
+                            CurrentUser.AccountName,
+                            CurrentUser.RoleName.Equals("Superadmin", StringComparison.OrdinalIgnoreCase)
+                        );
+                        // ----------------------------
 
                         mainMenu.Show();
                         this.Hide();
