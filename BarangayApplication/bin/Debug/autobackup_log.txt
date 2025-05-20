@@ -1,0 +1,20 @@
+2025-05-20 23:16:57 - Auto-backup: First login of new day or superadmin login
+2025-05-20 23:18:01 - Auto-backup: First login of new day or superadmin login
+2025-05-20 23:20:11 - Auto-backup: 10 changes reached
+2025-05-20 23:21:57 - Auto-backup: 10 changes reached
+2025-05-20 23:39:33 - Auto-backup: First login of new day or superadmin login
+2025-05-20 23:44:46 - Auto-backup: First login of new day or superadmin login
+2025-05-20 23:46:45 - Auto-backup: First login of new day or superadmin login
+2025-05-20 23:50:04 - Auto-backup: First login of new day or superadmin login
+2025-05-21 00:16:54 - Auto-backup failed: Cannot open database "NewDatabase" requested by the login. The login failed.
+Login failed for user 'DESKTOP-E5GB2DL\Creigh'.
+2025-05-21 00:18:31 - Auto-backup failed: Database 'NewDatabase' is already open and can only have one user at a time.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 00:19:31 - Auto-backup failed: Database 'NewDatabase' is already open and can only have one user at a time.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 00:20:28 - Auto-backup failed: Database 'NewDatabase' is already open and can only have one user at a time.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 00:23:30 - Auto-backup failed: Database 'NewDatabase' is already open and can only have one user at a time.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 00:37:50 - Auto-backup failed: Database 'NewDatabase' is already open and can only have one user at a time.
+BACKUP DATABASE is terminating abnormally.

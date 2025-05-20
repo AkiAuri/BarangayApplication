@@ -33,6 +33,7 @@ namespace BarangayApplication
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainMenu));
             this.Sidebar = new System.Windows.Forms.Panel();
+            this.settings = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel6 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -41,7 +42,6 @@ namespace BarangayApplication
             this.panel3 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.MainPanel = new System.Windows.Forms.Panel();
-            this.settings = new System.Windows.Forms.Label();
             this.settingsLogo = new System.Windows.Forms.PictureBox();
             this.button4 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
@@ -79,6 +79,20 @@ namespace BarangayApplication
             this.Sidebar.Size = new System.Drawing.Size(251, 861);
             this.Sidebar.TabIndex = 1;
             this.Sidebar.Paint += new System.Windows.Forms.PaintEventHandler(this.Sidebar_Paint);
+            // 
+            // settings
+            // 
+            this.settings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.settings.AutoSize = true;
+            this.settings.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.settings.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.settings.ForeColor = System.Drawing.Color.LightGray;
+            this.settings.Location = new System.Drawing.Point(84, 781);
+            this.settings.Name = "settings";
+            this.settings.Size = new System.Drawing.Size(121, 25);
+            this.settings.TabIndex = 21;
+            this.settings.Text = "SETTINGS";
+            this.settings.Click += new System.EventHandler(this.settings_Click);
             // 
             // panel7
             // 
@@ -153,20 +167,6 @@ namespace BarangayApplication
             this.MainPanel.Size = new System.Drawing.Size(1424, 861);
             this.MainPanel.TabIndex = 2;
             this.MainPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.MainPanel_Paint);
-            // 
-            // settings
-            // 
-            this.settings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.settings.AutoSize = true;
-            this.settings.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.settings.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.settings.ForeColor = System.Drawing.Color.LightGray;
-            this.settings.Location = new System.Drawing.Point(84, 781);
-            this.settings.Name = "settings";
-            this.settings.Size = new System.Drawing.Size(121, 25);
-            this.settings.TabIndex = 21;
-            this.settings.Text = "SETTINGS";
-            this.settings.Click += new System.EventHandler(this.settings_Click);
             // 
             // settingsLogo
             // 
@@ -311,6 +311,7 @@ namespace BarangayApplication
             this.ClientSize = new System.Drawing.Size(1675, 861);
             this.Controls.Add(this.MainPanel);
             this.Controls.Add(this.Sidebar);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainMenu";

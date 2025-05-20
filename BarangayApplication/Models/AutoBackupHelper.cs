@@ -11,7 +11,7 @@ namespace BarangayApplication.Helpers
         private const string BackupLocationFile = "backup_location.txt";
         private const string DatabaseName = "sybau_database";
         private const string ServerName = @"localhost,1433";
-        private const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
+        private const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog="+ DatabaseName +";Integrated Security=True";
 
         // Call this after every data change (create, update, delete)
         public static void IncrementChangeCountAndAutoBackup()
