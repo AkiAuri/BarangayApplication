@@ -138,6 +138,7 @@
     <Compile Include="MainViewForm.Designer.cs">
       <DependentUpon>MainViewForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\AutoBackupHelper.cs" />
     <Compile Include="Models\ChildRelative.cs" />
     <Compile Include="Models\PurposeTypeIds.cs" />
     <Compile Include="Models\Repositories\ResidentsRepository.cs" />

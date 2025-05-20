@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using BarangayApplication.Helpers;
 using BarangayApplication.Models;
 using static BarangayApplication.LoginMenu;
 namespace BarangayApplication.Models.Repositories
@@ -1063,6 +1064,7 @@ namespace BarangayApplication.Models.Repositories
                 }
                 // Add log if needed
                 AddUserLog(CurrentUser.AccountID, "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
+                AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)
             {
@@ -1318,6 +1320,7 @@ namespace BarangayApplication.Models.Repositories
                     }
                 }
                 AddUserLog(CurrentUser.AccountID, "Edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
+                AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)
             {
@@ -1424,6 +1427,7 @@ namespace BarangayApplication.Models.Repositories
                     }
                 }
                 AddUserLog(CurrentUser.AccountID, "Archived", $"Archived resident with ID: {residentId}");
+                AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)
             {
