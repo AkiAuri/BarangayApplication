@@ -9,6 +9,8 @@ namespace BarangayApplication
         public MainMenu()
         {
             InitializeComponent();
+            // Attach the load event handler for role-based UI changes
+            this.Load += MainMenu_Load;
         }
 
         // Event handler for the ExitButton click event.
@@ -71,12 +73,19 @@ namespace BarangayApplication
         {
             loadform(new Logbook()); // Load the Logbook form into the MainPanel.
         }
+
         private void settingsLogo_Click(object sender, EventArgs e)
         {
+            // Extra check for security
+            if (LoginMenu.CurrentUser.RoleID != 1)
+                return;
             loadform(new Settings()); // Load the Settings form into the MainPanel.
         }
+
         private void settings_Click(object sender, EventArgs e)
         {
+            if (LoginMenu.CurrentUser.RoleID != 1)
+                return;
             loadform(new Settings()); // Load the Settings form into the MainPanel.
         }
 
@@ -129,6 +138,17 @@ namespace BarangayApplication
         {
             // Automatically load the Overview form into the MainPanel when MainMenu is opened
             loadform(new Overview());
+
+            // Hide settings controls by default
+            settingsLogo.Visible = false;
+            settings.Visible = false;
+
+            // Show settings controls only for superadmin (roleid 1)
+            if (LoginMenu.CurrentUser.RoleID == 1)
+            {
+                settingsLogo.Visible = true;
+                settings.Visible = true;
+            }
         }
 
         private void Sidebar_Paint(object sender, PaintEventArgs e)
@@ -136,9 +156,6 @@ namespace BarangayApplication
 
         }
 
-        
-
-        
         private void Overview_Click(object sender, EventArgs e)
         {
           
@@ -178,7 +195,5 @@ namespace BarangayApplication
         {
             
         }
-
-        
     }
 }
