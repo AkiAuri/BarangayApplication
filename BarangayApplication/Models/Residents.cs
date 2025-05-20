@@ -26,6 +26,7 @@ namespace BarangayApplication.Models
         public string PaymentFrequency { get; set; } = string.Empty;
         public decimal Height { get; set; }
         public decimal Weight { get; set; }
+        public bool isArchived { get; set; }
 
         // Navigation properties for related tables
         public List<Employment> Employments { get; set; } = new();

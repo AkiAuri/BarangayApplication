@@ -31,25 +31,26 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.btnFinished = new System.Windows.Forms.Button();
-            this.txtAdd = new System.Windows.Forms.TextBox();
+            this.txtReason = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.panel1.Location = new System.Drawing.Point(17, 71);
-            this.panel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.panel1.Location = new System.Drawing.Point(13, 58);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(368, 2);
+            this.panel1.Size = new System.Drawing.Size(276, 2);
             this.panel1.TabIndex = 6;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Franklin Gothic Medium", 22.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(12, 26);
+            this.label1.Location = new System.Drawing.Point(9, 21);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(154, 43);
+            this.label1.Size = new System.Drawing.Size(126, 38);
             this.label1.TabIndex = 5;
             this.label1.Text = "REASON";
             // 
@@ -60,49 +61,51 @@
             this.btnFinished.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFinished.Font = new System.Drawing.Font("Segoe UI", 25.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFinished.ForeColor = System.Drawing.Color.LightGray;
-            this.btnFinished.Location = new System.Drawing.Point(0, 358);
+            this.btnFinished.Location = new System.Drawing.Point(0, 291);
+            this.btnFinished.Margin = new System.Windows.Forms.Padding(2);
             this.btnFinished.Name = "btnFinished";
-            this.btnFinished.Size = new System.Drawing.Size(421, 92);
+            this.btnFinished.Size = new System.Drawing.Size(316, 75);
             this.btnFinished.TabIndex = 0;
             this.btnFinished.Text = "Finish";
             this.btnFinished.UseVisualStyleBackColor = false;
+            this.btnFinished.Click += new System.EventHandler(this.btnFinished_Click_1);
             // 
-            // txtAdd
+            // txtReason
             // 
-            this.txtAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.txtAdd.BackColor = System.Drawing.SystemColors.Window;
-            this.txtAdd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtAdd.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtAdd.Location = new System.Drawing.Point(17, 137);
-            this.txtAdd.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
-            this.txtAdd.Multiline = true;
-            this.txtAdd.Name = "txtAdd";
-            this.txtAdd.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtAdd.Size = new System.Drawing.Size(382, 133);
-            this.txtAdd.TabIndex = 10;
+            this.txtReason.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.txtReason.BackColor = System.Drawing.SystemColors.Window;
+            this.txtReason.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtReason.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtReason.Location = new System.Drawing.Point(13, 111);
+            this.txtReason.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.txtReason.Multiline = true;
+            this.txtReason.Name = "txtReason";
+            this.txtReason.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtReason.Size = new System.Drawing.Size(287, 108);
+            this.txtReason.TabIndex = 10;
             // 
             // Reason
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.ClientSize = new System.Drawing.Size(421, 450);
-            this.Controls.Add(this.txtAdd);
+            this.ClientSize = new System.Drawing.Size(316, 366);
+            this.Controls.Add(this.txtReason);
             this.Controls.Add(this.btnFinished);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Reason";
             this.Text = "Reason";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnFinished;
-        private System.Windows.Forms.TextBox txtAdd;
+        private System.Windows.Forms.TextBox txtReason;
     }
 }

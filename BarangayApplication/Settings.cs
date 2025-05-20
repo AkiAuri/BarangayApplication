@@ -146,11 +146,20 @@ namespace BarangayApplication
         }
         
         //Account shit.
+        
+        // Define a class for display/value pairing
+        public class AccountItem
+        {
+            public int AccountID { get; set; }
+            public string AccountName { get; set; }
+            public override string ToString() => AccountName; // This will be shown in the ComboBox
+        }
+        
         private void PopulateAdminAccountIDs()
         {
             using (var conn = new SqlConnection(ConnectionString))
             {
-                string query = "SELECT accountID FROM users WHERE roleID = 2";
+                string query = "SELECT accountID, accountName FROM users WHERE roleID = 2";
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     try
@@ -161,7 +170,11 @@ namespace BarangayApplication
                             cmbAccountID.Items.Clear();
                             while (reader.Read())
                             {
-                                cmbAccountID.Items.Add(reader["accountID"].ToString());
+                                cmbAccountID.Items.Add(new AccountItem
+                                {
+                                    AccountID = reader.GetInt32(0),
+                                    AccountName = reader.GetString(1)
+                                });
                             }
                         }
                     }
@@ -175,72 +188,87 @@ namespace BarangayApplication
 
         private void cmbAccountID_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string accountID = cmbAccountID.SelectedItem?.ToString();
-            if (string.IsNullOrEmpty(accountID)) return;
-            using (var conn = new SqlConnection(ConnectionString))
-            {
-                string query = "SELECT accountName FROM users WHERE accountID = @accountID";
-                using (var cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@accountID", accountID);
-                    try
-                    {
-                        conn.Open();
-                        var accountName = cmd.ExecuteScalar()?.ToString();
-                        if (txtAccountName != null)
-                            txtAccountName.Text = accountName ?? "";
-                    }
-                    catch
-                    {
-                        if (txtAccountName != null)
-                            txtAccountName.Text = "";
-                    }
-                }
-            }
-            // Always clear the password box when user changes selection!
+            var selected = cmbAccountID.SelectedItem as AccountItem;
+            if (selected == null) return;
+
+            txtAccountName.Text = selected.AccountName ?? "";
+
+            // Always clear the password box on change
             txtNewPassword.Text = "";
         }
-        // THIS IS THE UPDATED FUNCTION FOR 16x HASHING
-        private void btnSetPassword_Click(object sender, EventArgs e)
+        
+       private void btnSetPassword_Click(object sender, EventArgs e)
         {
-            string accountID = cmbAccountID.SelectedItem?.ToString();
-            string newPassword = txtNewPassword.Text;
-            if (string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(newPassword))
+            var selected = cmbAccountID.SelectedItem as AccountItem;
+            if (selected == null)
             {
-                MessageBox.Show("Please select an account and enter a new password.");
+                MessageBox.Show("Please select an account.");
                 return;
             }
-            // Hash password 16 times using bcrypt
-            string hash = newPassword;
-            for (int i = 0; i < 16; i++)
+
+            string newAccountName = txtAccountName.Text.Trim();
+            string newPassword = txtNewPassword.Text;
+
+            // Build the update SQL dynamically
+            bool updateName = !string.IsNullOrEmpty(newAccountName) && newAccountName != selected.AccountName;
+            bool updatePassword = !string.IsNullOrEmpty(newPassword);
+
+            if (!updateName && !updatePassword)
             {
-                hash = BCrypt.Net.BCrypt.HashPassword(hash);
+                MessageBox.Show("No changes to update.");
+                return;
             }
-            using (var conn = new SqlConnection(ConnectionString))
+
+            string setClause = "";
+            if (updateName) setClause += "accountName = @name";
+            if (updatePassword)
             {
-                string query = "UPDATE users SET passwordHash = @hash WHERE accountID = @accountID";
-                using (var cmd = new SqlCommand(query, conn))
+                if (setClause.Length > 0) setClause += ", ";
+                setClause += "passwordHash = @hash";
+            }
+
+            string query = $"UPDATE users SET {setClause} WHERE accountID = @accountID";
+
+            using (var conn = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, conn))
+            {
+                if (updateName)
+                    cmd.Parameters.AddWithValue("@name", newAccountName);
+
+                if (updatePassword)
                 {
+                    // Hash password using bcrypt with work factor 16
+                    string hash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 16);
                     cmd.Parameters.AddWithValue("@hash", hash);
-                    cmd.Parameters.AddWithValue("@accountID", accountID);
-                    try
+                }
+
+                cmd.Parameters.AddWithValue("@accountID", selected.AccountID);
+
+                try
+                {
+                    conn.Open();
+                    int rows = cmd.ExecuteNonQuery();
+                    if (rows > 0)
                     {
-                        conn.Open();
-                        int rows = cmd.ExecuteNonQuery();
-                        if (rows > 0)
-                            MessageBox.Show("Password updated successfully!");
-                        else
-                            MessageBox.Show("Failed to update password.");
+                        string what = (updateName && updatePassword) ? "Account name and password" :
+                                      updateName ? "Account name" : "Password";
+                        MessageBox.Show($"{what} updated successfully!");
+                        // Optionally update the selected AccountItem's name in the ComboBox
+                        if (updateName) selected.AccountName = newAccountName;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        MessageBox.Show("Error: " + ex.Message);
+                        MessageBox.Show("Failed to update account.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
             }
+
             txtNewPassword.Text = "";
         }
-
 
         //Unneeded stuff
         private void label6_Click(object sender, EventArgs e)

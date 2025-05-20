@@ -397,27 +397,27 @@ namespace BarangayApplication.Models.Repositories
 
                     // Query main resident info only (other data is retrieved via additional queries)
                     string sql = @"
-                        SELECT 
-                            ResidentID, 
-                            LastName, 
-                            FirstName, 
-                            MiddleName, 
-                            Address, 
-                            TelCelNo, 
-                            Sex, 
-                            Height, 
-                            Weight, 
-                            DateOfBirth, 
-                            PlaceOfBirth, 
-                            CivilStatus, 
-                            VoterIDNo, 
-                            PollingPlace,
-                            ResidenceType, 
-                            PaymentAmount, 
-                            PaymentFrequency
-                        FROM Residents
-                        ORDER BY ResidentID DESC;";
-
+                                SELECT 
+                                    ResidentID, 
+                                    LastName, 
+                                    FirstName, 
+                                    MiddleName, 
+                                    Address, 
+                                    TelCelNo, 
+                                    Sex, 
+                                    Height, 
+                                    Weight, 
+                                    DateOfBirth, 
+                                    PlaceOfBirth, 
+                                    CivilStatus, 
+                                    VoterIDNo, 
+                                    PollingPlace,
+                                    ResidenceType, 
+                                    PaymentAmount, 
+                                    PaymentFrequency
+                                FROM Residents
+                                WHERE isArchived = 0
+                                ORDER BY ResidentID DESC;";
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
                     {
@@ -655,26 +655,27 @@ namespace BarangayApplication.Models.Repositories
                     // 1. Main Resident info
                     Resident? resident = null;
                     string sql = @"
-                        SELECT 
-                            ResidentID, 
-                            LastName, 
-                            FirstName, 
-                            MiddleName, 
-                            Address, 
-                            TelCelNo, 
-                            Sex, 
-                            Height, 
-                            Weight, 
-                            DateOfBirth, 
-                            PlaceOfBirth, 
-                            CivilStatus, 
-                            VoterIDNo, 
-                            PollingPlace,
-                            ResidenceType, 
-                            PaymentAmount, 
-                            PaymentFrequency
-                        FROM Residents
-                        WHERE ResidentID = @residentId";
+                                SELECT 
+                                    ResidentID, 
+                                    LastName, 
+                                    FirstName, 
+                                    MiddleName, 
+                                    Address, 
+                                    TelCelNo, 
+                                    Sex, 
+                                    Height, 
+                                    Weight, 
+                                    DateOfBirth, 
+                                    PlaceOfBirth, 
+                                    CivilStatus, 
+                                    VoterIDNo, 
+                                    PollingPlace,
+                                    ResidenceType, 
+                                    PaymentAmount, 
+                                    PaymentFrequency
+                                FROM Residents
+                                WHERE isArchived = 0
+                                ORDER BY ResidentID DESC;";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
@@ -1330,12 +1331,13 @@ namespace BarangayApplication.Models.Repositories
         }
         
         /// <summary>
-        /// Deletes a resident record and all related Employment, Spouse, and Purposes records from the database based on the provided residentId.
-        /// The method establishes a database connection, creates DELETE SQL commands with parameters for each related table,
-        /// and executes the commands within a transaction to ensure referential integrity.
+        /// Archives a resident record by setting isArchived=1 based on the provided residentId.
+        /// Related Employment, Spouse, and Purposes records are left intact.
+        /// The method establishes a database connection, creates an UPDATE SQL command with a parameter,
+        /// and executes the command within a transaction to ensure referential integrity.
         /// </summary>
-        /// <param name="residentId">The unique identifier of the resident to be deleted.</param>
-        public void DeleteResident(int residentId)
+        /// <param name="residentId">The unique identifier of the resident to be archived.</param>
+        public void ArchiveResident(int residentId)
         {
             try
             {
@@ -1346,72 +1348,9 @@ namespace BarangayApplication.Models.Repositories
                     {
                         try
                         {
-                            // Child tables must be deleted first, then main Resident
-                            // Order: Spouse-related, then Spouse, Employment, PreviousEmployment, ResidentPurposes, Residents
-
-                            // 1. Delete SpouseEmployment and SpousePreviousEmployment
-                            string sqlGetSpouseIds = "SELECT SpouseID FROM Spouse WHERE ResidentID = @ResidentID;";
-                            var spouseIds = new List<int>();
-                            using (SqlCommand cmd = new SqlCommand(sqlGetSpouseIds, _conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                using (var reader = cmd.ExecuteReader())
-                                {
-                                    while (reader.Read())
-                                    {
-                                        if (!reader.IsDBNull(0))
-                                            spouseIds.Add(reader.GetInt32(0));
-                                    }
-                                }
-                            }
-                            if (spouseIds.Count > 0)
-                            {
-                                string spouseIdList = string.Join(",", spouseIds);
-                                string deleteSpouseEmp = $"DELETE FROM SpouseEmployment WHERE SpouseID IN ({spouseIdList});";
-                                string deleteSpousePrevEmp = $"DELETE FROM SpousePreviousEmployment WHERE SpouseID IN ({spouseIdList});";
-                                using (SqlCommand cmd = new SqlCommand(deleteSpouseEmp, _conn, transaction))
-                                {
-                                    cmd.ExecuteNonQuery();
-                                }
-                                using (SqlCommand cmd = new SqlCommand(deleteSpousePrevEmp, _conn, transaction))
-                                {
-                                    cmd.ExecuteNonQuery();
-                                }
-                            }
-
-                            // 2. Delete Spouse
-                            string sqlSpouse = "DELETE FROM Spouse WHERE ResidentID = @ResidentID;";
-                            using (SqlCommand cmd = new SqlCommand(sqlSpouse, _conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // 3. Delete Employment and PreviousEmployment
-                            string sqlEmployment = "DELETE FROM Employment WHERE ResidentID = @ResidentID;";
-                            using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                cmd.ExecuteNonQuery();
-                            }
-                            string sqlPrevEmployment = "DELETE FROM PreviousEmployment WHERE ResidentID = @ResidentID;";
-                            using (SqlCommand cmd = new SqlCommand(sqlPrevEmployment, _conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // 4. Delete ResidentPurposes
-                            string sqlPurposes = "DELETE FROM ResidentPurposes WHERE ResidentID = @ResidentID;";
-                            using (SqlCommand cmd = new SqlCommand(sqlPurposes, _conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // 5. Delete Resident
-                            string sqlResident = "DELETE FROM Residents WHERE ResidentID = @ResidentID;";
-                            using (SqlCommand cmd = new SqlCommand(sqlResident, _conn, transaction))
+                            // Only update the isArchived column for the resident
+                            string sqlArchive = "UPDATE Residents SET isArchived = 1 WHERE ResidentID = @ResidentID;";
+                            using (SqlCommand cmd = new SqlCommand(sqlArchive, _conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@ResidentID", residentId);
                                 cmd.ExecuteNonQuery();
@@ -1435,6 +1374,85 @@ namespace BarangayApplication.Models.Repositories
                 throw;
             }
         }
+        
+        public List<Resident> GetArchivedResidents()
+        {
+            var residents = new List<Resident>();
+            using (SqlConnection conn = new SqlConnection(_repoconn))
+            {
+                conn.Open();
+                string query = "SELECT * FROM Residents WHERE isArchived = 1";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var resident = new Resident
+                        {
+                            ResidentID = reader["ResidentID"] != DBNull.Value ? Convert.ToInt32(reader["ResidentID"]) : 0,
+                            LastName = reader["LastName"]?.ToString(),
+                            FirstName = reader["FirstName"]?.ToString(),
+                            MiddleName = reader["MiddleName"]?.ToString(),
+                            Address = reader["Address"]?.ToString(),
+                            TelCelNo = reader["TelCelNo"]?.ToString(),
+                            Sex = reader["Sex"]?.ToString(),
+                            DateOfBirth = reader["DateOfBirth"] != DBNull.Value ? Convert.ToDateTime(reader["DateOfBirth"]) : DateTime.MinValue,
+                            PlaceOfBirth = reader["PlaceOfBirth"]?.ToString(),
+                            CivilStatus = reader["CivilStatus"]?.ToString(),
+                            VoterIDNo = reader["VoterIDNo"]?.ToString(),
+                            PollingPlace = reader["PollingPlace"]?.ToString(),
+                            ResidenceType = reader["ResidenceType"]?.ToString(),
+                            PaymentAmount = reader["PaymentAmount"] != DBNull.Value ? Convert.ToDecimal(reader["PaymentAmount"]) : 0,
+                            PaymentFrequency = reader["PaymentFrequency"]?.ToString(),
+                            Height = reader["Height"] != DBNull.Value ? Convert.ToDecimal(reader["Height"]) : 0,
+                            Weight = reader["Weight"] != DBNull.Value ? Convert.ToDecimal(reader["Weight"]) : 0,
+                            isArchived = reader["isArchived"] != DBNull.Value ? Convert.ToBoolean(reader["isArchived"]) : false
+                        };
+                        residents.Add(resident);
+                    }
+                }
+
+                // I FUCKING FORGOT TO ADD PURPOSES
+                if (residents.Count > 0)
+                {
+                    var residentIds = residents.Select(r => r.ResidentID).ToList();
+                    string purposesSql = $@"
+                        SELECT rp.ResidentPurposeID, rp.ResidentID, rp.PurposeTypeID, rp.PurposeOthers, pt.PurposeName
+                        FROM ResidentPurposes rp
+                        INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+                        WHERE rp.ResidentID IN ({string.Join(",", residentIds)})
+                    ";
+                    using (SqlCommand purposesCmd = new SqlCommand(purposesSql, conn))
+                    using (SqlDataReader purposesReader = purposesCmd.ExecuteReader())
+                    {
+                        var purposesDict = new Dictionary<int, List<ResidentPurpose>>();
+                        while (purposesReader.Read())
+                        {
+                            int resId = purposesReader.GetInt32(purposesReader.GetOrdinal("ResidentID"));
+                            var purpose = new ResidentPurpose
+                            {
+                                ResidentPurposeID = purposesReader.GetInt32(purposesReader.GetOrdinal("ResidentPurposeID")),
+                                ResidentID = resId,
+                                PurposeTypeID = purposesReader.GetInt32(purposesReader.GetOrdinal("PurposeTypeID")),
+                                PurposeOthers = purposesReader.IsDBNull(purposesReader.GetOrdinal("PurposeOthers")) ? null : purposesReader.GetString(purposesReader.GetOrdinal("PurposeOthers")),
+                                PurposeType = new PurposeType
+                                {
+                                    PurposeTypeID = purposesReader.GetInt32(purposesReader.GetOrdinal("PurposeTypeID")),
+                                    PurposeName = purposesReader.IsDBNull(purposesReader.GetOrdinal("PurposeName")) ? "" : purposesReader.GetString(purposesReader.GetOrdinal("PurposeName"))
+                                }
+                            };
+                            if (!purposesDict.ContainsKey(resId))
+                                purposesDict[resId] = new List<ResidentPurpose>();
+                            purposesDict[resId].Add(purpose);
+                        }
+                        foreach (var r in residents)
+                            if (purposesDict.ContainsKey(r.ResidentID))
+                                r.Purposes = purposesDict[r.ResidentID];
+                    }
+                }
+                // Hate.A
+            }
+            return residents;
+        }
     }
-    
 }

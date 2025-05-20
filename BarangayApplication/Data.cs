@@ -200,7 +200,7 @@ namespace BarangayApplication
         {
             if (this.DataGrid.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a resident to edit.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please select a resident to archive.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -208,22 +208,37 @@ namespace BarangayApplication
             if (string.IsNullOrWhiteSpace(val))
                 return;
 
-            int applicantId;
-            if (!int.TryParse(val, out applicantId))
+            // Get the name from the DataGrid using your column names
+            var lastName = this.DataGrid.SelectedRows[0].Cells["Last Name"].Value?.ToString();
+            var firstName = this.DataGrid.SelectedRows[0].Cells["First Name"].Value?.ToString();
+            var fullName = $"{firstName} {lastName}".Trim();
+
+            int residentId;
+            if (!int.TryParse(val, out residentId))
             {
                 MessageBox.Show("Invalid resident ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            var repo = new ResidentsRepository();
-            repo.DeleteResident(applicantId);
+            // Show Reason form
+            using (var reasonForm = new Reason())
+            {
+                if (reasonForm.ShowDialog() == DialogResult.OK)
+                {
+                    string archiveReason = reasonForm.ArchiveReason;
 
-            repo.AddUserLog(CurrentUser.AccountID, "Archive", $"Archived resident with ID: {applicantId}"); //logbook code
+                    var repo = new ResidentsRepository();
+                    repo.ArchiveResident(residentId);
 
-            ReadResidents();
-            SetupSearchBarAutocomplete(); // Refresh suggestions after delete
+                    // Log the action using the name and reason
+                    repo.AddUserLog(CurrentUser.AccountID, "Archived",
+                        $"Archived resident: {fullName}. Reason: {archiveReason}");
+
+                    ReadResidents();
+                    SetupSearchBarAutocomplete();
+                }
+            }
         }
-
 
         private void Viewbtn_Click(object sender, EventArgs e)
         {
