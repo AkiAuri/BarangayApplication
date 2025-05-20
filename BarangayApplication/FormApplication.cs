@@ -65,16 +65,16 @@ namespace BarangayApplication
         private void MainContainer_Paint_1(object sender, PaintEventArgs e)
         {
         }
-        private string GetPurposeText(Residents resident)
+        private string GetPurposeText(Resident resident)
         {
             // Method cleared
             return string.Empty;
         }
 
         // Collapsed / cleared methods
-        private void ClearPurposeFlags(Residents resident) { }
-        public void EditResident(Residents resident) { }
-        private void SetPurposeFlags(Residents resident, string purpose) { }
+        private void ClearPurposeFlags(Resident resident) { }
+        public void EditResident(Resident resident) { }
+        private void SetPurposeFlags(Resident resident, string purpose) { }
         private void Finishbtn_Click_1(object sender, EventArgs e) { }
         private void Cancelbtn_Click_1(object sender, EventArgs e) { }
         private void txtHeight_KeyPress(object sender, KeyPressEventArgs e) { }

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using BarangayApplication.Models;
 using static BarangayApplication.LoginMenu;
 namespace BarangayApplication.Models.Repositories
 {
     public class ResidentsRepository
     {
-        private readonly string _repoconn = "Data Source=.;Initial Catalog=BarangayDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
+        private readonly string _repoconn = "Data Source=localhost,1433;Initial Catalog=sybau_database;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 
         /// <summary>
         /// Gets the list of applicant residents. This method connects to the database,
@@ -42,42 +43,58 @@ namespace BarangayApplication.Models.Repositories
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
+                    // This query counts purposes by joining ResidentPurposes and PurposeTypes, grouping by PurposeName
                     string sql = @"
                         SELECT 
-                            SUM(CASE WHEN PurposeResidency = 1 THEN 1 ELSE 0 END) AS Residency,
-                            SUM(CASE WHEN PurposePostalID = 1 THEN 1 ELSE 0 END) AS PostalID,
-                            SUM(CASE WHEN PurposeLocalEmployment = 1 THEN 1 ELSE 0 END) AS LocalEmployment,
-                            SUM(CASE WHEN PurposeMarriage = 1 THEN 1 ELSE 0 END) AS Marriage,
-                            SUM(CASE WHEN PurposeLoan = 1 THEN 1 ELSE 0 END) AS Loan,
-                            SUM(CASE WHEN PurposeMeralco = 1 THEN 1 ELSE 0 END) AS Meralco,
-                            SUM(CASE WHEN PurposeBankTransaction = 1 THEN 1 ELSE 0 END) AS BankTransaction,
-                            SUM(CASE WHEN PurposeTravelAbroad = 1 THEN 1 ELSE 0 END) AS TravelAbroad,
-                            SUM(CASE WHEN PurposeSeniorCitizen = 1 THEN 1 ELSE 0 END) AS SeniorCitizen,
-                            SUM(CASE WHEN PurposeSchool = 1 THEN 1 ELSE 0 END) AS School,
-                            SUM(CASE WHEN PurposeMedical = 1 THEN 1 ELSE 0 END) AS Medical,
-                            SUM(CASE WHEN PurposeBurial = 1 THEN 1 ELSE 0 END) AS Burial,
-                            SUM(CASE WHEN PurposeOthers IS NOT NULL AND PurposeOthers != '' THEN 1 ELSE 0 END) AS Others
-                        FROM Purposes";
+                            pt.PurposeName, COUNT(rp.ResidentPurposeID) AS Count
+                        FROM ResidentPurposes rp
+                        INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+                        GROUP BY pt.PurposeName
+                    ";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
                     {
-                        if (_reader.Read())
+                        while (_reader.Read())
                         {
-                            purposeDistribution["Residency"] = _reader.IsDBNull(0) ? 0 : _reader.GetInt32(0);
-                            purposeDistribution["Postal ID"] = _reader.IsDBNull(1) ? 0 : _reader.GetInt32(1);
-                            purposeDistribution["Local Employment"] = _reader.IsDBNull(2) ? 0 : _reader.GetInt32(2);
-                            purposeDistribution["Marriage"] = _reader.IsDBNull(3) ? 0 : _reader.GetInt32(3);
-                            purposeDistribution["Loan"] = _reader.IsDBNull(4) ? 0 : _reader.GetInt32(4);
-                            purposeDistribution["Meralco"] = _reader.IsDBNull(5) ? 0 : _reader.GetInt32(5);
-                            purposeDistribution["Bank Transaction"] = _reader.IsDBNull(6) ? 0 : _reader.GetInt32(6);
-                            purposeDistribution["Travel Abroad"] = _reader.IsDBNull(7) ? 0 : _reader.GetInt32(7);
-                            purposeDistribution["Senior Citizen"] = _reader.IsDBNull(8) ? 0 : _reader.GetInt32(8);
-                            purposeDistribution["School"] = _reader.IsDBNull(9) ? 0 : _reader.GetInt32(9);
-                            purposeDistribution["Medical"] = _reader.IsDBNull(10) ? 0 : _reader.GetInt32(10);
-                            purposeDistribution["Burial"] = _reader.IsDBNull(11) ? 0 : _reader.GetInt32(11);
-                            purposeDistribution["Others"] = _reader.IsDBNull(12) ? 0 : _reader.GetInt32(12);
+                            string purpose = _reader.IsDBNull(0) ? "" : _reader.GetString(0);
+                            int count = _reader.IsDBNull(1) ? 0 : _reader.GetInt32(1);
+
+                            // Normalize purpose names to match dictionary keys
+                            switch (purpose)
+                            {
+                                case "Residency": purposeDistribution["Residency"] = count; break;
+                                case "PostalID": purposeDistribution["Postal ID"] = count; break;
+                                case "LocalEmployment": purposeDistribution["Local Employment"] = count; break;
+                                case "Marriage": purposeDistribution["Marriage"] = count; break;
+                                case "Loan": purposeDistribution["Loan"] = count; break;
+                                case "Meralco": purposeDistribution["Meralco"] = count; break;
+                                case "BankTransaction": purposeDistribution["Bank Transaction"] = count; break;
+                                case "TravelAbroad": purposeDistribution["Travel Abroad"] = count; break;
+                                case "SeniorCitizen": purposeDistribution["Senior Citizen"] = count; break;
+                                case "School": purposeDistribution["School"] = count; break;
+                                case "Medical": purposeDistribution["Medical"] = count; break;
+                                case "Burial": purposeDistribution["Burial"] = count; break;
+                                case "Others": 
+                                    // For "Others" we sum all ResidentPurposes with PurposeType 'Others' AND a non-null PurposeOthers
+                                    purposeDistribution["Others"] = count; 
+                                    break;
+                                default: break;
+                            }
                         }
+                    }
+
+                    // Additionally, for "Others", count only those with non-null/non-empty PurposeOthers
+                    string othersSql = @"
+                        SELECT COUNT(*) 
+                        FROM ResidentPurposes rp
+                        INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+                        WHERE pt.PurposeName = 'Others' AND rp.PurposeOthers IS NOT NULL AND LTRIM(RTRIM(rp.PurposeOthers)) <> ''
+                    ";
+                    using (SqlCommand _cmd = new SqlCommand(othersSql, _conn))
+                    {
+                        int othersCount = (int)_cmd.ExecuteScalar();
+                        purposeDistribution["Others"] = othersCount;
                     }
                 }
             }
@@ -155,21 +172,27 @@ namespace BarangayApplication.Models.Repositories
                 using (SqlConnection _conn = new SqlConnection(_repoconn))
                 {
                     _conn.Open();
-                    string sql = "SELECT Age FROM Residents";
+                    // No more Age column, so calculate age from DateOfBirth
+                    string sql = "SELECT DateOfBirth FROM Residents";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
                     {
                         while (_reader.Read())
                         {
-                            int age = _reader.IsDBNull(0) ? 0 : _reader.GetInt32(0);
+                            if (_reader.IsDBNull(0)) continue;
+                            DateTime dob = _reader.GetDateTime(0);
 
-                            if (age >= 0 && age <= 30)
+                            // Calculate age
+                            int age = DateTime.Now.Year - dob.Year;
+                            if (DateTime.Now < dob.AddYears(age)) age--;
+
+                            if (age >= 18 && age <= 30)
                                 ageGroups["Youth (18-30)"]++;
                             else if (age >= 31 && age <= 59)
                                 ageGroups["Adults (31-59)"]++;
                             else if (age >= 60)
-                                ageGroups["Seniors (65+)"]++;
+                                ageGroups["Seniors (60+)"]++;
                         }
                     }
                 }
@@ -182,7 +205,6 @@ namespace BarangayApplication.Models.Repositories
 
             return ageGroups;
         }
-        // ...existing code...
 
         // Method to get the logged-in user's account name based on accountID
         private string GetLoggedInUserName(string currentAccountId)
@@ -362,9 +384,9 @@ namespace BarangayApplication.Models.Repositories
         }
         // end of logbook codes
 
-        public List<Residents> GetApplicants()
+        public List<Resident> GetApplicants()
         {
-            var residents = new List<Residents>();
+            var residents = new List<Resident>();
 
             try
             {
@@ -372,76 +394,35 @@ namespace BarangayApplication.Models.Repositories
                 {
                     _conn.Open();
 
-                    // Query only the Residents table and join Employment, Spouse, and Purposes
+                    // Query main resident info only (other data is retrieved via additional queries)
                     string sql = @"
                         SELECT 
-                            r.ResidentID, 
-                            r.LastName, 
-                            r.FirstName, 
-                            r.MiddleName, 
-                            r.Address, 
-                            r.TelCelNo, 
-                            r.Sex, 
-                            r.Height, 
-                            r.Weight, 
-                            r.DateOfBirth, 
-                            r.Age, 
-                            r.PlaceOfBirth, 
-                            r.CivilStatus, 
-                            r.VoterIDNo, 
-                            r.PollingPlace,
-                            r.ResidenceType, 
-                            r.PaymentAmount, 
-                            r.PaymentFrequency,
-
-                            -- Employment
-                            e.EmploymentID,
-                            e.Company, 
-                            e.Position, 
-                            e.LengthOfService, 
-                            e.PreviousCompany, 
-                            e.PreviousPosition, 
-                            e.PreviousLengthOfService,
-
-                            -- Spouse
-                            s.SpouseID,
-                            s.SpouseName, 
-                            s.SpousePhone, 
-                            s.SpouseCompany, 
-                            s.SpousePosition, 
-                            s.SpouseLengthOfService, 
-                            s.SpousePreviousCompany, 
-                            s.SpousePreviousPosition, 
-                            s.SpousePreviousLengthOfService,
-
-                            -- Purposes
-                            p.PurposeID,
-                            p.PurposeResidency, 
-                            p.PurposePostalID, 
-                            p.PurposeLocalEmployment, 
-                            p.PurposeMarriage, 
-                            p.PurposeLoan, 
-                            p.PurposeMeralco, 
-                            p.PurposeBankTransaction, 
-                            p.PurposeTravelAbroad, 
-                            p.PurposeSeniorCitizen, 
-                            p.PurposeSchool, 
-                            p.PurposeMedical, 
-                            p.PurposeBurial, 
-                            p.PurposeOthers
-
-                        FROM Residents r
-                        LEFT JOIN Employment e ON r.ResidentID = e.ResidentID
-                        LEFT JOIN Spouse s ON r.ResidentID = s.ResidentID
-                        LEFT JOIN Purposes p ON r.ResidentID = p.ResidentID
-                        ORDER BY r.ResidentID DESC;";
+                            ResidentID, 
+                            LastName, 
+                            FirstName, 
+                            MiddleName, 
+                            Address, 
+                            TelCelNo, 
+                            Sex, 
+                            Height, 
+                            Weight, 
+                            DateOfBirth, 
+                            PlaceOfBirth, 
+                            CivilStatus, 
+                            VoterIDNo, 
+                            PollingPlace,
+                            ResidenceType, 
+                            PaymentAmount, 
+                            PaymentFrequency
+                        FROM Residents
+                        ORDER BY ResidentID DESC;";
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     using (SqlDataReader _reader = _cmd.ExecuteReader())
                     {
                         while (_reader.Read())
                         {
-                            var resident = new Residents
+                            var resident = new Resident
                             {
                                 ResidentID = _reader.GetInt32(_reader.GetOrdinal("ResidentID")),
                                 LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? "" : _reader.GetString(_reader.GetOrdinal("LastName")),
@@ -453,7 +434,6 @@ namespace BarangayApplication.Models.Repositories
                                 Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
                                 Weight = _reader.IsDBNull(_reader.GetOrdinal("Weight")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Weight")),
                                 DateOfBirth = _reader.IsDBNull(_reader.GetOrdinal("DateOfBirth")) ? DateTime.MinValue : _reader.GetDateTime(_reader.GetOrdinal("DateOfBirth")),
-                                Age = _reader.IsDBNull(_reader.GetOrdinal("Age")) ? 0 : _reader.GetInt32(_reader.GetOrdinal("Age")),
                                 PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? "" : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth")),
                                 CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? "" : _reader.GetString(_reader.GetOrdinal("CivilStatus")),
                                 VoterIDNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? "" : _reader.GetString(_reader.GetOrdinal("VoterIDNo")),
@@ -463,66 +443,186 @@ namespace BarangayApplication.Models.Repositories
                                 PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? "" : _reader.GetString(_reader.GetOrdinal("PaymentFrequency")),
                             };
 
-                            // Employment info (may be null)
-                            if (!_reader.IsDBNull(_reader.GetOrdinal("EmploymentID")))
-                            {
-                                resident.Employment = new Employment
-                                {
-                                    EmploymentID = _reader.GetInt32(_reader.GetOrdinal("EmploymentID")),
-                                    ResidentID = resident.ResidentID,
-                                    Company = _reader.IsDBNull(_reader.GetOrdinal("Company")) ? "" : _reader.GetString(_reader.GetOrdinal("Company")),
-                                    Position = _reader.IsDBNull(_reader.GetOrdinal("Position")) ? "" : _reader.GetString(_reader.GetOrdinal("Position")),
-                                    LengthOfService = _reader.IsDBNull(_reader.GetOrdinal("LengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("LengthOfService")),
-                                    PreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("PreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousCompany")),
-                                    PreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("PreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousPosition")),
-                                    PreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("PreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousLengthOfService"))
-                                };
-                            }
-
-                            // Spouse info (may be null)
-                            if (!_reader.IsDBNull(_reader.GetOrdinal("SpouseID")))
-                            {
-                                resident.Spouse = new Spouse
-                                {
-                                    SpouseID = _reader.GetInt32(_reader.GetOrdinal("SpouseID")),
-                                    ResidentID = resident.ResidentID,
-                                    SpouseName = _reader.IsDBNull(_reader.GetOrdinal("SpouseName")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseName")),
-                                    SpousePhone = _reader.IsDBNull(_reader.GetOrdinal("SpousePhone")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePhone")),
-                                    SpouseCompany = _reader.IsDBNull(_reader.GetOrdinal("SpouseCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseCompany")),
-                                    SpousePosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePosition")),
-                                    SpouseLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpouseLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseLengthOfService")),
-                                    SpousePreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousCompany")),
-                                    SpousePreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousPosition")),
-                                    SpousePreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousLengthOfService"))
-                                };
-                            }
-
-                            // Purposes info (may be null)
-                            if (!_reader.IsDBNull(_reader.GetOrdinal("PurposeID")))
-                            {
-                                resident.Purposes = new Purposes
-                                {
-                                    PurposeID = _reader.GetInt32(_reader.GetOrdinal("PurposeID")),
-                                    ResidentID = resident.ResidentID,
-                                    PurposeResidency = !_reader.IsDBNull(_reader.GetOrdinal("PurposeResidency")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeResidency")),
-                                    PurposePostalID = !_reader.IsDBNull(_reader.GetOrdinal("PurposePostalID")) && _reader.GetBoolean(_reader.GetOrdinal("PurposePostalID")),
-                                    PurposeLocalEmployment = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLocalEmployment")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLocalEmployment")),
-                                    PurposeMarriage = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMarriage")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMarriage")),
-                                    PurposeLoan = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLoan")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLoan")),
-                                    PurposeMeralco = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMeralco")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMeralco")),
-                                    PurposeBankTransaction = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBankTransaction")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBankTransaction")),
-                                    PurposeTravelAbroad = !_reader.IsDBNull(_reader.GetOrdinal("PurposeTravelAbroad")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeTravelAbroad")),
-                                    PurposeSeniorCitizen = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSeniorCitizen")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSeniorCitizen")),
-                                    PurposeSchool = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSchool")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSchool")),
-                                    PurposeMedical = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMedical")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMedical")),
-                                    PurposeBurial = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBurial")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBurial")),
-                                    PurposeOthers = _reader.IsDBNull(_reader.GetOrdinal("PurposeOthers")) ? "" : _reader.GetString(_reader.GetOrdinal("PurposeOthers"))
-                                };
-                            }
-
                             residents.Add(resident);
                         }
                     }
+
+                    // Bulk load other info for all residents (use dictionaries for efficient lookup)
+                    var residentIds = residents.Select(r => r.ResidentID).ToList();
+
+                    // Employment
+                    var employmentDict = new Dictionary<int, List<Employment>>();
+                    if (residentIds.Count > 0)
+                    {
+                        string empSql = $"SELECT EmploymentID, ResidentID, Company, Position, LengthOfService FROM Employment WHERE ResidentID IN ({string.Join(",", residentIds)})";
+                        using (SqlCommand empCmd = new SqlCommand(empSql, _conn))
+                        using (SqlDataReader empReader = empCmd.ExecuteReader())
+                        {
+                            while (empReader.Read())
+                            {
+                                int resId = empReader.GetInt32(empReader.GetOrdinal("ResidentID"));
+                                var emp = new Employment
+                                {
+                                    EmploymentID = empReader.GetInt32(empReader.GetOrdinal("EmploymentID")),
+                                    ResidentID = resId,
+                                    Company = empReader.IsDBNull(empReader.GetOrdinal("Company")) ? "" : empReader.GetString(empReader.GetOrdinal("Company")),
+                                    Position = empReader.IsDBNull(empReader.GetOrdinal("Position")) ? "" : empReader.GetString(empReader.GetOrdinal("Position")),
+                                    LengthOfService = empReader.IsDBNull(empReader.GetOrdinal("LengthOfService")) ? "" : empReader.GetString(empReader.GetOrdinal("LengthOfService"))
+                                };
+                                if (!employmentDict.ContainsKey(resId))
+                                    employmentDict[resId] = new List<Employment>();
+                                employmentDict[resId].Add(emp);
+                            }
+                        }
+                    }
+                    foreach (var r in residents)
+                        if (employmentDict.ContainsKey(r.ResidentID))
+                            r.Employments = employmentDict[r.ResidentID];
+
+                    // Previous Employment
+                    var prevEmpDict = new Dictionary<int, List<PreviousEmployment>>();
+                    if (residentIds.Count > 0)
+                    {
+                        string prevEmpSql = $"SELECT PreviousEmploymentID, ResidentID, Company, Position, LengthOfService FROM PreviousEmployment WHERE ResidentID IN ({string.Join(",", residentIds)})";
+                        using (SqlCommand prevEmpCmd = new SqlCommand(prevEmpSql, _conn))
+                        using (SqlDataReader prevEmpReader = prevEmpCmd.ExecuteReader())
+                        {
+                            while (prevEmpReader.Read())
+                            {
+                                int resId = prevEmpReader.GetInt32(prevEmpReader.GetOrdinal("ResidentID"));
+                                var prevEmp = new PreviousEmployment
+                                {
+                                    PreviousEmploymentID = prevEmpReader.GetInt32(prevEmpReader.GetOrdinal("PreviousEmploymentID")),
+                                    ResidentID = resId,
+                                    Company = prevEmpReader.IsDBNull(prevEmpReader.GetOrdinal("Company")) ? "" : prevEmpReader.GetString(prevEmpReader.GetOrdinal("Company")),
+                                    Position = prevEmpReader.IsDBNull(prevEmpReader.GetOrdinal("Position")) ? "" : prevEmpReader.GetString(prevEmpReader.GetOrdinal("Position")),
+                                    LengthOfService = prevEmpReader.IsDBNull(prevEmpReader.GetOrdinal("LengthOfService")) ? "" : prevEmpReader.GetString(prevEmpReader.GetOrdinal("LengthOfService"))
+                                };
+                                if (!prevEmpDict.ContainsKey(resId))
+                                    prevEmpDict[resId] = new List<PreviousEmployment>();
+                                prevEmpDict[resId].Add(prevEmp);
+                            }
+                        }
+                    }
+                    foreach (var r in residents)
+                        if (prevEmpDict.ContainsKey(r.ResidentID))
+                            r.PreviousEmployments = prevEmpDict[r.ResidentID];
+
+                    // Spouse, SpouseEmployment, SpousePreviousEmployment
+                    var spouseDict = new Dictionary<int, Spouse>();
+                    if (residentIds.Count > 0)
+                    {
+                        string spouseSql = $"SELECT SpouseID, ResidentID, SpouseName, SpousePhone FROM Spouse WHERE ResidentID IN ({string.Join(",", residentIds)})";
+                        using (SqlCommand spouseCmd = new SqlCommand(spouseSql, _conn))
+                        using (SqlDataReader spouseReader = spouseCmd.ExecuteReader())
+                        {
+                            while (spouseReader.Read())
+                            {
+                                int resId = spouseReader.GetInt32(spouseReader.GetOrdinal("ResidentID"));
+                                var sp = new Spouse
+                                {
+                                    SpouseID = spouseReader.GetInt32(spouseReader.GetOrdinal("SpouseID")),
+                                    ResidentID = resId,
+                                    SpouseName = spouseReader.IsDBNull(spouseReader.GetOrdinal("SpouseName")) ? "" : spouseReader.GetString(spouseReader.GetOrdinal("SpouseName")),
+                                    SpousePhone = spouseReader.IsDBNull(spouseReader.GetOrdinal("SpousePhone")) ? "" : spouseReader.GetString(spouseReader.GetOrdinal("SpousePhone")),
+                                };
+                                spouseDict[resId] = sp;
+                            }
+                        }
+
+                        // SpouseEmployment
+                        string spouseEmpSql = $"SELECT SpouseEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpouseEmployment WHERE SpouseID IN (SELECT SpouseID FROM Spouse WHERE ResidentID IN ({string.Join(",", residentIds)}))";
+                        using (SqlCommand spouseEmpCmd = new SqlCommand(spouseEmpSql, _conn))
+                        using (SqlDataReader spouseEmpReader = spouseEmpCmd.ExecuteReader())
+                        {
+                            var spouseEmpDict = new Dictionary<int, List<SpouseEmployment>>();
+                            while (spouseEmpReader.Read())
+                            {
+                                int spouseId = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseID"));
+                                var spEmp = new SpouseEmployment
+                                {
+                                    SpouseEmploymentID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseEmploymentID")),
+                                    SpouseID = spouseId,
+                                    Company = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Company")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Company")),
+                                    Position = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Position")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Position")),
+                                    LengthOfService = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("LengthOfService")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("LengthOfService"))
+                                };
+                                if (!spouseEmpDict.ContainsKey(spouseId))
+                                    spouseEmpDict[spouseId] = new List<SpouseEmployment>();
+                                spouseEmpDict[spouseId].Add(spEmp);
+                            }
+                            foreach (var sp in spouseDict.Values)
+                                if (spouseEmpDict.ContainsKey(sp.SpouseID))
+                                    sp.Employments = spouseEmpDict[sp.SpouseID];
+                        }
+
+                        // SpousePreviousEmployment
+                        string spousePrevEmpSql = $"SELECT SpousePrevEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpousePreviousEmployment WHERE SpouseID IN (SELECT SpouseID FROM Spouse WHERE ResidentID IN ({string.Join(",", residentIds)}))";
+                        using (SqlCommand spousePrevEmpCmd = new SqlCommand(spousePrevEmpSql, _conn))
+                        using (SqlDataReader spousePrevEmpReader = spousePrevEmpCmd.ExecuteReader())
+                        {
+                            var spousePrevEmpDict = new Dictionary<int, List<SpousePreviousEmployment>>();
+                            while (spousePrevEmpReader.Read())
+                            {
+                                int spouseId = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpouseID"));
+                                var spPrevEmp = new SpousePreviousEmployment
+                                {
+                                    SpousePrevEmploymentID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpousePrevEmploymentID")),
+                                    SpouseID = spouseId,
+                                    Company = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Company")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Company")),
+                                    Position = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Position")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Position")),
+                                    LengthOfService = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("LengthOfService")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("LengthOfService"))
+                                };
+                                if (!spousePrevEmpDict.ContainsKey(spouseId))
+                                    spousePrevEmpDict[spouseId] = new List<SpousePreviousEmployment>();
+                                spousePrevEmpDict[spouseId].Add(spPrevEmp);
+                            }
+                            foreach (var sp in spouseDict.Values)
+                                if (spousePrevEmpDict.ContainsKey(sp.SpouseID))
+                                    sp.PreviousEmployments = spousePrevEmpDict[sp.SpouseID];
+                        }
+                    }
+                    foreach (var r in residents)
+                        if (spouseDict.ContainsKey(r.ResidentID))
+                            r.Spouse = spouseDict[r.ResidentID];
+
+                    // Purposes (ResidentPurposes, PurposeTypes)
+                    var purposesDict = new Dictionary<int, List<ResidentPurpose>>();
+                    if (residentIds.Count > 0)
+                    {
+                        string purposesSql = $@"
+                            SELECT rp.ResidentPurposeID, rp.ResidentID, rp.PurposeTypeID, rp.PurposeOthers, pt.PurposeName 
+                            FROM ResidentPurposes rp
+                            INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+                            WHERE rp.ResidentID IN ({string.Join(",", residentIds)})
+                        ";
+                        using (SqlCommand purposesCmd = new SqlCommand(purposesSql, _conn))
+                        using (SqlDataReader purposesReader = purposesCmd.ExecuteReader())
+                        {
+                            while (purposesReader.Read())
+                            {
+                                int resId = purposesReader.GetInt32(purposesReader.GetOrdinal("ResidentID"));
+                                var purpose = new ResidentPurpose
+                                {
+                                    ResidentPurposeID = purposesReader.GetInt32(purposesReader.GetOrdinal("ResidentPurposeID")),
+                                    ResidentID = resId,
+                                    PurposeTypeID = purposesReader.GetInt32(purposesReader.GetOrdinal("PurposeTypeID")),
+                                    PurposeOthers = purposesReader.IsDBNull(purposesReader.GetOrdinal("PurposeOthers")) ? null : purposesReader.GetString(purposesReader.GetOrdinal("PurposeOthers")),
+                                    PurposeType = new PurposeType
+                                    {
+                                        PurposeTypeID = purposesReader.GetInt32(purposesReader.GetOrdinal("PurposeTypeID")),
+                                        PurposeName = purposesReader.IsDBNull(purposesReader.GetOrdinal("PurposeName")) ? "" : purposesReader.GetString(purposesReader.GetOrdinal("PurposeName"))
+                                    }
+                                };
+                                if (!purposesDict.ContainsKey(resId))
+                                    purposesDict[resId] = new List<ResidentPurpose>();
+                                purposesDict[resId].Add(purpose);
+                            }
+                        }
+                    }
+                    foreach (var r in residents)
+                        if (purposesDict.ContainsKey(r.ResidentID))
+                            r.Purposes = purposesDict[r.ResidentID];
                 }
             }
             catch (Exception ex)
@@ -543,7 +643,7 @@ namespace BarangayApplication.Models.Repositories
         /// </summary>
         /// <param name="residentId">The ID of the resident to be retrieved.</param>
         /// <returns>A Residents object if found; otherwise, null.</returns>
-        public Residents? GetApplicant(int residentId)
+        public Resident? GetApplicant(int residentId)
         {
             try
             {
@@ -551,68 +651,30 @@ namespace BarangayApplication.Models.Repositories
                 {
                     _conn.Open();
 
+                    // Main Resident info
                     string sql = @"
                         SELECT 
-                            r.ResidentID, 
-                            r.LastName, 
-                            r.FirstName, 
-                            r.MiddleName, 
-                            r.Address, 
-                            r.TelCelNo, 
-                            r.Sex, 
-                            r.Height, 
-                            r.Weight, 
-                            r.DateOfBirth, 
-                            r.Age, 
-                            r.PlaceOfBirth, 
-                            r.CivilStatus, 
-                            r.VoterIDNo, 
-                            r.PollingPlace,
-                            r.ResidenceType, 
-                            r.PaymentAmount, 
-                            r.PaymentFrequency,
+                            ResidentID, 
+                            LastName, 
+                            FirstName, 
+                            MiddleName, 
+                            Address, 
+                            TelCelNo, 
+                            Sex, 
+                            Height, 
+                            Weight, 
+                            DateOfBirth, 
+                            PlaceOfBirth, 
+                            CivilStatus, 
+                            VoterIDNo, 
+                            PollingPlace,
+                            ResidenceType, 
+                            PaymentAmount, 
+                            PaymentFrequency
+                        FROM Residents
+                        WHERE ResidentID = @residentId";
 
-                            -- Employment
-                            e.EmploymentID,
-                            e.Company, 
-                            e.Position, 
-                            e.LengthOfService, 
-                            e.PreviousCompany, 
-                            e.PreviousPosition, 
-                            e.PreviousLengthOfService,
-
-                            -- Spouse
-                            s.SpouseID,
-                            s.SpouseName, 
-                            s.SpousePhone, 
-                            s.SpouseCompany, 
-                            s.SpousePosition, 
-                            s.SpouseLengthOfService, 
-                            s.SpousePreviousCompany, 
-                            s.SpousePreviousPosition, 
-                            s.SpousePreviousLengthOfService,
-
-                            -- Purposes
-                            p.PurposeID,
-                            p.PurposeResidency, 
-                            p.PurposePostalID, 
-                            p.PurposeLocalEmployment, 
-                            p.PurposeMarriage, 
-                            p.PurposeLoan, 
-                            p.PurposeMeralco, 
-                            p.PurposeBankTransaction, 
-                            p.PurposeTravelAbroad, 
-                            p.PurposeSeniorCitizen, 
-                            p.PurposeSchool, 
-                            p.PurposeMedical, 
-                            p.PurposeBurial, 
-                            p.PurposeOthers
-
-                        FROM Residents r
-                        LEFT JOIN Employment e ON r.ResidentID = e.ResidentID
-                        LEFT JOIN Spouse s ON r.ResidentID = s.ResidentID
-                        LEFT JOIN Purposes p ON r.ResidentID = p.ResidentID
-                        WHERE r.ResidentID = @residentId;";
+                    Resident? resident = null;
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
@@ -622,89 +684,174 @@ namespace BarangayApplication.Models.Repositories
                         {
                             if (_reader.Read())
                             {
-                                Residents resident = new Residents();
-
-                                // Residents fields
-                                resident.ResidentID = _reader.GetInt32(_reader.GetOrdinal("ResidentID"));
-                                resident.LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? "" : _reader.GetString(_reader.GetOrdinal("LastName"));
-                                resident.FirstName = _reader.IsDBNull(_reader.GetOrdinal("FirstName")) ? "" : _reader.GetString(_reader.GetOrdinal("FirstName"));
-                                resident.MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName"));
-                                resident.Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address"));
-                                resident.TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo"));
-                                resident.Sex = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex"));
-                                resident.Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height"));
-                                resident.Weight = _reader.IsDBNull(_reader.GetOrdinal("Weight")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Weight"));
-                                resident.DateOfBirth = _reader.IsDBNull(_reader.GetOrdinal("DateOfBirth")) ? DateTime.MinValue : _reader.GetDateTime(_reader.GetOrdinal("DateOfBirth"));
-                                resident.Age = _reader.IsDBNull(_reader.GetOrdinal("Age")) ? 0 : _reader.GetInt32(_reader.GetOrdinal("Age"));
-                                resident.PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? "" : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth"));
-                                resident.CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? "" : _reader.GetString(_reader.GetOrdinal("CivilStatus"));
-                                resident.VoterIDNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? "" : _reader.GetString(_reader.GetOrdinal("VoterIDNo"));
-                                resident.PollingPlace = _reader.IsDBNull(_reader.GetOrdinal("PollingPlace")) ? "" : _reader.GetString(_reader.GetOrdinal("PollingPlace"));
-                                resident.ResidenceType = _reader.IsDBNull(_reader.GetOrdinal("ResidenceType")) ? "" : _reader.GetString(_reader.GetOrdinal("ResidenceType"));
-                                resident.PaymentAmount = _reader.IsDBNull(_reader.GetOrdinal("PaymentAmount")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("PaymentAmount"));
-                                resident.PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? "" : _reader.GetString(_reader.GetOrdinal("PaymentFrequency"));
-
-                                // Employment (if exists)
-                                if (!_reader.IsDBNull(_reader.GetOrdinal("EmploymentID")))
+                                resident = new Resident
                                 {
-                                    resident.Employment = new Employment
-                                    {
-                                        EmploymentID = _reader.GetInt32(_reader.GetOrdinal("EmploymentID")),
-                                        ResidentID = resident.ResidentID,
-                                        Company = _reader.IsDBNull(_reader.GetOrdinal("Company")) ? "" : _reader.GetString(_reader.GetOrdinal("Company")),
-                                        Position = _reader.IsDBNull(_reader.GetOrdinal("Position")) ? "" : _reader.GetString(_reader.GetOrdinal("Position")),
-                                        LengthOfService = _reader.IsDBNull(_reader.GetOrdinal("LengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("LengthOfService")),
-                                        PreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("PreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousCompany")),
-                                        PreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("PreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousPosition")),
-                                        PreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("PreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("PreviousLengthOfService"))
-                                    };
-                                }
-
-                                // Spouse (if exists)
-                                if (!_reader.IsDBNull(_reader.GetOrdinal("SpouseID")))
-                                {
-                                    resident.Spouse = new Spouse
-                                    {
-                                        SpouseID = _reader.GetInt32(_reader.GetOrdinal("SpouseID")),
-                                        ResidentID = resident.ResidentID,
-                                        SpouseName = _reader.IsDBNull(_reader.GetOrdinal("SpouseName")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseName")),
-                                        SpousePhone = _reader.IsDBNull(_reader.GetOrdinal("SpousePhone")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePhone")),
-                                        SpouseCompany = _reader.IsDBNull(_reader.GetOrdinal("SpouseCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseCompany")),
-                                        SpousePosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePosition")),
-                                        SpouseLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpouseLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpouseLengthOfService")),
-                                        SpousePreviousCompany = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousCompany")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousCompany")),
-                                        SpousePreviousPosition = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousPosition")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousPosition")),
-                                        SpousePreviousLengthOfService = _reader.IsDBNull(_reader.GetOrdinal("SpousePreviousLengthOfService")) ? "" : _reader.GetString(_reader.GetOrdinal("SpousePreviousLengthOfService"))
-                                    };
-                                }
-
-                                // Purposes (if exists)
-                                if (!_reader.IsDBNull(_reader.GetOrdinal("PurposeID")))
-                                {
-                                    resident.Purposes = new Purposes
-                                    {
-                                        PurposeID = _reader.GetInt32(_reader.GetOrdinal("PurposeID")),
-                                        ResidentID = resident.ResidentID,
-                                        PurposeResidency = !_reader.IsDBNull(_reader.GetOrdinal("PurposeResidency")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeResidency")),
-                                        PurposePostalID = !_reader.IsDBNull(_reader.GetOrdinal("PurposePostalID")) && _reader.GetBoolean(_reader.GetOrdinal("PurposePostalID")),
-                                        PurposeLocalEmployment = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLocalEmployment")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLocalEmployment")),
-                                        PurposeMarriage = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMarriage")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMarriage")),
-                                        PurposeLoan = !_reader.IsDBNull(_reader.GetOrdinal("PurposeLoan")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeLoan")),
-                                        PurposeMeralco = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMeralco")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMeralco")),
-                                        PurposeBankTransaction = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBankTransaction")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBankTransaction")),
-                                        PurposeTravelAbroad = !_reader.IsDBNull(_reader.GetOrdinal("PurposeTravelAbroad")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeTravelAbroad")),
-                                        PurposeSeniorCitizen = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSeniorCitizen")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSeniorCitizen")),
-                                        PurposeSchool = !_reader.IsDBNull(_reader.GetOrdinal("PurposeSchool")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeSchool")),
-                                        PurposeMedical = !_reader.IsDBNull(_reader.GetOrdinal("PurposeMedical")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeMedical")),
-                                        PurposeBurial = !_reader.IsDBNull(_reader.GetOrdinal("PurposeBurial")) && _reader.GetBoolean(_reader.GetOrdinal("PurposeBurial")),
-                                        PurposeOthers = _reader.IsDBNull(_reader.GetOrdinal("PurposeOthers")) ? "" : _reader.GetString(_reader.GetOrdinal("PurposeOthers"))
-                                    };
-                                }
-
-                                return resident;
+                                    ResidentID = _reader.GetInt32(_reader.GetOrdinal("ResidentID")),
+                                    LastName = _reader.IsDBNull(_reader.GetOrdinal("LastName")) ? "" : _reader.GetString(_reader.GetOrdinal("LastName")),
+                                    FirstName = _reader.IsDBNull(_reader.GetOrdinal("FirstName")) ? "" : _reader.GetString(_reader.GetOrdinal("FirstName")),
+                                    MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName")),
+                                    Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address")),
+                                    TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo")),
+                                    Sex = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex")),
+                                    Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
+                                    Weight = _reader.IsDBNull(_reader.GetOrdinal("Weight")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Weight")),
+                                    DateOfBirth = _reader.IsDBNull(_reader.GetOrdinal("DateOfBirth")) ? DateTime.MinValue : _reader.GetDateTime(_reader.GetOrdinal("DateOfBirth")),
+                                    PlaceOfBirth = _reader.IsDBNull(_reader.GetOrdinal("PlaceOfBirth")) ? "" : _reader.GetString(_reader.GetOrdinal("PlaceOfBirth")),
+                                    CivilStatus = _reader.IsDBNull(_reader.GetOrdinal("CivilStatus")) ? "" : _reader.GetString(_reader.GetOrdinal("CivilStatus")),
+                                    VoterIDNo = _reader.IsDBNull(_reader.GetOrdinal("VoterIDNo")) ? "" : _reader.GetString(_reader.GetOrdinal("VoterIDNo")),
+                                    PollingPlace = _reader.IsDBNull(_reader.GetOrdinal("PollingPlace")) ? "" : _reader.GetString(_reader.GetOrdinal("PollingPlace")),
+                                    ResidenceType = _reader.IsDBNull(_reader.GetOrdinal("ResidenceType")) ? "" : _reader.GetString(_reader.GetOrdinal("ResidenceType")),
+                                    PaymentAmount = _reader.IsDBNull(_reader.GetOrdinal("PaymentAmount")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("PaymentAmount")),
+                                    PaymentFrequency = _reader.IsDBNull(_reader.GetOrdinal("PaymentFrequency")) ? "" : _reader.GetString(_reader.GetOrdinal("PaymentFrequency")),
+                                };
                             }
                         }
                     }
+
+                    if (resident == null)
+                        return null;
+
+                    // Related Employment
+                    string empSql = "SELECT EmploymentID, ResidentID, Company, Position, LengthOfService FROM Employment WHERE ResidentID = @residentId";
+                    using (SqlCommand empCmd = new SqlCommand(empSql, _conn))
+                    {
+                        empCmd.Parameters.AddWithValue("@residentId", residentId);
+                        using (SqlDataReader empReader = empCmd.ExecuteReader())
+                        {
+                            while (empReader.Read())
+                            {
+                                var emp = new Employment
+                                {
+                                    EmploymentID = empReader.GetInt32(empReader.GetOrdinal("EmploymentID")),
+                                    ResidentID = empReader.GetInt32(empReader.GetOrdinal("ResidentID")),
+                                    Company = empReader.IsDBNull(empReader.GetOrdinal("Company")) ? "" : empReader.GetString(empReader.GetOrdinal("Company")),
+                                    Position = empReader.IsDBNull(empReader.GetOrdinal("Position")) ? "" : empReader.GetString(empReader.GetOrdinal("Position")),
+                                    LengthOfService = empReader.IsDBNull(empReader.GetOrdinal("LengthOfService")) ? "" : empReader.GetString(empReader.GetOrdinal("LengthOfService"))
+                                };
+                                resident.Employments.Add(emp);
+                            }
+                        }
+                    }
+
+                    // Previous Employment
+                    string prevEmpSql = "SELECT PreviousEmploymentID, ResidentID, Company, Position, LengthOfService FROM PreviousEmployment WHERE ResidentID = @residentId";
+                    using (SqlCommand prevEmpCmd = new SqlCommand(prevEmpSql, _conn))
+                    {
+                        prevEmpCmd.Parameters.AddWithValue("@residentId", residentId);
+                        using (SqlDataReader prevEmpReader = prevEmpCmd.ExecuteReader())
+                        {
+                            while (prevEmpReader.Read())
+                            {
+                                var prevEmp = new PreviousEmployment
+                                {
+                                    PreviousEmploymentID = prevEmpReader.GetInt32(prevEmpReader.GetOrdinal("PreviousEmploymentID")),
+                                    ResidentID = prevEmpReader.GetInt32(prevEmpReader.GetOrdinal("ResidentID")),
+                                    Company = prevEmpReader.IsDBNull(prevEmpReader.GetOrdinal("Company")) ? "" : prevEmpReader.GetString(prevEmpReader.GetOrdinal("Company")),
+                                    Position = prevEmpReader.IsDBNull(prevEmpReader.GetOrdinal("Position")) ? "" : prevEmpReader.GetString(prevEmpReader.GetOrdinal("Position")),
+                                    LengthOfService = prevEmpReader.IsDBNull(prevEmpReader.GetOrdinal("LengthOfService")) ? "" : prevEmpReader.GetString(prevEmpReader.GetOrdinal("LengthOfService"))
+                                };
+                                resident.PreviousEmployments.Add(prevEmp);
+                            }
+                        }
+                    }
+
+                    // Spouse (if exists)
+                    string spouseSql = "SELECT SpouseID, ResidentID, SpouseName, SpousePhone FROM Spouse WHERE ResidentID = @residentId";
+                    using (SqlCommand spouseCmd = new SqlCommand(spouseSql, _conn))
+                    {
+                        spouseCmd.Parameters.AddWithValue("@residentId", residentId);
+                        using (SqlDataReader spouseReader = spouseCmd.ExecuteReader())
+                        {
+                            if (spouseReader.Read())
+                            {
+                                var spouse = new Spouse
+                                {
+                                    SpouseID = spouseReader.GetInt32(spouseReader.GetOrdinal("SpouseID")),
+                                    ResidentID = spouseReader.GetInt32(spouseReader.GetOrdinal("ResidentID")),
+                                    SpouseName = spouseReader.IsDBNull(spouseReader.GetOrdinal("SpouseName")) ? "" : spouseReader.GetString(spouseReader.GetOrdinal("SpouseName")),
+                                    SpousePhone = spouseReader.IsDBNull(spouseReader.GetOrdinal("SpousePhone")) ? "" : spouseReader.GetString(spouseReader.GetOrdinal("SpousePhone")),
+                                };
+
+                                // Spouse Employment
+                                string spouseEmpSql = "SELECT SpouseEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpouseEmployment WHERE SpouseID = @spouseId";
+                                using (SqlCommand spouseEmpCmd = new SqlCommand(spouseEmpSql, _conn))
+                                {
+                                    spouseEmpCmd.Parameters.AddWithValue("@spouseId", spouse.SpouseID);
+                                    using (SqlDataReader spouseEmpReader = spouseEmpCmd.ExecuteReader())
+                                    {
+                                        while (spouseEmpReader.Read())
+                                        {
+                                            var spEmp = new SpouseEmployment
+                                            {
+                                                SpouseEmploymentID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseEmploymentID")),
+                                                SpouseID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseID")),
+                                                Company = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Company")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Company")),
+                                                Position = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Position")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Position")),
+                                                LengthOfService = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("LengthOfService")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("LengthOfService"))
+                                            };
+                                            spouse.Employments.Add(spEmp);
+                                        }
+                                    }
+                                }
+
+                                // Spouse Previous Employment
+                                string spousePrevEmpSql = "SELECT SpousePrevEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpousePreviousEmployment WHERE SpouseID = @spouseId";
+                                using (SqlCommand spousePrevEmpCmd = new SqlCommand(spousePrevEmpSql, _conn))
+                                {
+                                    spousePrevEmpCmd.Parameters.AddWithValue("@spouseId", spouse.SpouseID);
+                                    using (SqlDataReader spousePrevEmpReader = spousePrevEmpCmd.ExecuteReader())
+                                    {
+                                        while (spousePrevEmpReader.Read())
+                                        {
+                                            var spPrevEmp = new SpousePreviousEmployment
+                                            {
+                                                SpousePrevEmploymentID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpousePrevEmploymentID")),
+                                                SpouseID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpouseID")),
+                                                Company = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Company")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Company")),
+                                                Position = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Position")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Position")),
+                                                LengthOfService = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("LengthOfService")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("LengthOfService"))
+                                            };
+                                            spouse.PreviousEmployments.Add(spPrevEmp);
+                                        }
+                                    }
+                                }
+
+                                resident.Spouse = spouse;
+                            }
+                        }
+                    }
+
+                    // Purposes (ResidentPurposes, PurposeTypes)
+                    string purposesSql = @"
+                        SELECT rp.ResidentPurposeID, rp.ResidentID, rp.PurposeTypeID, rp.PurposeOthers, pt.PurposeName
+                        FROM ResidentPurposes rp
+                        INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+                        WHERE rp.ResidentID = @residentId";
+                    using (SqlCommand purposesCmd = new SqlCommand(purposesSql, _conn))
+                    {
+                        purposesCmd.Parameters.AddWithValue("@residentId", residentId);
+                        using (SqlDataReader purposesReader = purposesCmd.ExecuteReader())
+                        {
+                            while (purposesReader.Read())
+                            {
+                                var purpose = new ResidentPurpose
+                                {
+                                    ResidentPurposeID = purposesReader.GetInt32(purposesReader.GetOrdinal("ResidentPurposeID")),
+                                    ResidentID = purposesReader.GetInt32(purposesReader.GetOrdinal("ResidentID")),
+                                    PurposeTypeID = purposesReader.GetInt32(purposesReader.GetOrdinal("PurposeTypeID")),
+                                    PurposeOthers = purposesReader.IsDBNull(purposesReader.GetOrdinal("PurposeOthers")) ? null : purposesReader.GetString(purposesReader.GetOrdinal("PurposeOthers")),
+                                    PurposeType = new PurposeType
+                                    {
+                                        PurposeTypeID = purposesReader.GetInt32(purposesReader.GetOrdinal("PurposeTypeID")),
+                                        PurposeName = purposesReader.IsDBNull(purposesReader.GetOrdinal("PurposeName")) ? "" : purposesReader.GetString(purposesReader.GetOrdinal("PurposeName"))
+                                    }
+                                };
+                                resident.Purposes.Add(purpose);
+                            }
+                        }
+                    }
+
+                    return resident;
                 }
             }
             catch (Exception ex)
@@ -712,8 +859,6 @@ namespace BarangayApplication.Models.Repositories
                 Console.WriteLine("Exception: " + ex.ToString());
                 throw;
             }
-
-            return null;
         }
         
         /// <summary>
@@ -726,7 +871,7 @@ namespace BarangayApplication.Models.Repositories
         /// <param name="resident">
         /// The Residents object containing the data to be inserted, including optional Employment, Spouse, and Purposes details.
         /// </param>
-        public void CreateResident(Residents resident)
+        public void CreateResident(Resident resident)
         {
             try
             {
@@ -742,11 +887,11 @@ namespace BarangayApplication.Models.Repositories
                             string sqlResidents = @"
                                 INSERT INTO Residents (
                                     LastName, FirstName, MiddleName, Address, TelCelNo, Sex, Height, 
-                                    Weight, DateOfBirth, Age, PlaceOfBirth, CivilStatus, VoterIDNo, PollingPlace,
+                                    Weight, DateOfBirth, PlaceOfBirth, CivilStatus, VoterIDNo, PollingPlace,
                                     ResidenceType, PaymentAmount, PaymentFrequency
                                 ) VALUES (
                                     @LastName, @FirstName, @MiddleName, @Address, @TelCelNo, @Sex, @Height, 
-                                    @Weight, @DateOfBirth, @Age, @PlaceOfBirth, @CivilStatus, @VoterIDNo, @PollingPlace,
+                                    @Weight, @DateOfBirth, @PlaceOfBirth, @CivilStatus, @VoterIDNo, @PollingPlace,
                                     @ResidenceType, @PaymentAmount, @PaymentFrequency
                                 );
                                 SELECT SCOPE_IDENTITY();";
@@ -763,7 +908,6 @@ namespace BarangayApplication.Models.Repositories
                                 cmd.Parameters.AddWithValue("@Height", resident.Height);
                                 cmd.Parameters.AddWithValue("@Weight", resident.Weight);
                                 cmd.Parameters.AddWithValue("@DateOfBirth", resident.DateOfBirth);
-                                cmd.Parameters.AddWithValue("@Age", resident.Age);
                                 cmd.Parameters.AddWithValue("@PlaceOfBirth", resident.PlaceOfBirth);
                                 cmd.Parameters.AddWithValue("@CivilStatus", resident.CivilStatus);
                                 cmd.Parameters.AddWithValue("@VoterIDNo", resident.VoterIDNo);
@@ -775,84 +919,131 @@ namespace BarangayApplication.Models.Repositories
                                 residentId = Convert.ToInt32(cmd.ExecuteScalar());
                             }
 
-                            // 2. Insert into Employment table (if data provided)
-                            if (resident.Employment != null)
+                            // 2. Insert into Employment table(s) (if data provided)
+                            if (resident.Employments != null && resident.Employments.Count > 0)
                             {
                                 string sqlEmployment = @"
                                     INSERT INTO Employment (
-                                        ResidentID, Company, Position, LengthOfService, PreviousCompany, PreviousPosition, PreviousLengthOfService
+                                        ResidentID, Company, Position, LengthOfService
                                     ) VALUES (
-                                        @ResidentID, @Company, @Position, @LengthOfService, @PreviousCompany, @PreviousPosition, @PreviousLengthOfService
+                                        @ResidentID, @Company, @Position, @LengthOfService
                                     );";
-                                using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                                foreach (var emp in resident.Employments)
                                 {
-                                    cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                    cmd.Parameters.AddWithValue("@Company", resident.Employment.Company);
-                                    cmd.Parameters.AddWithValue("@Position", resident.Employment.Position);
-                                    cmd.Parameters.AddWithValue("@LengthOfService", resident.Employment.LengthOfService);
-                                    cmd.Parameters.AddWithValue("@PreviousCompany", resident.Employment.PreviousCompany);
-                                    cmd.Parameters.AddWithValue("@PreviousPosition", resident.Employment.PreviousPosition);
-                                    cmd.Parameters.AddWithValue("@PreviousLengthOfService", resident.Employment.PreviousLengthOfService);
-                                    cmd.ExecuteNonQuery();
+                                    using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                        cmd.Parameters.AddWithValue("@Company", emp.Company);
+                                        cmd.Parameters.AddWithValue("@Position", emp.Position);
+                                        cmd.Parameters.AddWithValue("@LengthOfService", emp.LengthOfService);
+                                        cmd.ExecuteNonQuery();
+                                    }
                                 }
                             }
 
-                            // 3. Insert into Spouse table (if data provided)
+                            // 3. Insert into PreviousEmployment table(s) (if data provided)
+                            if (resident.PreviousEmployments != null && resident.PreviousEmployments.Count > 0)
+                            {
+                                string sqlPrevEmployment = @"
+                                    INSERT INTO PreviousEmployment (
+                                        ResidentID, Company, Position, LengthOfService
+                                    ) VALUES (
+                                        @ResidentID, @Company, @Position, @LengthOfService
+                                    );";
+                                foreach (var prevEmp in resident.PreviousEmployments)
+                                {
+                                    using (SqlCommand cmd = new SqlCommand(sqlPrevEmployment, _conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                        cmd.Parameters.AddWithValue("@Company", prevEmp.Company);
+                                        cmd.Parameters.AddWithValue("@Position", prevEmp.Position);
+                                        cmd.Parameters.AddWithValue("@LengthOfService", prevEmp.LengthOfService);
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+
+                            // 4. Insert into Spouse table (if data provided)
+                            int? spouseId = null;
                             if (resident.Spouse != null)
                             {
                                 string sqlSpouse = @"
                                     INSERT INTO Spouse (
-                                        ResidentID, SpouseName, SpousePhone, SpouseCompany, SpousePosition, SpouseLengthOfService,
-                                        SpousePreviousCompany, SpousePreviousPosition, SpousePreviousLengthOfService
+                                        ResidentID, SpouseName, SpousePhone
                                     ) VALUES (
-                                        @ResidentID, @SpouseName, @SpousePhone, @SpouseCompany, @SpousePosition, @SpouseLengthOfService,
-                                        @SpousePreviousCompany, @SpousePreviousPosition, @SpousePreviousLengthOfService
-                                    );";
+                                        @ResidentID, @SpouseName, @SpousePhone
+                                    );
+                                    SELECT SCOPE_IDENTITY();";
                                 using (SqlCommand cmd = new SqlCommand(sqlSpouse, _conn, transaction))
                                 {
                                     cmd.Parameters.AddWithValue("@ResidentID", residentId);
                                     cmd.Parameters.AddWithValue("@SpouseName", resident.Spouse.SpouseName);
                                     cmd.Parameters.AddWithValue("@SpousePhone", resident.Spouse.SpousePhone);
-                                    cmd.Parameters.AddWithValue("@SpouseCompany", resident.Spouse.SpouseCompany);
-                                    cmd.Parameters.AddWithValue("@SpousePosition", resident.Spouse.SpousePosition);
-                                    cmd.Parameters.AddWithValue("@SpouseLengthOfService", resident.Spouse.SpouseLengthOfService);
-                                    cmd.Parameters.AddWithValue("@SpousePreviousCompany", resident.Spouse.SpousePreviousCompany);
-                                    cmd.Parameters.AddWithValue("@SpousePreviousPosition", resident.Spouse.SpousePreviousPosition);
-                                    cmd.Parameters.AddWithValue("@SpousePreviousLengthOfService", resident.Spouse.SpousePreviousLengthOfService);
-                                    cmd.ExecuteNonQuery();
+                                    spouseId = Convert.ToInt32(cmd.ExecuteScalar());
+                                }
+
+                                // Spouse Employment(s)
+                                if (resident.Spouse.Employments != null && resident.Spouse.Employments.Count > 0)
+                                {
+                                    string sqlSpouseEmp = @"
+                                        INSERT INTO SpouseEmployment (
+                                            SpouseID, Company, Position, LengthOfService
+                                        ) VALUES (
+                                            @SpouseID, @Company, @Position, @LengthOfService
+                                        );";
+                                    foreach (var spEmp in resident.Spouse.Employments)
+                                    {
+                                        using (SqlCommand cmd = new SqlCommand(sqlSpouseEmp, _conn, transaction))
+                                        {
+                                            cmd.Parameters.AddWithValue("@SpouseID", spouseId);
+                                            cmd.Parameters.AddWithValue("@Company", spEmp.Company);
+                                            cmd.Parameters.AddWithValue("@Position", spEmp.Position);
+                                            cmd.Parameters.AddWithValue("@LengthOfService", spEmp.LengthOfService);
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                }
+                                // Spouse Previous Employment(s)
+                                if (resident.Spouse.PreviousEmployments != null && resident.Spouse.PreviousEmployments.Count > 0)
+                                {
+                                    string sqlSpousePrevEmp = @"
+                                        INSERT INTO SpousePreviousEmployment (
+                                            SpouseID, Company, Position, LengthOfService
+                                        ) VALUES (
+                                            @SpouseID, @Company, @Position, @LengthOfService
+                                        );";
+                                    foreach (var spPrevEmp in resident.Spouse.PreviousEmployments)
+                                    {
+                                        using (SqlCommand cmd = new SqlCommand(sqlSpousePrevEmp, _conn, transaction))
+                                        {
+                                            cmd.Parameters.AddWithValue("@SpouseID", spouseId);
+                                            cmd.Parameters.AddWithValue("@Company", spPrevEmp.Company);
+                                            cmd.Parameters.AddWithValue("@Position", spPrevEmp.Position);
+                                            cmd.Parameters.AddWithValue("@LengthOfService", spPrevEmp.LengthOfService);
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                    }
                                 }
                             }
 
-                            // 4. Insert into Purposes table (if data provided)
-                            if (resident.Purposes != null)
+                            // 5. Insert into ResidentPurposes (if data provided)
+                            if (resident.Purposes != null && resident.Purposes.Count > 0)
                             {
-                                string sqlPurposes = @"
-                                    INSERT INTO Purposes (
-                                        ResidentID, PurposeResidency, PurposePostalID, PurposeLocalEmployment, PurposeMarriage,
-                                        PurposeLoan, PurposeMeralco, PurposeBankTransaction, PurposeTravelAbroad, PurposeSeniorCitizen,
-                                        PurposeSchool, PurposeMedical, PurposeBurial, PurposeOthers
+                                string sqlPurpose = @"
+                                    INSERT INTO ResidentPurposes (
+                                        ResidentID, PurposeTypeID, PurposeOthers
                                     ) VALUES (
-                                        @ResidentID, @PurposeResidency, @PurposePostalID, @PurposeLocalEmployment, @PurposeMarriage,
-                                        @PurposeLoan, @PurposeMeralco, @PurposeBankTransaction, @PurposeTravelAbroad, @PurposeSeniorCitizen,
-                                        @PurposeSchool, @PurposeMedical, @PurposeBurial, @PurposeOthers
+                                        @ResidentID, @PurposeTypeID, @PurposeOthers
                                     );";
-                                using (SqlCommand cmd = new SqlCommand(sqlPurposes, _conn, transaction))
+                                foreach (var rp in resident.Purposes)
                                 {
-                                    cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                    cmd.Parameters.AddWithValue("@PurposeResidency", resident.Purposes.PurposeResidency);
-                                    cmd.Parameters.AddWithValue("@PurposePostalID", resident.Purposes.PurposePostalID);
-                                    cmd.Parameters.AddWithValue("@PurposeLocalEmployment", resident.Purposes.PurposeLocalEmployment);
-                                    cmd.Parameters.AddWithValue("@PurposeMarriage", resident.Purposes.PurposeMarriage);
-                                    cmd.Parameters.AddWithValue("@PurposeLoan", resident.Purposes.PurposeLoan);
-                                    cmd.Parameters.AddWithValue("@PurposeMeralco", resident.Purposes.PurposeMeralco);
-                                    cmd.Parameters.AddWithValue("@PurposeBankTransaction", resident.Purposes.PurposeBankTransaction);
-                                    cmd.Parameters.AddWithValue("@PurposeTravelAbroad", resident.Purposes.PurposeTravelAbroad);
-                                    cmd.Parameters.AddWithValue("@PurposeSeniorCitizen", resident.Purposes.PurposeSeniorCitizen);
-                                    cmd.Parameters.AddWithValue("@PurposeSchool", resident.Purposes.PurposeSchool);
-                                    cmd.Parameters.AddWithValue("@PurposeMedical", resident.Purposes.PurposeMedical);
-                                    cmd.Parameters.AddWithValue("@PurposeBurial", resident.Purposes.PurposeBurial);
-                                    cmd.Parameters.AddWithValue("@PurposeOthers", resident.Purposes.PurposeOthers);
-                                    cmd.ExecuteNonQuery();
+                                    using (SqlCommand cmd = new SqlCommand(sqlPurpose, _conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                        cmd.Parameters.AddWithValue("@PurposeTypeID", rp.PurposeTypeID);
+                                        cmd.Parameters.AddWithValue("@PurposeOthers", (object?)rp.PurposeOthers ?? DBNull.Value);
+                                        cmd.ExecuteNonQuery();
+                                    }
                                 }
                             }
 
@@ -865,6 +1056,7 @@ namespace BarangayApplication.Models.Repositories
                         }
                     }
                 }
+                // Add log if needed
                 AddUserLog(CurrentUser.AccountID, "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
             }
             catch (Exception ex)
@@ -885,7 +1077,7 @@ namespace BarangayApplication.Models.Repositories
         /// <param name="resident">
         /// The Residents object containing the updated data, including the ResidentID, and optional updated Employment, Spouse, and Purposes details.
         /// </param>
-        public void UpdateResident(Residents resident)
+        public void UpdateResident(Resident resident)
         {
             try
             {
@@ -908,7 +1100,6 @@ namespace BarangayApplication.Models.Repositories
                                     Height = @Height,
                                     Weight = @Weight,
                                     DateOfBirth = @DateOfBirth,
-                                    Age = @Age,
                                     PlaceOfBirth = @PlaceOfBirth,
                                     CivilStatus = @CivilStatus,
                                     VoterIDNo = @VoterIDNo,
@@ -930,7 +1121,6 @@ namespace BarangayApplication.Models.Repositories
                                 cmd.Parameters.AddWithValue("@Height", resident.Height);
                                 cmd.Parameters.AddWithValue("@Weight", resident.Weight);
                                 cmd.Parameters.AddWithValue("@DateOfBirth", resident.DateOfBirth);
-                                cmd.Parameters.AddWithValue("@Age", resident.Age);
                                 cmd.Parameters.AddWithValue("@PlaceOfBirth", resident.PlaceOfBirth);
                                 cmd.Parameters.AddWithValue("@CivilStatus", resident.CivilStatus);
                                 cmd.Parameters.AddWithValue("@VoterIDNo", resident.VoterIDNo);
@@ -941,99 +1131,150 @@ namespace BarangayApplication.Models.Repositories
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // 2. Update Employment (if provided)
-                            if (resident.Employment != null)
+                            // 2. Update Employment (delete all and re-insert for this Resident)
+                            string deleteEmployment = "DELETE FROM Employment WHERE ResidentID = @ResidentID";
+                            using (var cmd = new SqlCommand(deleteEmployment, _conn, transaction))
                             {
-                                string sqlEmployment = @"
-                                    UPDATE Employment SET
-                                        Company = @Company,
-                                        Position = @Position,
-                                        LengthOfService = @LengthOfService,
-                                        PreviousCompany = @PreviousCompany,
-                                        PreviousPosition = @PreviousPosition,
-                                        PreviousLengthOfService = @PreviousLengthOfService
-                                    WHERE ResidentID = @ResidentID;
-                                ";
-                                using (var cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                                cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                cmd.ExecuteNonQuery();
+                            }
+                            if (resident.Employments != null && resident.Employments.Count > 0)
+                            {
+                                string insertEmployment = @"
+                                    INSERT INTO Employment (ResidentID, Company, Position, LengthOfService)
+                                    VALUES (@ResidentID, @Company, @Position, @LengthOfService);";
+                                foreach (var emp in resident.Employments)
                                 {
-                                    cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
-                                    cmd.Parameters.AddWithValue("@Company", resident.Employment.Company);
-                                    cmd.Parameters.AddWithValue("@Position", resident.Employment.Position);
-                                    cmd.Parameters.AddWithValue("@LengthOfService", resident.Employment.LengthOfService);
-                                    cmd.Parameters.AddWithValue("@PreviousCompany", resident.Employment.PreviousCompany);
-                                    cmd.Parameters.AddWithValue("@PreviousPosition", resident.Employment.PreviousPosition);
-                                    cmd.Parameters.AddWithValue("@PreviousLengthOfService", resident.Employment.PreviousLengthOfService);
-                                    cmd.ExecuteNonQuery();
+                                    using (var cmd = new SqlCommand(insertEmployment, _conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                        cmd.Parameters.AddWithValue("@Company", emp.Company);
+                                        cmd.Parameters.AddWithValue("@Position", emp.Position);
+                                        cmd.Parameters.AddWithValue("@LengthOfService", emp.LengthOfService);
+                                        cmd.ExecuteNonQuery();
+                                    }
                                 }
                             }
 
-                            // 3. Update Spouse (if provided)
+                            // 3. Update PreviousEmployment (delete all and re-insert)
+                            string deletePrevEmployment = "DELETE FROM PreviousEmployment WHERE ResidentID = @ResidentID";
+                            using (var cmd = new SqlCommand(deletePrevEmployment, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                cmd.ExecuteNonQuery();
+                            }
+                            if (resident.PreviousEmployments != null && resident.PreviousEmployments.Count > 0)
+                            {
+                                string insertPrevEmployment = @"
+                                    INSERT INTO PreviousEmployment (ResidentID, Company, Position, LengthOfService)
+                                    VALUES (@ResidentID, @Company, @Position, @LengthOfService);";
+                                foreach (var prevEmp in resident.PreviousEmployments)
+                                {
+                                    using (var cmd = new SqlCommand(insertPrevEmployment, _conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                        cmd.Parameters.AddWithValue("@Company", prevEmp.Company);
+                                        cmd.Parameters.AddWithValue("@Position", prevEmp.Position);
+                                        cmd.Parameters.AddWithValue("@LengthOfService", prevEmp.LengthOfService);
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+
+                            // 4. Update Spouse (delete and re-insert)
+                            string deleteSpouse = "DELETE FROM Spouse WHERE ResidentID = @ResidentID";
+                            using (var cmd = new SqlCommand(deleteSpouse, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                cmd.ExecuteNonQuery();
+                            }
+                            int? spouseId = null;
                             if (resident.Spouse != null)
                             {
-                                string sqlSpouse = @"
-                                    UPDATE Spouse SET
-                                        SpouseName = @SpouseName,
-                                        SpousePhone = @SpousePhone,
-                                        SpouseCompany = @SpouseCompany,
-                                        SpousePosition = @SpousePosition,
-                                        SpouseLengthOfService = @SpouseLengthOfService,
-                                        SpousePreviousCompany = @SpousePreviousCompany,
-                                        SpousePreviousPosition = @SpousePreviousPosition,
-                                        SpousePreviousLengthOfService = @SpousePreviousLengthOfService
-                                    WHERE ResidentID = @ResidentID;
-                                ";
-                                using (var cmd = new SqlCommand(sqlSpouse, _conn, transaction))
+                                string insertSpouse = @"
+                                    INSERT INTO Spouse (ResidentID, SpouseName, SpousePhone)
+                                    VALUES (@ResidentID, @SpouseName, @SpousePhone);
+                                    SELECT SCOPE_IDENTITY();";
+                                using (var cmd = new SqlCommand(insertSpouse, _conn, transaction))
                                 {
                                     cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
                                     cmd.Parameters.AddWithValue("@SpouseName", resident.Spouse.SpouseName);
                                     cmd.Parameters.AddWithValue("@SpousePhone", resident.Spouse.SpousePhone);
-                                    cmd.Parameters.AddWithValue("@SpouseCompany", resident.Spouse.SpouseCompany);
-                                    cmd.Parameters.AddWithValue("@SpousePosition", resident.Spouse.SpousePosition);
-                                    cmd.Parameters.AddWithValue("@SpouseLengthOfService", resident.Spouse.SpouseLengthOfService);
-                                    cmd.Parameters.AddWithValue("@SpousePreviousCompany", resident.Spouse.SpousePreviousCompany);
-                                    cmd.Parameters.AddWithValue("@SpousePreviousPosition", resident.Spouse.SpousePreviousPosition);
-                                    cmd.Parameters.AddWithValue("@SpousePreviousLengthOfService", resident.Spouse.SpousePreviousLengthOfService);
+                                    spouseId = Convert.ToInt32(cmd.ExecuteScalar());
+                                }
+
+                                // SpouseEmployment (delete all and re-insert)
+                                string deleteSpouseEmp = "DELETE FROM SpouseEmployment WHERE SpouseID = @SpouseID";
+                                using (var cmd = new SqlCommand(deleteSpouseEmp, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@SpouseID", spouseId);
                                     cmd.ExecuteNonQuery();
+                                }
+                                if (resident.Spouse.Employments != null && resident.Spouse.Employments.Count > 0)
+                                {
+                                    string insertSpouseEmp = @"
+                                        INSERT INTO SpouseEmployment (SpouseID, Company, Position, LengthOfService)
+                                        VALUES (@SpouseID, @Company, @Position, @LengthOfService);";
+                                    foreach (var spEmp in resident.Spouse.Employments)
+                                    {
+                                        using (var cmd = new SqlCommand(insertSpouseEmp, _conn, transaction))
+                                        {
+                                            cmd.Parameters.AddWithValue("@SpouseID", spouseId);
+                                            cmd.Parameters.AddWithValue("@Company", spEmp.Company);
+                                            cmd.Parameters.AddWithValue("@Position", spEmp.Position);
+                                            cmd.Parameters.AddWithValue("@LengthOfService", spEmp.LengthOfService);
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                }
+
+                                // SpousePreviousEmployment (delete all and re-insert)
+                                string deleteSpousePrevEmp = "DELETE FROM SpousePreviousEmployment WHERE SpouseID = @SpouseID";
+                                using (var cmd = new SqlCommand(deleteSpousePrevEmp, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@SpouseID", spouseId);
+                                    cmd.ExecuteNonQuery();
+                                }
+                                if (resident.Spouse.PreviousEmployments != null && resident.Spouse.PreviousEmployments.Count > 0)
+                                {
+                                    string insertSpousePrevEmp = @"
+                                        INSERT INTO SpousePreviousEmployment (SpouseID, Company, Position, LengthOfService)
+                                        VALUES (@SpouseID, @Company, @Position, @LengthOfService);";
+                                    foreach (var spPrevEmp in resident.Spouse.PreviousEmployments)
+                                    {
+                                        using (var cmd = new SqlCommand(insertSpousePrevEmp, _conn, transaction))
+                                        {
+                                            cmd.Parameters.AddWithValue("@SpouseID", spouseId);
+                                            cmd.Parameters.AddWithValue("@Company", spPrevEmp.Company);
+                                            cmd.Parameters.AddWithValue("@Position", spPrevEmp.Position);
+                                            cmd.Parameters.AddWithValue("@LengthOfService", spPrevEmp.LengthOfService);
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                    }
                                 }
                             }
 
-                            // 4. Update Purposes (if provided)
-                            if (resident.Purposes != null)
+                            // 5. Update ResidentPurposes (delete all and re-insert)
+                            string deletePurposes = "DELETE FROM ResidentPurposes WHERE ResidentID = @ResidentID";
+                            using (var cmd = new SqlCommand(deletePurposes, _conn, transaction))
                             {
-                                string sqlPurposes = @"
-                                    UPDATE Purposes SET
-                                        PurposeResidency = @PurposeResidency,
-                                        PurposePostalID = @PurposePostalID,
-                                        PurposeLocalEmployment = @PurposeLocalEmployment,
-                                        PurposeMarriage = @PurposeMarriage,
-                                        PurposeLoan = @PurposeLoan,
-                                        PurposeMeralco = @PurposeMeralco,
-                                        PurposeBankTransaction = @PurposeBankTransaction,
-                                        PurposeTravelAbroad = @PurposeTravelAbroad,
-                                        PurposeSeniorCitizen = @PurposeSeniorCitizen,
-                                        PurposeSchool = @PurposeSchool,
-                                        PurposeMedical = @PurposeMedical,
-                                        PurposeBurial = @PurposeBurial,
-                                        PurposeOthers = @PurposeOthers
-                                    WHERE ResidentID = @ResidentID;
-                                ";
-                                using (var cmd = new SqlCommand(sqlPurposes, _conn, transaction))
+                                cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                cmd.ExecuteNonQuery();
+                            }
+                            if (resident.Purposes != null && resident.Purposes.Count > 0)
+                            {
+                                string insertPurpose = @"
+                                    INSERT INTO ResidentPurposes (ResidentID, PurposeTypeID, PurposeOthers)
+                                    VALUES (@ResidentID, @PurposeTypeID, @PurposeOthers);";
+                                foreach (var rp in resident.Purposes)
                                 {
-                                    cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
-                                    cmd.Parameters.AddWithValue("@PurposeResidency", resident.Purposes.PurposeResidency);
-                                    cmd.Parameters.AddWithValue("@PurposePostalID", resident.Purposes.PurposePostalID);
-                                    cmd.Parameters.AddWithValue("@PurposeLocalEmployment", resident.Purposes.PurposeLocalEmployment);
-                                    cmd.Parameters.AddWithValue("@PurposeMarriage", resident.Purposes.PurposeMarriage);
-                                    cmd.Parameters.AddWithValue("@PurposeLoan", resident.Purposes.PurposeLoan);
-                                    cmd.Parameters.AddWithValue("@PurposeMeralco", resident.Purposes.PurposeMeralco);
-                                    cmd.Parameters.AddWithValue("@PurposeBankTransaction", resident.Purposes.PurposeBankTransaction);
-                                    cmd.Parameters.AddWithValue("@PurposeTravelAbroad", resident.Purposes.PurposeTravelAbroad);
-                                    cmd.Parameters.AddWithValue("@PurposeSeniorCitizen", resident.Purposes.PurposeSeniorCitizen);
-                                    cmd.Parameters.AddWithValue("@PurposeSchool", resident.Purposes.PurposeSchool);
-                                    cmd.Parameters.AddWithValue("@PurposeMedical", resident.Purposes.PurposeMedical);
-                                    cmd.Parameters.AddWithValue("@PurposeBurial", resident.Purposes.PurposeBurial);
-                                    cmd.Parameters.AddWithValue("@PurposeOthers", resident.Purposes.PurposeOthers);
-                                    cmd.ExecuteNonQuery();
+                                    using (var cmd = new SqlCommand(insertPurpose, _conn, transaction))
+                                    {
+                                        cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                        cmd.Parameters.AddWithValue("@PurposeTypeID", rp.PurposeTypeID);
+                                        cmd.Parameters.AddWithValue("@PurposeOthers", (object?)rp.PurposeOthers ?? DBNull.Value);
+                                        cmd.ExecuteNonQuery();
+                                    }
                                 }
                             }
 
@@ -1072,27 +1313,71 @@ namespace BarangayApplication.Models.Repositories
                     {
                         try
                         {
-                            // Delete from child tables first, then from Residents
-                            string sqlEmployment = "DELETE FROM Employment WHERE ResidentID = @ResidentID;";
-                            string sqlSpouse = "DELETE FROM Spouse WHERE ResidentID = @ResidentID;";
-                            string sqlPurposes = "DELETE FROM Purposes WHERE ResidentID = @ResidentID;";
-                            string sqlResident = "DELETE FROM Residents WHERE ResidentID = @ResidentID;";
+                            // Child tables must be deleted first, then main Resident
+                            // Order: Spouse-related, then Spouse, Employment, PreviousEmployment, ResidentPurposes, Residents
 
-                            using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                            // 1. Delete SpouseEmployment and SpousePreviousEmployment
+                            string sqlGetSpouseIds = "SELECT SpouseID FROM Spouse WHERE ResidentID = @ResidentID;";
+                            var spouseIds = new List<int>();
+                            using (SqlCommand cmd = new SqlCommand(sqlGetSpouseIds, _conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@ResidentID", residentId);
-                                cmd.ExecuteNonQuery();
+                                using (var reader = cmd.ExecuteReader())
+                                {
+                                    while (reader.Read())
+                                    {
+                                        if (!reader.IsDBNull(0))
+                                            spouseIds.Add(reader.GetInt32(0));
+                                    }
+                                }
                             }
+                            if (spouseIds.Count > 0)
+                            {
+                                string spouseIdList = string.Join(",", spouseIds);
+                                string deleteSpouseEmp = $"DELETE FROM SpouseEmployment WHERE SpouseID IN ({spouseIdList});";
+                                string deleteSpousePrevEmp = $"DELETE FROM SpousePreviousEmployment WHERE SpouseID IN ({spouseIdList});";
+                                using (SqlCommand cmd = new SqlCommand(deleteSpouseEmp, _conn, transaction))
+                                {
+                                    cmd.ExecuteNonQuery();
+                                }
+                                using (SqlCommand cmd = new SqlCommand(deleteSpousePrevEmp, _conn, transaction))
+                                {
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // 2. Delete Spouse
+                            string sqlSpouse = "DELETE FROM Spouse WHERE ResidentID = @ResidentID;";
                             using (SqlCommand cmd = new SqlCommand(sqlSpouse, _conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@ResidentID", residentId);
                                 cmd.ExecuteNonQuery();
                             }
+
+                            // 3. Delete Employment and PreviousEmployment
+                            string sqlEmployment = "DELETE FROM Employment WHERE ResidentID = @ResidentID;";
+                            using (SqlCommand cmd = new SqlCommand(sqlEmployment, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            string sqlPrevEmployment = "DELETE FROM PreviousEmployment WHERE ResidentID = @ResidentID;";
+                            using (SqlCommand cmd = new SqlCommand(sqlPrevEmployment, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // 4. Delete ResidentPurposes
+                            string sqlPurposes = "DELETE FROM ResidentPurposes WHERE ResidentID = @ResidentID;";
                             using (SqlCommand cmd = new SqlCommand(sqlPurposes, _conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@ResidentID", residentId);
                                 cmd.ExecuteNonQuery();
                             }
+
+                            // 5. Delete Resident
+                            string sqlResident = "DELETE FROM Residents WHERE ResidentID = @ResidentID;";
                             using (SqlCommand cmd = new SqlCommand(sqlResident, _conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@ResidentID", residentId);

@@ -7,9 +7,9 @@ namespace BarangayApplication
 {
     public partial class Occupation : Form
     {
-        private Residents _resident;
+        private Resident _resident;
 
-        public Occupation(Residents resident)
+        public Occupation(Resident resident)
         {
             InitializeComponent();
             _resident = resident ?? throw new ArgumentNullException(nameof(resident));
@@ -27,13 +27,50 @@ namespace BarangayApplication
         // Load model data into controls
         public void LoadFromModel()
         {
-            // Parse helper for year/month strings
+            // Helper for getting the first value from a list or default
+            string GetCompany(List<Employment> emps) => emps != null && emps.Count > 0 ? emps[0].Company : "";
+            string GetPosition(List<Employment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
+            string GetLengthOfService(List<Employment> emps) => emps != null && emps.Count > 0 ? emps[0].LengthOfService : "";
+
+            string GetPrevCompany(List<PreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Company : "";
+            string GetPrevPosition(List<PreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
+            string GetPrevLengthOfService(List<PreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].LengthOfService : "";
+
+            // Employment (handle null safely)
+            txtOccCompany.Text = GetCompany(_resident.Employments);
+            txtOccPos1.Text = GetPosition(_resident.Employments);
+            SetYearMonthFromString(GetLengthOfService(_resident.Employments), YearLength1, MonthLength1);
+
+            txtOccPrev.Text = GetPrevCompany(_resident.PreviousEmployments);
+            txtOccPos2.Text = GetPrevPosition(_resident.PreviousEmployments);
+            SetYearMonthFromString(GetPrevLengthOfService(_resident.PreviousEmployments), YearLength2, MonthLength2);
+
+            // Spouse (handle null safely)
+            txtSpouseName.Text = _resident.Spouse?.SpouseName ?? "";
+            txtSpouseContact.Text = _resident.Spouse?.SpousePhone ?? "";
+
+            string GetSpouseCompany(List<SpouseEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Company : "";
+            string GetSpousePosition(List<SpouseEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
+            string GetSpouseLengthOfService(List<SpouseEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].LengthOfService : "";
+
+            string GetSpousePrevCompany(List<SpousePreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Company : "";
+            string GetSpousePrevPosition(List<SpousePreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
+            string GetSpousePrevLengthOfService(List<SpousePreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].LengthOfService : "";
+
+            txtSpouseCompany.Text = GetSpouseCompany(_resident.Spouse?.Employments);
+            txtSpousePos1.Text = GetSpousePosition(_resident.Spouse?.Employments);
+            SetYearMonthFromString(GetSpouseLengthOfService(_resident.Spouse?.Employments), YearLength3, MonthLength3);
+
+            txtSpousePrev.Text = GetSpousePrevCompany(_resident.Spouse?.PreviousEmployments);
+            txtSpousePos2.Text = GetSpousePrevPosition(_resident.Spouse?.PreviousEmployments);
+            SetYearMonthFromString(GetSpousePrevLengthOfService(_resident.Spouse?.PreviousEmployments), YearLength4, MonthLength4);
+
+            // Local helper: parse "3 years 2 months" type string
             void SetYearMonthFromString(string value, ComboBox yearBox, ComboBox monthBox)
             {
                 int years = 0, months = 0;
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    // Accepts formats like "3 years 2 months", "1 year", "8 months", etc.
                     var parts = value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     for (int i = 0; i < parts.Length - 1; i += 2)
                     {
@@ -46,24 +83,6 @@ namespace BarangayApplication
                 yearBox.SelectedItem = years > 0 ? years.ToString() : "0";
                 monthBox.SelectedItem = months > 0 ? months.ToString() : "0";
             }
-
-            // Employment (handle null safely)
-            txtOccCompany.Text = _resident.Employment?.Company ?? "";
-            txtOccPos1.Text = _resident.Employment?.Position ?? "";
-            SetYearMonthFromString(_resident.Employment?.LengthOfService, YearLength1, MonthLength1);
-            txtOccPrev.Text = _resident.Employment?.PreviousCompany ?? "";
-            txtOccPos2.Text = _resident.Employment?.PreviousPosition ?? "";
-            SetYearMonthFromString(_resident.Employment?.PreviousLengthOfService, YearLength2, MonthLength2);
-
-            // Spouse (handle null safely)
-            txtSpouseName.Text = _resident.Spouse?.SpouseName ?? "";
-            txtSpouseContact.Text = _resident.Spouse?.SpousePhone ?? "";
-            txtSpouseCompany.Text = _resident.Spouse?.SpouseCompany ?? "";
-            txtSpousePos1.Text = _resident.Spouse?.SpousePosition ?? "";
-            SetYearMonthFromString(_resident.Spouse?.SpouseLengthOfService, YearLength3, MonthLength3);
-            txtSpousePrev.Text = _resident.Spouse?.SpousePreviousCompany ?? "";
-            txtSpousePos2.Text = _resident.Spouse?.SpousePreviousPosition ?? "";
-            SetYearMonthFromString(_resident.Spouse?.SpousePreviousLengthOfService, YearLength4, MonthLength4);
         }
 
         // Save control values back to model
@@ -80,16 +99,23 @@ namespace BarangayApplication
                 return sb.Count > 0 ? string.Join(" ", sb) : "";
             }
 
-            // Employment (create if null)
-            if (_resident.Employment == null)
-                _resident.Employment = new Employment();
+            // Employment (create list if null)
+            if (_resident.Employments == null)
+                _resident.Employments = new List<Employment>();
+            if (_resident.Employments.Count == 0)
+                _resident.Employments.Add(new Employment());
+            _resident.Employments[0].Company = txtOccCompany.Text;
+            _resident.Employments[0].Position = txtOccPos1.Text;
+            _resident.Employments[0].LengthOfService = ComposeYearMonth(YearLength1, MonthLength1);
 
-            _resident.Employment.Company = txtOccCompany.Text;
-            _resident.Employment.Position = txtOccPos1.Text;
-            _resident.Employment.LengthOfService = ComposeYearMonth(YearLength1, MonthLength1);
-            _resident.Employment.PreviousCompany = txtOccPrev.Text;
-            _resident.Employment.PreviousPosition = txtOccPos2.Text;
-            _resident.Employment.PreviousLengthOfService = ComposeYearMonth(YearLength2, MonthLength2);
+            // Previous Employment (create list if null)
+            if (_resident.PreviousEmployments == null)
+                _resident.PreviousEmployments = new List<PreviousEmployment>();
+            if (_resident.PreviousEmployments.Count == 0)
+                _resident.PreviousEmployments.Add(new PreviousEmployment());
+            _resident.PreviousEmployments[0].Company = txtOccPrev.Text;
+            _resident.PreviousEmployments[0].Position = txtOccPos2.Text;
+            _resident.PreviousEmployments[0].LengthOfService = ComposeYearMonth(YearLength2, MonthLength2);
 
             // Spouse (create if null)
             if (_resident.Spouse == null)
@@ -97,14 +123,25 @@ namespace BarangayApplication
 
             _resident.Spouse.SpouseName = txtSpouseName.Text;
             _resident.Spouse.SpousePhone = txtSpouseContact.Text;
-            _resident.Spouse.SpouseCompany = txtSpouseCompany.Text;
-            _resident.Spouse.SpousePosition = txtSpousePos1.Text;
-            _resident.Spouse.SpouseLengthOfService = ComposeYearMonth(YearLength3, MonthLength3);
-            _resident.Spouse.SpousePreviousCompany = txtSpousePrev.Text;
-            _resident.Spouse.SpousePreviousPosition = txtSpousePos2.Text;
-            _resident.Spouse.SpousePreviousLengthOfService = ComposeYearMonth(YearLength4, MonthLength4);
-        }
 
+            // Spouse Employment (create list if null)
+            if (_resident.Spouse.Employments == null)
+                _resident.Spouse.Employments = new List<SpouseEmployment>();
+            if (_resident.Spouse.Employments.Count == 0)
+                _resident.Spouse.Employments.Add(new SpouseEmployment());
+            _resident.Spouse.Employments[0].Company = txtSpouseCompany.Text;
+            _resident.Spouse.Employments[0].Position = txtSpousePos1.Text;
+            _resident.Spouse.Employments[0].LengthOfService = ComposeYearMonth(YearLength3, MonthLength3);
+
+            // Spouse Previous Employment (create list if null)
+            if (_resident.Spouse.PreviousEmployments == null)
+                _resident.Spouse.PreviousEmployments = new List<SpousePreviousEmployment>();
+            if (_resident.Spouse.PreviousEmployments.Count == 0)
+                _resident.Spouse.PreviousEmployments.Add(new SpousePreviousEmployment());
+            _resident.Spouse.PreviousEmployments[0].Company = txtSpousePrev.Text;
+            _resident.Spouse.PreviousEmployments[0].Position = txtSpousePos2.Text;
+            _resident.Spouse.PreviousEmployments[0].LengthOfService = ComposeYearMonth(YearLength4, MonthLength4);
+        }
         private void AlphanumericOnly_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsLetterOrDigit(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))

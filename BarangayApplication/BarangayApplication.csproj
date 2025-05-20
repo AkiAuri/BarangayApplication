@@ -122,6 +122,7 @@
       <DependentUpon>MainViewForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\ChildRelative.cs" />
+    <Compile Include="Models\PurposeTypeIds.cs" />
     <Compile Include="Models\Repositories\ResidentsRepository.cs" />
     <Compile Include="Models\Residents.cs" />
     <Compile Include="Occupation.cs">

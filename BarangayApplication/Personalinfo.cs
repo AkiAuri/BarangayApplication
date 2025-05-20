@@ -6,10 +6,10 @@ namespace BarangayApplication
 {
     public partial class Personalinfo : Form
     {
-        private Residents _resident;
+        private Resident _resident;
 
-        // Constructor accepts the shared Residents object
-        public Personalinfo(Residents resident)
+        // Constructor accepts the shared Resident object
+        public Personalinfo(Resident resident)
         {
             InitializeComponent();
             _resident = resident ?? throw new ArgumentNullException(nameof(resident));
@@ -25,8 +25,6 @@ namespace BarangayApplication
 
             txtVoterIdNo.KeyPress += txtVoterIdNo_KeyPress;
             txtVoterIdNo.TextChanged += txtVoterIdNo_TextChanged;
-
-            Age.KeyPress += NumberOnly_KeyPress; // Age is now a TextBox
 
             txtHeight.KeyPress += txtHeight_KeyPress;
             txtWeight.KeyPress += txtWeight_KeyPress;
@@ -45,7 +43,7 @@ namespace BarangayApplication
             LoadFromModel();
         }
 
-        // Populate controls from Residents object
+        // Populate controls from Resident object
         public void LoadFromModel()
         {
             txtLname.Text = _resident.LastName ?? "";
@@ -57,14 +55,15 @@ namespace BarangayApplication
             txtHeight.Text = _resident.Height > 0 ? _resident.Height.ToString("0.##") : "";
             txtWeight.Text = _resident.Weight > 0 ? _resident.Weight.ToString("0.##") : "";
             dateTimePicker1.Value = _resident.DateOfBirth == DateTime.MinValue ? DateTime.Today : _resident.DateOfBirth;
-            Age.Text = _resident.Age > 0 ? _resident.Age.ToString() : "";
+            // Age is not a stored property anymore, so calculate for display if needed
+            Age.Text = _resident.DateOfBirth != DateTime.MinValue ? CalculateAge(_resident.DateOfBirth).ToString() : "";
             txtPoB.Text = _resident.PlaceOfBirth ?? "";
             cBxCivilStatus.Text = _resident.CivilStatus ?? "";
             txtVoterIdNo.Text = _resident.VoterIDNo ?? "";
             txtPoll.Text = _resident.PollingPlace ?? "";
         }
 
-        // Copy control values into Residents object
+        // Copy control values into Resident object
         public void ApplyToModel()
         {
             _resident.LastName = txtLname.Text;
@@ -86,15 +85,21 @@ namespace BarangayApplication
 
             _resident.DateOfBirth = dateTimePicker1.Value;
 
-            if (int.TryParse(Age.Text, out var age))
-                _resident.Age = age;
-            else
-                _resident.Age = 0;
+            // Remove Age from model - always calculate from DateOfBirth
+            // If needed elsewhere, expose as a property: int Age => CalculateAge(DateOfBirth);
 
             _resident.PlaceOfBirth = txtPoB.Text;
             _resident.CivilStatus = cBxCivilStatus.Text;
             _resident.VoterIDNo = txtVoterIdNo.Text;
             _resident.PollingPlace = txtPoll.Text;
+        }
+
+        private int CalculateAge(DateTime dateOfBirth)
+        {
+            var now = DateTime.Now;
+            int age = now.Year - dateOfBirth.Year;
+            if (now < dateOfBirth.AddYears(age)) age--;
+            return age;
         }
 
         // --- INPUT RESTRICTION HANDLERS ---

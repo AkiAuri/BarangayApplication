@@ -62,17 +62,19 @@ namespace BarangayApplication
             }
 
             // Add age-based suggestions (all unique ages)
-            foreach (var age in residents.Select(r => r.Age).Distinct())
+            foreach (var age in residents.Select(r => r.DateOfBirth != DateTime.MinValue ? CalculateAge(r.DateOfBirth) : (int?)null).Where(a => a.HasValue).Select(a => a.Value).Distinct())
             {
                 autoCompleteCollection.Add("A:" + age);
             }
 
-            // Add purposes
-            foreach (var r in residents)
+            // Add purposes (show all unique purpose names)
+            var allPurposeNames = residents
+                .SelectMany(r => (r.Purposes != null) ? r.Purposes.Select(p => GetPurposeText(p)) : new List<string>())
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Distinct();
+            foreach (var purpose in allPurposeNames)
             {
-                string purpose = GetPurposeText(r);
-                if (!string.IsNullOrWhiteSpace(purpose))
-                    autoCompleteCollection.Add("P:" + purpose);
+                autoCompleteCollection.Add("P:" + purpose);
             }
 
             // Remove duplicates
@@ -110,9 +112,11 @@ namespace BarangayApplication
                 row["Last Name"] = resident.LastName;
                 row["First Name"] = resident.FirstName;
                 row["Middle Name"] = resident.MiddleName;
-                row["Age"] = resident.Age;
+                row["Age"] = resident.DateOfBirth != DateTime.MinValue ? CalculateAge(resident.DateOfBirth) : 0;
                 row["Contact Number"] = resident.TelCelNo;
-                row["Purpose"] = GetPurposeText(resident);
+                row["Purpose"] = resident.Purposes != null && resident.Purposes.Count > 0
+                    ? string.Join(", ", resident.Purposes.Select(GetPurposeText))
+                    : "";
                 dt.Rows.Add(row);
             }
 
@@ -125,25 +129,13 @@ namespace BarangayApplication
                 col.HeaderText = col.HeaderText.ToUpper();
         }
 
-        private string GetPurposeText(Residents resident)
+        private string GetPurposeText(ResidentPurpose purpose)
         {
-            var purposes = resident.Purposes;
-            if (purposes == null) return "";
-
-            if (!string.IsNullOrWhiteSpace(purposes.PurposeOthers))
-                return purposes.PurposeOthers;
-            if (purposes.PurposeResidency) return "Residency";
-            if (purposes.PurposePostalID) return "Postal ID";
-            if (purposes.PurposeLocalEmployment) return "Local Employment";
-            if (purposes.PurposeMarriage) return "Marriage";
-            if (purposes.PurposeLoan) return "Loan";
-            if (purposes.PurposeMeralco) return "Meralco";
-            if (purposes.PurposeBankTransaction) return "Bank Transaction";
-            if (purposes.PurposeTravelAbroad) return "Travel Abroad";
-            if (purposes.PurposeSeniorCitizen) return "Senior Citizen";
-            if (purposes.PurposeSchool) return "School";
-            if (purposes.PurposeMedical) return "Medical";
-            if (purposes.PurposeBurial) return "Burial";
+            if (purpose == null) return "";
+            if (!string.IsNullOrWhiteSpace(purpose.PurposeOthers))
+                return purpose.PurposeOthers;
+            if (purpose.PurposeType != null && !string.IsNullOrWhiteSpace(purpose.PurposeType.PurposeName))
+                return purpose.PurposeType.PurposeName;
             return "";
         }
 
@@ -249,7 +241,7 @@ namespace BarangayApplication
 
             var repo = new ResidentsRepository();
             var residents = repo.GetApplicants();
-            IEnumerable<Residents> filtered = residents;
+            IEnumerable<Resident> filtered = residents;
 
             if (query.StartsWith("N:", StringComparison.OrdinalIgnoreCase))
             {
@@ -265,17 +257,19 @@ namespace BarangayApplication
                 string agePart = query.Substring(2).Trim();
                 if (int.TryParse(agePart, out int age))
                 {
-                    filtered = residents.Where(r => r.Age == age);
+                    filtered = residents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age);
                 }
                 else
                 {
-                    filtered = residents.Where(r => r.Age.ToString().Contains(agePart));
+                    filtered = residents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(agePart));
                 }
             }
             else if (query.StartsWith("P:", StringComparison.OrdinalIgnoreCase))
             {
                 string purposePart = query.Substring(2).Trim().ToLower();
-                filtered = residents.Where(r => GetPurposeText(r).ToLower().Contains(purposePart));
+                filtered = residents.Where(r =>
+                    r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(purposePart))
+                );
             }
             else
             {
@@ -284,8 +278,8 @@ namespace BarangayApplication
                       (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(lower))
                    || (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(lower))
                    || (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(lower))
-                   || r.Age.ToString().Contains(lower)
-                   || GetPurposeText(r).ToLower().Contains(lower)
+                   || (r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(lower))
+                   || (r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(lower)))
                 );
             }
 
@@ -305,9 +299,11 @@ namespace BarangayApplication
                 row["Last Name"] = resident.LastName;
                 row["First Name"] = resident.FirstName;
                 row["Middle Name"] = resident.MiddleName;
-                row["Age"] = resident.Age;
+                row["Age"] = resident.DateOfBirth != DateTime.MinValue ? CalculateAge(resident.DateOfBirth) : 0;
                 row["Contact Number"] = resident.TelCelNo;
-                row["Purpose"] = GetPurposeText(resident);
+                row["Purpose"] = resident.Purposes != null && resident.Purposes.Count > 0
+                    ? string.Join(", ", resident.Purposes.Select(GetPurposeText))
+                    : "";
                 dt.Rows.Add(row);
             }
 
@@ -318,6 +314,14 @@ namespace BarangayApplication
             // Make header ALL CAPS
             foreach (DataGridViewColumn col in DataGrid.Columns)
                 col.HeaderText = col.HeaderText.ToUpper();
+        }
+
+        private int CalculateAge(DateTime dateOfBirth)
+        {
+            var now = DateTime.Now;
+            int age = now.Year - dateOfBirth.Year;
+            if (now < dateOfBirth.AddYears(age)) age--;
+            return age;
         }
 
         public void AdjustLayoutForFormApplication()

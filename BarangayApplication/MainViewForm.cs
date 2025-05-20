@@ -18,7 +18,7 @@ namespace BarangayApplication
             int nHeightEllipse
         );
 
-        private Residents _resident = new Residents();
+        private Resident _resident = new Resident();
 
         // Track current step (0=personal, 1=collection, 2=occupation)
         private int _currentStep = 0;
@@ -29,7 +29,7 @@ namespace BarangayApplication
         private Form[] _forms;
 
         // NEW: Constructor for editing existing Residents
-        public MainViewForm(Residents residentToEdit)
+        public MainViewForm(Resident residentToEdit)
         {
             InitializeComponent();
 
@@ -37,7 +37,7 @@ namespace BarangayApplication
                 CreateRoundRectRgn(0, 0, Width, Height, 20, 20)
             );
 
-            _resident = residentToEdit ?? new Residents();
+            _resident = residentToEdit ?? new Resident();
 
             _personalForm = new Personalinfo(_resident);
             _collectionForm = new Collection(_resident);
