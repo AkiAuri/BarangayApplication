@@ -651,7 +651,8 @@ namespace BarangayApplication.Models.Repositories
                 {
                     _conn.Open();
 
-                    // Main Resident info
+                    // 1. Main Resident info
+                    Resident? resident = null;
                     string sql = @"
                         SELECT 
                             ResidentID, 
@@ -673,8 +674,6 @@ namespace BarangayApplication.Models.Repositories
                             PaymentFrequency
                         FROM Residents
                         WHERE ResidentID = @residentId";
-
-                    Resident? resident = null;
 
                     using (SqlCommand _cmd = new SqlCommand(sql, _conn))
                     {
@@ -711,7 +710,7 @@ namespace BarangayApplication.Models.Repositories
                     if (resident == null)
                         return null;
 
-                    // Related Employment
+                    // 2. Related Employment
                     string empSql = "SELECT EmploymentID, ResidentID, Company, Position, LengthOfService FROM Employment WHERE ResidentID = @residentId";
                     using (SqlCommand empCmd = new SqlCommand(empSql, _conn))
                     {
@@ -733,7 +732,7 @@ namespace BarangayApplication.Models.Repositories
                         }
                     }
 
-                    // Previous Employment
+                    // 3. Previous Employment
                     string prevEmpSql = "SELECT PreviousEmploymentID, ResidentID, Company, Position, LengthOfService FROM PreviousEmployment WHERE ResidentID = @residentId";
                     using (SqlCommand prevEmpCmd = new SqlCommand(prevEmpSql, _conn))
                     {
@@ -755,7 +754,9 @@ namespace BarangayApplication.Models.Repositories
                         }
                     }
 
-                    // Spouse (if exists)
+                    // 4. Spouse (if exists) - read spouse FIRST, then query spouse employments if spouse exists
+                    Spouse? spouse = null;
+                    int spouseId = 0;
                     string spouseSql = "SELECT SpouseID, ResidentID, SpouseName, SpousePhone FROM Spouse WHERE ResidentID = @residentId";
                     using (SqlCommand spouseCmd = new SqlCommand(spouseSql, _conn))
                     {
@@ -764,64 +765,68 @@ namespace BarangayApplication.Models.Repositories
                         {
                             if (spouseReader.Read())
                             {
-                                var spouse = new Spouse
+                                spouseId = spouseReader.GetInt32(spouseReader.GetOrdinal("SpouseID"));
+                                spouse = new Spouse
                                 {
-                                    SpouseID = spouseReader.GetInt32(spouseReader.GetOrdinal("SpouseID")),
+                                    SpouseID = spouseId,
                                     ResidentID = spouseReader.GetInt32(spouseReader.GetOrdinal("ResidentID")),
                                     SpouseName = spouseReader.IsDBNull(spouseReader.GetOrdinal("SpouseName")) ? "" : spouseReader.GetString(spouseReader.GetOrdinal("SpouseName")),
                                     SpousePhone = spouseReader.IsDBNull(spouseReader.GetOrdinal("SpousePhone")) ? "" : spouseReader.GetString(spouseReader.GetOrdinal("SpousePhone")),
                                 };
-
-                                // Spouse Employment
-                                string spouseEmpSql = "SELECT SpouseEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpouseEmployment WHERE SpouseID = @spouseId";
-                                using (SqlCommand spouseEmpCmd = new SqlCommand(spouseEmpSql, _conn))
-                                {
-                                    spouseEmpCmd.Parameters.AddWithValue("@spouseId", spouse.SpouseID);
-                                    using (SqlDataReader spouseEmpReader = spouseEmpCmd.ExecuteReader())
-                                    {
-                                        while (spouseEmpReader.Read())
-                                        {
-                                            var spEmp = new SpouseEmployment
-                                            {
-                                                SpouseEmploymentID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseEmploymentID")),
-                                                SpouseID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseID")),
-                                                Company = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Company")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Company")),
-                                                Position = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Position")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Position")),
-                                                LengthOfService = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("LengthOfService")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("LengthOfService"))
-                                            };
-                                            spouse.Employments.Add(spEmp);
-                                        }
-                                    }
-                                }
-
-                                // Spouse Previous Employment
-                                string spousePrevEmpSql = "SELECT SpousePrevEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpousePreviousEmployment WHERE SpouseID = @spouseId";
-                                using (SqlCommand spousePrevEmpCmd = new SqlCommand(spousePrevEmpSql, _conn))
-                                {
-                                    spousePrevEmpCmd.Parameters.AddWithValue("@spouseId", spouse.SpouseID);
-                                    using (SqlDataReader spousePrevEmpReader = spousePrevEmpCmd.ExecuteReader())
-                                    {
-                                        while (spousePrevEmpReader.Read())
-                                        {
-                                            var spPrevEmp = new SpousePreviousEmployment
-                                            {
-                                                SpousePrevEmploymentID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpousePrevEmploymentID")),
-                                                SpouseID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpouseID")),
-                                                Company = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Company")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Company")),
-                                                Position = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Position")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Position")),
-                                                LengthOfService = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("LengthOfService")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("LengthOfService"))
-                                            };
-                                            spouse.PreviousEmployments.Add(spPrevEmp);
-                                        }
-                                    }
-                                }
-
-                                resident.Spouse = spouse;
                             }
                         }
                     }
 
-                    // Purposes (ResidentPurposes, PurposeTypes)
+                    // 4a. Spouse Employment
+                    if (spouse != null)
+                    {
+                        string spouseEmpSql = "SELECT SpouseEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpouseEmployment WHERE SpouseID = @spouseId";
+                        using (SqlCommand spouseEmpCmd = new SqlCommand(spouseEmpSql, _conn))
+                        {
+                            spouseEmpCmd.Parameters.AddWithValue("@spouseId", spouseId);
+                            using (SqlDataReader spouseEmpReader = spouseEmpCmd.ExecuteReader())
+                            {
+                                while (spouseEmpReader.Read())
+                                {
+                                    var spEmp = new SpouseEmployment
+                                    {
+                                        SpouseEmploymentID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseEmploymentID")),
+                                        SpouseID = spouseEmpReader.GetInt32(spouseEmpReader.GetOrdinal("SpouseID")),
+                                        Company = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Company")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Company")),
+                                        Position = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("Position")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("Position")),
+                                        LengthOfService = spouseEmpReader.IsDBNull(spouseEmpReader.GetOrdinal("LengthOfService")) ? "" : spouseEmpReader.GetString(spouseEmpReader.GetOrdinal("LengthOfService"))
+                                    };
+                                    spouse.Employments.Add(spEmp);
+                                }
+                            }
+                        }
+
+                        // 4b. Spouse Previous Employment
+                        string spousePrevEmpSql = "SELECT SpousePrevEmploymentID, SpouseID, Company, Position, LengthOfService FROM SpousePreviousEmployment WHERE SpouseID = @spouseId";
+                        using (SqlCommand spousePrevEmpCmd = new SqlCommand(spousePrevEmpSql, _conn))
+                        {
+                            spousePrevEmpCmd.Parameters.AddWithValue("@spouseId", spouseId);
+                            using (SqlDataReader spousePrevEmpReader = spousePrevEmpCmd.ExecuteReader())
+                            {
+                                while (spousePrevEmpReader.Read())
+                                {
+                                    var spPrevEmp = new SpousePreviousEmployment
+                                    {
+                                        SpousePrevEmploymentID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpousePrevEmploymentID")),
+                                        SpouseID = spousePrevEmpReader.GetInt32(spousePrevEmpReader.GetOrdinal("SpouseID")),
+                                        Company = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Company")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Company")),
+                                        Position = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("Position")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("Position")),
+                                        LengthOfService = spousePrevEmpReader.IsDBNull(spousePrevEmpReader.GetOrdinal("LengthOfService")) ? "" : spousePrevEmpReader.GetString(spousePrevEmpReader.GetOrdinal("LengthOfService"))
+                                    };
+                                    spouse.PreviousEmployments.Add(spPrevEmp);
+                                }
+                            }
+                        }
+
+                        resident.Spouse = spouse;
+                    }
+
+                    // 5. Purposes (ResidentPurposes, PurposeTypes)
                     string purposesSql = @"
                         SELECT rp.ResidentPurposeID, rp.ResidentID, rp.PurposeTypeID, rp.PurposeOthers, pt.PurposeName
                         FROM ResidentPurposes rp
@@ -1181,13 +1186,46 @@ namespace BarangayApplication.Models.Repositories
                                 }
                             }
 
-                            // 4. Update Spouse (delete and re-insert)
+                            // 4. Update Spouse and related tables
+
+                            // Step 1: Get old SpouseID (if any)
+                            int? oldSpouseId = null;
+                            string getOldSpouseId = "SELECT SpouseID FROM Spouse WHERE ResidentID = @ResidentID";
+                            using (var cmd = new SqlCommand(getOldSpouseId, _conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
+                                var result = cmd.ExecuteScalar();
+                                if (result != null && result != DBNull.Value)
+                                    oldSpouseId = Convert.ToInt32(result);
+                            }
+
+                            // Step 2: Delete SpouseEmployment and SpousePreviousEmployment for old SpouseID (if any)
+                            if (oldSpouseId.HasValue)
+                            {
+                                string deleteSpouseEmp = "DELETE FROM SpouseEmployment WHERE SpouseID = @SpouseID";
+                                using (var cmd = new SqlCommand(deleteSpouseEmp, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@SpouseID", oldSpouseId.Value);
+                                    cmd.ExecuteNonQuery();
+                                }
+
+                                string deleteSpousePrevEmp = "DELETE FROM SpousePreviousEmployment WHERE SpouseID = @SpouseID";
+                                using (var cmd = new SqlCommand(deleteSpousePrevEmp, _conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@SpouseID", oldSpouseId.Value);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // Step 3: Delete Spouse (now no referenced rows exist)
                             string deleteSpouse = "DELETE FROM Spouse WHERE ResidentID = @ResidentID";
                             using (var cmd = new SqlCommand(deleteSpouse, _conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
                                 cmd.ExecuteNonQuery();
                             }
+
+                            // Step 4: Re-insert Spouse (if any) and related employments
                             int? spouseId = null;
                             if (resident.Spouse != null)
                             {
@@ -1204,12 +1242,8 @@ namespace BarangayApplication.Models.Repositories
                                 }
 
                                 // SpouseEmployment (delete all and re-insert)
-                                string deleteSpouseEmp = "DELETE FROM SpouseEmployment WHERE SpouseID = @SpouseID";
-                                using (var cmd = new SqlCommand(deleteSpouseEmp, _conn, transaction))
-                                {
-                                    cmd.Parameters.AddWithValue("@SpouseID", spouseId);
-                                    cmd.ExecuteNonQuery();
-                                }
+                                // No need to delete here; already deleted above for oldSpouseId
+
                                 if (resident.Spouse.Employments != null && resident.Spouse.Employments.Count > 0)
                                 {
                                     string insertSpouseEmp = @"
@@ -1229,12 +1263,8 @@ namespace BarangayApplication.Models.Repositories
                                 }
 
                                 // SpousePreviousEmployment (delete all and re-insert)
-                                string deleteSpousePrevEmp = "DELETE FROM SpousePreviousEmployment WHERE SpouseID = @SpouseID";
-                                using (var cmd = new SqlCommand(deleteSpousePrevEmp, _conn, transaction))
-                                {
-                                    cmd.Parameters.AddWithValue("@SpouseID", spouseId);
-                                    cmd.ExecuteNonQuery();
-                                }
+                                // No need to delete here; already deleted above for oldSpouseId
+
                                 if (resident.Spouse.PreviousEmployments != null && resident.Spouse.PreviousEmployments.Count > 0)
                                 {
                                     string insertSpousePrevEmp = @"
