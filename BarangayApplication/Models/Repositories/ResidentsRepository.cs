@@ -282,18 +282,24 @@ namespace BarangayApplication.Models.Repositories
                 {
                     _conn.Open();
 
-                    // Check if a similar log entry already exists to prevent duplication
+                    // Normalize description (trim and lower for comparison)
+                    string normDescription = description?.Trim();
+
+                    // Check if a similar log entry already exists to prevent duplication within the last minute
                     string checkSql = @"
                         SELECT COUNT(*) 
                         FROM UserLogs 
-                        WHERE UserName = @UserName AND Action = @Action AND Description = @Description AND DATEDIFF(SECOND, Timestamp, @Timestamp) < 5";
+                        WHERE UserName = @UserName 
+                          AND Action = @Action 
+                          AND Description = @Description
+                          AND DATEDIFF(SECOND, Timestamp, @Now) BETWEEN 0 AND 60";
 
                     using (SqlCommand checkCmd = new SqlCommand(checkSql, _conn))
                     {
                         checkCmd.Parameters.AddWithValue("@UserName", accountName);
                         checkCmd.Parameters.AddWithValue("@Action", action);
-                        checkCmd.Parameters.AddWithValue("@Description", description);
-                        checkCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+                        checkCmd.Parameters.AddWithValue("@Description", normDescription);
+                        checkCmd.Parameters.AddWithValue("@Now", DateTime.Now);
 
                         int existingCount = (int)checkCmd.ExecuteScalar();
                         if (existingCount > 0)
@@ -312,7 +318,7 @@ namespace BarangayApplication.Models.Repositories
                     {
                         insertCmd.Parameters.AddWithValue("@UserName", accountName);
                         insertCmd.Parameters.AddWithValue("@Action", action);
-                        insertCmd.Parameters.AddWithValue("@Description", description);
+                        insertCmd.Parameters.AddWithValue("@Description", normDescription);
                         insertCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
 
                         insertCmd.ExecuteNonQuery();
