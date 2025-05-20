@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using BCrypt.Net;
 
 namespace BarangayApplication
 {
@@ -12,17 +13,18 @@ namespace BarangayApplication
         private const string LastBackupFile = "last_backup.txt";
         private const string BackupLocationFile = "backup_location.txt";
         private const string DatabaseName = "sybau_database";
-// You may want to pull this from a central config
         private const string ServerName = @"localhost,1433";
-        private const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
+        private const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog="+ DatabaseName + ";Integrated Security=True";
 
         public Settings()
         {
             InitializeComponent();
             LoadBackupLocation();
             LoadLastBackup();
+            PopulateAdminAccountIDs();
         }
-
+        
+        // Backup shit
         private void LoadBackupLocation()
         {
             if (File.Exists(BackupLocationFile))
@@ -141,8 +143,106 @@ namespace BarangayApplication
                 }
             }
         }
+        
+        //Account shit.
+        //Account functions
+        private void PopulateAdminAccountIDs()
+        {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                string query = "SELECT accountID FROM users WHERE roleID = 2";
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    try
+                    {
+                        conn.Open();
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            cmbAccountID.Items.Clear();
+                            while (reader.Read())
+                            {
+                                cmbAccountID.Items.Add(reader["accountID"].ToString());
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error loading accounts: " + ex.Message);
+                    }
+                }
+            }
+        }
 
-        //Unneeded
+        private void cmbAccountID_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string accountID = cmbAccountID.SelectedItem?.ToString();
+            if (string.IsNullOrEmpty(accountID)) return;
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                string query = "SELECT accountName FROM users WHERE accountID = @accountID";
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@accountID", accountID);
+                    try
+                    {
+                        conn.Open();
+                        var accountName = cmd.ExecuteScalar()?.ToString();
+                        if (txtAccountName != null)
+                            txtAccountName.Text = accountName ?? "";
+                    }
+                    catch
+                    {
+                        if (txtAccountName != null)
+                            txtAccountName.Text = "";
+                    }
+                }
+            }
+            // Always clear the password box when user changes selection!
+            txtNewPassword.Text = "";
+        }
+        // THIS IS THE UPDATED FUNCTION FOR 16x HASHING
+        private void btnSetPassword_Click(object sender, EventArgs e)
+        {
+            string accountID = cmbAccountID.SelectedItem?.ToString();
+            string newPassword = txtNewPassword.Text;
+            if (string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(newPassword))
+            {
+                MessageBox.Show("Please select an account and enter a new password.");
+                return;
+            }
+            // Hash password 16 times using bcrypt
+            string hash = newPassword;
+            for (int i = 0; i < 16; i++)
+            {
+                hash = BCrypt.Net.BCrypt.HashPassword(hash);
+            }
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                string query = "UPDATE users SET passwordHash = @hash WHERE accountID = @accountID";
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@hash", hash);
+                    cmd.Parameters.AddWithValue("@accountID", accountID);
+                    try
+                    {
+                        conn.Open();
+                        int rows = cmd.ExecuteNonQuery();
+                        if (rows > 0)
+                            MessageBox.Show("Password updated successfully!");
+                        else
+                            MessageBox.Show("Failed to update password.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error: " + ex.Message);
+                    }
+                }
+            }
+            txtNewPassword.Text = "";
+        }
+
+
+        //Unneeded stuff
         private void label6_Click(object sender, EventArgs e)
         {
 

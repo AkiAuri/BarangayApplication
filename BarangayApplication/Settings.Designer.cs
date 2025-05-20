@@ -32,15 +32,15 @@
             this.lblDateTime = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.btnEdit = new System.Windows.Forms.Button();
-            this.Password = new System.Windows.Forms.TextBox();
+            this.btnSetPassword = new System.Windows.Forms.Button();
+            this.txtNewPassword = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.AccountName = new System.Windows.Forms.TextBox();
+            this.txtAccountName = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label3 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.AccountID = new System.Windows.Forms.ComboBox();
+            this.cmbAccountID = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -100,31 +100,32 @@
             this.label6.Text = "BACKUP LOCATION";
             this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
-            // btnEdit
+            // btnSetPassword
             // 
-            this.btnEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnEdit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(47)))), ((int)(((byte)(51)))));
-            this.btnEdit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEdit.Font = new System.Drawing.Font("Segoe UI", 22.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnEdit.ForeColor = System.Drawing.Color.LightGray;
-            this.btnEdit.Location = new System.Drawing.Point(975, 598);
-            this.btnEdit.Margin = new System.Windows.Forms.Padding(2);
-            this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(94, 48);
-            this.btnEdit.TabIndex = 29;
-            this.btnEdit.Text = "EDIT";
-            this.btnEdit.UseVisualStyleBackColor = false;
+            this.btnSetPassword.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSetPassword.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(47)))), ((int)(((byte)(51)))));
+            this.btnSetPassword.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSetPassword.Font = new System.Drawing.Font("Segoe UI", 22.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSetPassword.ForeColor = System.Drawing.Color.LightGray;
+            this.btnSetPassword.Location = new System.Drawing.Point(975, 598);
+            this.btnSetPassword.Margin = new System.Windows.Forms.Padding(2);
+            this.btnSetPassword.Name = "btnSetPassword";
+            this.btnSetPassword.Size = new System.Drawing.Size(94, 48);
+            this.btnSetPassword.TabIndex = 29;
+            this.btnSetPassword.Text = "EDIT";
+            this.btnSetPassword.UseVisualStyleBackColor = false;
+            this.btnSetPassword.Click += new System.EventHandler(this.btnSetPassword_Click);
             // 
-            // Password
+            // txtNewPassword
             // 
-            this.Password.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.Password.BackColor = System.Drawing.SystemColors.MenuBar;
-            this.Password.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
-            this.Password.Location = new System.Drawing.Point(704, 446);
-            this.Password.Margin = new System.Windows.Forms.Padding(2);
-            this.Password.Name = "Password";
-            this.Password.Size = new System.Drawing.Size(366, 23);
-            this.Password.TabIndex = 28;
+            this.txtNewPassword.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtNewPassword.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.txtNewPassword.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
+            this.txtNewPassword.Location = new System.Drawing.Point(704, 446);
+            this.txtNewPassword.Margin = new System.Windows.Forms.Padding(2);
+            this.txtNewPassword.Name = "txtNewPassword";
+            this.txtNewPassword.Size = new System.Drawing.Size(366, 23);
+            this.txtNewPassword.TabIndex = 28;
             // 
             // label5
             // 
@@ -138,16 +139,16 @@
             this.label5.Text = "PASSWORD";
             this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
-            // AccountName
+            // txtAccountName
             // 
-            this.AccountName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.AccountName.BackColor = System.Drawing.SystemColors.MenuBar;
-            this.AccountName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
-            this.AccountName.Location = new System.Drawing.Point(704, 325);
-            this.AccountName.Margin = new System.Windows.Forms.Padding(2);
-            this.AccountName.Name = "AccountName";
-            this.AccountName.Size = new System.Drawing.Size(366, 23);
-            this.AccountName.TabIndex = 26;
+            this.txtAccountName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtAccountName.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.txtAccountName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
+            this.txtAccountName.Location = new System.Drawing.Point(704, 325);
+            this.txtAccountName.Margin = new System.Windows.Forms.Padding(2);
+            this.txtAccountName.Name = "txtAccountName";
+            this.txtAccountName.Size = new System.Drawing.Size(366, 23);
+            this.txtAccountName.TabIndex = 26;
             // 
             // label4
             // 
@@ -191,17 +192,18 @@
             this.panel2.Size = new System.Drawing.Size(436, 2);
             this.panel2.TabIndex = 19;
             // 
-            // AccountID
+            // cmbAccountID
             // 
-            this.AccountID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.AccountID.BackColor = System.Drawing.SystemColors.MenuBar;
-            this.AccountID.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
-            this.AccountID.FormattingEnabled = true;
-            this.AccountID.Location = new System.Drawing.Point(704, 184);
-            this.AccountID.Margin = new System.Windows.Forms.Padding(2);
-            this.AccountID.Name = "AccountID";
-            this.AccountID.Size = new System.Drawing.Size(366, 23);
-            this.AccountID.TabIndex = 23;
+            this.cmbAccountID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmbAccountID.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.cmbAccountID.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
+            this.cmbAccountID.FormattingEnabled = true;
+            this.cmbAccountID.Location = new System.Drawing.Point(704, 184);
+            this.cmbAccountID.Margin = new System.Windows.Forms.Padding(2);
+            this.cmbAccountID.Name = "cmbAccountID";
+            this.cmbAccountID.Size = new System.Drawing.Size(366, 23);
+            this.cmbAccountID.TabIndex = 23;
+            this.cmbAccountID.SelectedIndexChanged += new System.EventHandler(this.cmbAccountID_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -308,15 +310,15 @@
             this.Controls.Add(this.btnRestore);
             this.Controls.Add(this.btnBackup);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.btnEdit);
-            this.Controls.Add(this.Password);
+            this.Controls.Add(this.btnSetPassword);
+            this.Controls.Add(this.txtNewPassword);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.AccountName);
+            this.Controls.Add(this.txtAccountName);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.panel2);
-            this.Controls.Add(this.AccountID);
+            this.Controls.Add(this.cmbAccountID);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
@@ -340,15 +342,15 @@
         private System.Windows.Forms.Button btnBackup;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Button btnEdit;
-        private System.Windows.Forms.TextBox Password;
+        private System.Windows.Forms.Button btnSetPassword;
+        private System.Windows.Forms.TextBox txtNewPassword;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox AccountName;
+        private System.Windows.Forms.TextBox txtAccountName;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.ComboBox AccountID;
+        private System.Windows.Forms.ComboBox cmbAccountID;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
