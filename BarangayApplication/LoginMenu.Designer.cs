@@ -45,7 +45,6 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.Password = new System.Windows.Forms.TextBox();
-            this.Bypass = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.panel2.SuspendLayout();
@@ -239,26 +238,12 @@
             this.Password.Size = new System.Drawing.Size(271, 34);
             this.Password.TabIndex = 5;
             // 
-            // Bypass
-            // 
-            this.Bypass.BackColor = System.Drawing.Color.ForestGreen;
-            this.Bypass.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.Bypass.Location = new System.Drawing.Point(616, 298);
-            this.Bypass.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.Bypass.Name = "Bypass";
-            this.Bypass.Size = new System.Drawing.Size(83, 38);
-            this.Bypass.TabIndex = 15;
-            this.Bypass.Text = "BYPASS";
-            this.Bypass.UseVisualStyleBackColor = false;
-            this.Bypass.Click += new System.EventHandler(this.Bypass_Click);
-            // 
             // LoginMenu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gold;
             this.ClientSize = new System.Drawing.Size(713, 350);
-            this.Controls.Add(this.Bypass);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.checkBox1);
@@ -267,7 +252,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "LoginMenu";
@@ -289,8 +274,6 @@
             this.PerformLayout();
 
         }
-
-        private System.Windows.Forms.Button Bypass;
 
         #endregion
         private System.Windows.Forms.Panel panel1;

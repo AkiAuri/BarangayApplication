@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Overview));
             this.lblOverview = new System.Windows.Forms.Label();
             this.panelOverview = new System.Windows.Forms.Panel();
@@ -40,8 +40,6 @@
             this.chartOverview = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.lblChartTopic = new System.Windows.Forms.Label();
             this.pnlChart = new System.Windows.Forms.Panel();
-            this.picNext = new System.Windows.Forms.PictureBox();
-            this.picPrevious = new System.Windows.Forms.PictureBox();
             this.lblData1 = new System.Windows.Forms.Label();
             this.lblData2 = new System.Windows.Forms.Label();
             this.lblData3 = new System.Windows.Forms.Label();
@@ -51,15 +49,11 @@
             this.pnlTotalResidentsApplied = new System.Windows.Forms.Panel();
             this.lblTotalResApplied = new System.Windows.Forms.Label();
             this.lblTotalResidentsApplied = new System.Windows.Forms.Label();
-            this.pbPerson = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lblTotalAppMonth = new System.Windows.Forms.Label();
-            this.pbPaper = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.lblQuickShortcuts = new System.Windows.Forms.Label();
             this.tipCreateNew = new System.Windows.Forms.ToolTip(this.components);
-            this.pbSearch = new System.Windows.Forms.PictureBox();
-            this.pbCreateNew = new System.Windows.Forms.PictureBox();
             this.tipSearch = new System.Windows.Forms.ToolTip(this.components);
             this.Box1 = new System.Windows.Forms.Panel();
             this.Box2 = new System.Windows.Forms.Panel();
@@ -70,18 +64,24 @@
             this.lblData11 = new System.Windows.Forms.Label();
             this.lblData9 = new System.Windows.Forms.Label();
             this.lblData10 = new System.Windows.Forms.Label();
+            this.pbPaper = new System.Windows.Forms.PictureBox();
+            this.pbPerson = new System.Windows.Forms.PictureBox();
+            this.picNext = new System.Windows.Forms.PictureBox();
+            this.picPrevious = new System.Windows.Forms.PictureBox();
+            this.pbCreateNew = new System.Windows.Forms.PictureBox();
+            this.pbSearch = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.chartOverview)).BeginInit();
             this.pnlChart.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.picNext)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picPrevious)).BeginInit();
             this.pnlTotalResidentsApplied.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPerson)).BeginInit();
             this.panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPaper)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbSearch)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCreateNew)).BeginInit();
             this.Box1.SuspendLayout();
             this.Box2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPaper)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPerson)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picNext)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picPrevious)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCreateNew)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSearch)).BeginInit();
             this.SuspendLayout();
             // 
             // lblOverview
@@ -130,18 +130,18 @@
             // 
             this.chartOverview.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.chartOverview.BackColor = System.Drawing.SystemColors.Window;
-            chartArea1.Name = "ChartArea1";
-            this.chartOverview.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chartOverview.Legends.Add(legend1);
-            this.chartOverview.Location = new System.Drawing.Point(63, 46);
+            chartArea2.Name = "ChartArea1";
+            this.chartOverview.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chartOverview.Legends.Add(legend2);
+            this.chartOverview.Location = new System.Drawing.Point(60, 45);
             this.chartOverview.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.chartOverview.Name = "chartOverview";
             this.chartOverview.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.SeaGreen;
-            series1.ChartArea = "ChartArea1";
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.chartOverview.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.chartOverview.Series.Add(series2);
             this.chartOverview.Size = new System.Drawing.Size(923, 466);
             this.chartOverview.TabIndex = 4;
             this.chartOverview.Text = "chartOverview";
@@ -159,43 +159,15 @@
             // 
             // pnlChart
             // 
-            this.pnlChart.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.pnlChart.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.pnlChart.Controls.Add(this.picNext);
             this.pnlChart.Controls.Add(this.chartOverview);
             this.pnlChart.Controls.Add(this.picPrevious);
-            this.pnlChart.Location = new System.Drawing.Point(575, 374);
+            this.pnlChart.Location = new System.Drawing.Point(617, 397);
             this.pnlChart.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlChart.Name = "pnlChart";
-            this.pnlChart.Size = new System.Drawing.Size(1084, 527);
+            this.pnlChart.Size = new System.Drawing.Size(1042, 527);
             this.pnlChart.TabIndex = 8;
-            // 
-            // picNext
-            // 
-            this.picNext.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.picNext.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picNext.Image = global::BarangayApplication.Properties.Resources.right_arrow;
-            this.picNext.Location = new System.Drawing.Point(992, 263);
-            this.picNext.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.picNext.Name = "picNext";
-            this.picNext.Size = new System.Drawing.Size(51, 50);
-            this.picNext.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.picNext.TabIndex = 6;
-            this.picNext.TabStop = false;
-            this.picNext.Click += new System.EventHandler(this.picNext_Click);
-            // 
-            // picPrevious
-            // 
-            this.picPrevious.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.picPrevious.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picPrevious.Image = ((System.Drawing.Image)(resources.GetObject("picPrevious.Image")));
-            this.picPrevious.Location = new System.Drawing.Point(7, 263);
-            this.picPrevious.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.picPrevious.Name = "picPrevious";
-            this.picPrevious.Size = new System.Drawing.Size(51, 50);
-            this.picPrevious.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.picPrevious.TabIndex = 5;
-            this.picPrevious.TabStop = false;
-            this.picPrevious.Click += new System.EventHandler(this.picPrevious_Click);
             // 
             // lblData1
             // 
@@ -262,7 +234,7 @@
             this.pnlTotalResidentsApplied.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlTotalResidentsApplied.BackColor = System.Drawing.SystemColors.Window;
+            this.pnlTotalResidentsApplied.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.pnlTotalResidentsApplied.Controls.Add(this.lblTotalResApplied);
             this.pnlTotalResidentsApplied.Controls.Add(this.lblTotalResidentsApplied);
             this.pnlTotalResidentsApplied.Controls.Add(this.pbPerson);
@@ -276,7 +248,7 @@
             // 
             this.lblTotalResApplied.AutoSize = true;
             this.lblTotalResApplied.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalResApplied.Location = new System.Drawing.Point(169, 126);
+            this.lblTotalResApplied.Location = new System.Drawing.Point(179, 114);
             this.lblTotalResApplied.Name = "lblTotalResApplied";
             this.lblTotalResApplied.Size = new System.Drawing.Size(212, 54);
             this.lblTotalResApplied.TabIndex = 2;
@@ -286,30 +258,19 @@
             // lblTotalResidentsApplied
             // 
             this.lblTotalResidentsApplied.Font = new System.Drawing.Font("Segoe UI", 19.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalResidentsApplied.Location = new System.Drawing.Point(109, 7);
+            this.lblTotalResidentsApplied.Location = new System.Drawing.Point(13, 26);
             this.lblTotalResidentsApplied.Name = "lblTotalResidentsApplied";
-            this.lblTotalResidentsApplied.Size = new System.Drawing.Size(333, 97);
+            this.lblTotalResidentsApplied.Size = new System.Drawing.Size(448, 52);
             this.lblTotalResidentsApplied.TabIndex = 1;
             this.lblTotalResidentsApplied.Text = "TOTAL RESIDENTS APPLIED";
             this.lblTotalResidentsApplied.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // pbPerson
-            // 
-            this.pbPerson.Image = global::BarangayApplication.Properties.Resources.person1;
-            this.pbPerson.Location = new System.Drawing.Point(7, 7);
-            this.pbPerson.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pbPerson.Name = "pbPerson";
-            this.pbPerson.Size = new System.Drawing.Size(97, 97);
-            this.pbPerson.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbPerson.TabIndex = 0;
-            this.pbPerson.TabStop = false;
             // 
             // panel2
             // 
             this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.BackColor = System.Drawing.SystemColors.Window;
+            this.panel2.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.panel2.Controls.Add(this.lblTotalAppMonth);
             this.panel2.Controls.Add(this.pbPaper);
             this.panel2.Controls.Add(this.label2);
@@ -323,29 +284,18 @@
             // 
             this.lblTotalAppMonth.AutoSize = true;
             this.lblTotalAppMonth.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalAppMonth.Location = new System.Drawing.Point(207, 126);
+            this.lblTotalAppMonth.Location = new System.Drawing.Point(221, 114);
             this.lblTotalAppMonth.Name = "lblTotalAppMonth";
             this.lblTotalAppMonth.Size = new System.Drawing.Size(212, 54);
             this.lblTotalAppMonth.TabIndex = 3;
             this.lblTotalAppMonth.Text = "(total no.)";
             // 
-            // pbPaper
-            // 
-            this.pbPaper.Image = global::BarangayApplication.Properties.Resources.paper1;
-            this.pbPaper.Location = new System.Drawing.Point(8, 7);
-            this.pbPaper.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pbPaper.Name = "pbPaper";
-            this.pbPaper.Size = new System.Drawing.Size(97, 97);
-            this.pbPaper.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbPaper.TabIndex = 3;
-            this.pbPaper.TabStop = false;
-            // 
             // label2
             // 
             this.label2.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(123, 7);
+            this.label2.Location = new System.Drawing.Point(13, 29);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(379, 97);
+            this.label2.Size = new System.Drawing.Size(482, 52);
             this.label2.TabIndex = 2;
             this.label2.Text = "TOTAL APPLICATIONS THIS MONTH\r\n";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -365,35 +315,9 @@
             // 
             this.tipCreateNew.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTip1_Popup);
             // 
-            // pbSearch
-            // 
-            this.pbSearch.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbSearch.Image = global::BarangayApplication.Properties.Resources.search1;
-            this.pbSearch.Location = new System.Drawing.Point(284, 85);
-            this.pbSearch.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pbSearch.Name = "pbSearch";
-            this.pbSearch.Size = new System.Drawing.Size(161, 161);
-            this.pbSearch.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbSearch.TabIndex = 19;
-            this.pbSearch.TabStop = false;
-            this.pbSearch.Click += new System.EventHandler(this.pbSearch_Click);
-            // 
-            // pbCreateNew
-            // 
-            this.pbCreateNew.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbCreateNew.Image = global::BarangayApplication.Properties.Resources.CreateNew;
-            this.pbCreateNew.Location = new System.Drawing.Point(43, 85);
-            this.pbCreateNew.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pbCreateNew.Name = "pbCreateNew";
-            this.pbCreateNew.Size = new System.Drawing.Size(161, 161);
-            this.pbCreateNew.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbCreateNew.TabIndex = 18;
-            this.pbCreateNew.TabStop = false;
-            this.pbCreateNew.Click += new System.EventHandler(this.pbCreateNew_Click);
-            // 
             // Box1
             // 
-            this.Box1.BackColor = System.Drawing.SystemColors.Window;
+            this.Box1.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.Box1.Controls.Add(this.lblQuickShortcuts);
             this.Box1.Controls.Add(this.pbCreateNew);
             this.Box1.Controls.Add(this.pbSearch);
@@ -405,7 +329,7 @@
             // 
             // Box2
             // 
-            this.Box2.BackColor = System.Drawing.SystemColors.Window;
+            this.Box2.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.Box2.Controls.Add(this.lblData13);
             this.Box2.Controls.Add(this.lblData7);
             this.Box2.Controls.Add(this.lblData12);
@@ -496,11 +420,87 @@
             this.lblData10.TabIndex = 18;
             this.lblData10.Text = "[Data 10]";
             // 
+            // pbPaper
+            // 
+            this.pbPaper.Image = global::BarangayApplication.Properties.Resources.paper1;
+            this.pbPaper.Location = new System.Drawing.Point(20, 94);
+            this.pbPaper.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.pbPaper.Name = "pbPaper";
+            this.pbPaper.Size = new System.Drawing.Size(97, 97);
+            this.pbPaper.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbPaper.TabIndex = 3;
+            this.pbPaper.TabStop = false;
+            // 
+            // pbPerson
+            // 
+            this.pbPerson.Image = global::BarangayApplication.Properties.Resources.person1;
+            this.pbPerson.Location = new System.Drawing.Point(21, 94);
+            this.pbPerson.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.pbPerson.Name = "pbPerson";
+            this.pbPerson.Size = new System.Drawing.Size(97, 97);
+            this.pbPerson.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbPerson.TabIndex = 0;
+            this.pbPerson.TabStop = false;
+            // 
+            // picNext
+            // 
+            this.picNext.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.picNext.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.picNext.Image = global::BarangayApplication.Properties.Resources.right_arrow;
+            this.picNext.Location = new System.Drawing.Point(988, 263);
+            this.picNext.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.picNext.Name = "picNext";
+            this.picNext.Size = new System.Drawing.Size(51, 50);
+            this.picNext.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picNext.TabIndex = 6;
+            this.picNext.TabStop = false;
+            this.picNext.Click += new System.EventHandler(this.picNext_Click);
+            // 
+            // picPrevious
+            // 
+            this.picPrevious.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.picPrevious.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.picPrevious.Image = ((System.Drawing.Image)(resources.GetObject("picPrevious.Image")));
+            this.picPrevious.Location = new System.Drawing.Point(3, 263);
+            this.picPrevious.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.picPrevious.Name = "picPrevious";
+            this.picPrevious.Size = new System.Drawing.Size(51, 50);
+            this.picPrevious.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picPrevious.TabIndex = 5;
+            this.picPrevious.TabStop = false;
+            this.picPrevious.Click += new System.EventHandler(this.picPrevious_Click);
+            // 
+            // pbCreateNew
+            // 
+            this.pbCreateNew.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbCreateNew.Image = global::BarangayApplication.Properties.Resources.add__2_;
+            this.pbCreateNew.Location = new System.Drawing.Point(43, 85);
+            this.pbCreateNew.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.pbCreateNew.Name = "pbCreateNew";
+            this.pbCreateNew.Size = new System.Drawing.Size(161, 161);
+            this.pbCreateNew.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbCreateNew.TabIndex = 18;
+            this.pbCreateNew.TabStop = false;
+            this.pbCreateNew.Click += new System.EventHandler(this.pbCreateNew_Click);
+            // 
+            // pbSearch
+            // 
+            this.pbSearch.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbSearch.Image = global::BarangayApplication.Properties.Resources.member_search;
+            this.pbSearch.Location = new System.Drawing.Point(284, 85);
+            this.pbSearch.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.pbSearch.Name = "pbSearch";
+            this.pbSearch.Size = new System.Drawing.Size(161, 161);
+            this.pbSearch.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbSearch.TabIndex = 19;
+            this.pbSearch.TabStop = false;
+            this.pbSearch.Click += new System.EventHandler(this.pbSearch_Click);
+            // 
             // Overview
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(1733, 935);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.pnlTotalResidentsApplied);
@@ -518,20 +518,20 @@
             this.Load += new System.EventHandler(this.Overview_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chartOverview)).EndInit();
             this.pnlChart.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.picNext)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picPrevious)).EndInit();
             this.pnlTotalResidentsApplied.ResumeLayout(false);
             this.pnlTotalResidentsApplied.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPerson)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPaper)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbSearch)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCreateNew)).EndInit();
             this.Box1.ResumeLayout(false);
             this.Box1.PerformLayout();
             this.Box2.ResumeLayout(false);
             this.Box2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPaper)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPerson)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picNext)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picPrevious)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCreateNew)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSearch)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

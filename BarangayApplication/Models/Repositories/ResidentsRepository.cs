@@ -10,7 +10,7 @@ namespace BarangayApplication.Models.Repositories
 {
     public class ResidentsRepository
     {
-        private readonly string _repoconn = "Data Source=localhost,1433;Initial Catalog=sybau_database;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
+        private readonly string _repoconn = "Data Source=.;Initial Catalog=NewestDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 
         /// <summary>
         /// Gets the list of applicant residents. This method connects to the database,

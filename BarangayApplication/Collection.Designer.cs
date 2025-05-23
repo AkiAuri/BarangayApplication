@@ -48,7 +48,7 @@
             this.flowLayoutPanel1.ForeColor = System.Drawing.Color.Cyan;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(856, 58);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(976, 58);
             this.flowLayoutPanel1.TabIndex = 32;
             // 
             // label6
@@ -68,7 +68,7 @@
             this.label9.AutoSize = true;
             this.label9.BackColor = System.Drawing.Color.Transparent;
             this.label9.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(84, 209);
+            this.label9.Location = new System.Drawing.Point(65, 209);
             this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(61, 20);
@@ -96,17 +96,18 @@
             "SENIOR CITIZEN",
             "TRAVEL ABROAD",
             ""});
-            this.comboBox2.Location = new System.Drawing.Point(81, 156);
+            this.comboBox2.Location = new System.Drawing.Point(69, 156);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(254, 28);
             this.comboBox2.TabIndex = 246;
             // 
             // txtOthers
             // 
+            this.txtOthers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.txtOthers.BackColor = System.Drawing.SystemColors.Window;
             this.txtOthers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtOthers.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtOthers.Location = new System.Drawing.Point(116, 233);
+            this.txtOthers.Location = new System.Drawing.Point(69, 233);
             this.txtOthers.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtOthers.Name = "txtOthers";
             this.txtOthers.Size = new System.Drawing.Size(254, 27);
@@ -118,7 +119,7 @@
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(77, 133);
+            this.label1.Location = new System.Drawing.Point(65, 133);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(192, 20);
@@ -129,6 +130,7 @@
             // 
             this.comboBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.comboBox1.BackColor = System.Drawing.SystemColors.Window;
+            this.comboBox1.Cursor = System.Windows.Forms.Cursors.Default;
             this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBox1.FormattingEnabled = true;
@@ -136,7 +138,7 @@
             "OWNED",
             "RENTED",
             "BOARDERS/BEDSPACE"});
-            this.comboBox1.Location = new System.Drawing.Point(505, 156);
+            this.comboBox1.Location = new System.Drawing.Point(618, 156);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(249, 28);
             this.comboBox1.TabIndex = 248;
@@ -147,7 +149,7 @@
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Transparent;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(501, 133);
+            this.label2.Location = new System.Drawing.Point(614, 133);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(146, 20);
@@ -157,9 +159,9 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(47)))), ((int)(((byte)(51)))));
-            this.panel1.Location = new System.Drawing.Point(414, 72);
+            this.panel1.Location = new System.Drawing.Point(487, 86);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(3, 341);
+            this.panel1.Size = new System.Drawing.Size(3, 487);
             this.panel1.TabIndex = 250;
             // 
             // Collection
@@ -167,7 +169,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(235)))), ((int)(((byte)(230)))));
-            this.ClientSize = new System.Drawing.Size(856, 450);
+            this.ClientSize = new System.Drawing.Size(976, 585);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBox1);

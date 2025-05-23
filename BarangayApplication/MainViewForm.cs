@@ -25,7 +25,7 @@ namespace BarangayApplication
         // We'll store as strongly-typed for ApplyToModel access
         private Personalinfo _personalForm;
         private Collection _collectionForm;
-        private Occupation _occupationForm;
+        private Backup _occupationForm;
         private Form[] _forms;
 
         // NEW: Constructor for editing existing Residents
@@ -41,7 +41,7 @@ namespace BarangayApplication
 
             _personalForm = new Personalinfo(_resident);
             _collectionForm = new Collection(_resident);
-            _occupationForm = new Occupation(_resident);
+            _occupationForm = new Backup(_resident);
             _forms = new Form[]
             {
                 _personalForm,
@@ -71,7 +71,7 @@ namespace BarangayApplication
             // Initialize the steps with the shared Residents model
             _personalForm = new Personalinfo(_resident);
             _collectionForm = new Collection(_resident);
-            _occupationForm = new Occupation(_resident);
+            _occupationForm = new Backup(_resident);
             _forms = new Form[]
             {
                 _personalForm,
@@ -130,29 +130,15 @@ namespace BarangayApplication
         private void button1_Click(object sender, EventArgs e)
         {
             // Validate personal info first
-            if (!_personalForm.CheckRequiredFields(out string personalMissing))
+            bool personalValid = _personalForm.CheckRequiredFieldsAndHighlight();
+            bool collectionValid = _collectionForm.CheckRequiredFieldsAndHighlight();
+
+            if (!personalValid || !collectionValid)
             {
-                MessageBox.Show(
-                    "Please fill in the following required field(s):\n" + personalMissing,
-                    "Missing Information",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return; // Prevent save if incomplete
+                // Do not show MessageBox, just prevent save
+                return;
             }
 
-            // Validate collection (residence and purpose)
-            if (!_collectionForm.CheckRequiredFields(out string collectionMissing))
-            {
-                MessageBox.Show(
-                    "Please fill in the following required field(s):\n" + collectionMissing,
-                    "Missing Information",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return; // Prevent save if incomplete
-            }
-            
             // Update model from all subforms
             _personalForm.ApplyToModel();
             _collectionForm.ApplyToModel();
@@ -201,6 +187,11 @@ namespace BarangayApplication
                 _currentStep--;
                 loadform(_forms[_currentStep]);
             }
+        }
+
+        private void MainPanel_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

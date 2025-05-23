@@ -73,6 +73,16 @@ namespace BarangayApplication.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap add__2_ {
+            get {
+                object obj = ResourceManager.GetObject("add (2)", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap album_collection {
             get {
                 object obj = ResourceManager.GetObject("album-collection", resourceCulture);
@@ -236,6 +246,16 @@ namespace BarangayApplication.Properties {
         internal static System.Drawing.Bitmap loupe {
             get {
                 object obj = ResourceManager.GetObject("loupe", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap member_search {
+            get {
+                object obj = ResourceManager.GetObject("member-search", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

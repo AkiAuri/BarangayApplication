@@ -45,3 +45,55 @@ BACKUP DATABASE is terminating abnormally.
 2025-05-21 03:35:13 - Auto-backup: First login of new day or superadmin login
 2025-05-21 04:10:18 - Auto-backup: First login of new day or superadmin login
 2025-05-21 04:28:01 - Auto-backup: First login of new day or superadmin login
+2025-05-21 18:10:26 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:11:34 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:12:08 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:12:48 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:13:21 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:14:04 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:14:44 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:15:21 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:15:58 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:16:45 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:21:41 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:23:42 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:25:31 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:26:11 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:26:38 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:27:06 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:27:39 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:28:29 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:29:35 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:30:12 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:30:42 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:31:19 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:32:10 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:33:28 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 18:34:09 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.
+2025-05-21 20:00:28 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
+BACKUP DATABASE is terminating abnormally.

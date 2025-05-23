@@ -9,23 +9,22 @@ using Xceed.Words.NET;
 
 namespace BarangayApplication
 {
-    public class AccountItem
-    {
-        public int AccountID { get; set; }
-        public string AccountName { get; set; }
-        public override string ToString() => AccountName;
-    }
-
     public partial class Logbook : Form
     {
         private int currentPage = 1;
         private int totalPages = 0;
-        private const int rowsPerPage = 37;
+        private const int rowsPerPage = 28;
         private bool isLogUpdateInProgress = false;
 
         public Logbook()
         {
             InitializeComponent();
+
+            // Add alternating row color (like Archive)
+            dgvLog.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.LightGray;
+
+            //Add ALL CAPS text.
+            dgvLog.CellFormatting += DgvLog_CellFormatting;
 
             cBxFilterByAction.SelectedIndexChanged += cBxFilterByAction_SelectedIndexChanged;
             cbxUserFilter.SelectedIndexChanged += cbxUserFilter_SelectedIndexChanged;
@@ -33,13 +32,23 @@ namespace BarangayApplication
             cBxFilterByAction.Items.Clear();
             cBxFilterByAction.Items.Add("ALL ACTIONS");
             cBxFilterByAction.Items.AddRange(new string[] {
-                "ADD",
-                "EDIT",
-                "ARCHIVE",
-                "RESTORE",
-                "LOGIN"
+                                                    "ADD",
+                                                    "EDIT",
+                                                    "ARCHIVE",
+                                                    "RESTORE",
+                                                    "LOGIN"
             });
         }
+
+        private void DgvLog_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.Value != null && e.Value is string)
+            {
+                e.Value = e.Value.ToString().ToUpper();
+                e.FormattingApplied = true;
+            }
+        }
+                                                    
 
         private void Logbook_Load(object sender, EventArgs e)
         {
@@ -383,5 +392,12 @@ namespace BarangayApplication
                 }
             }
         }
+    }
+
+    public class AccountItem
+    {
+        public int AccountID { get; set; }
+        public string AccountName { get; set; }
+        public override string ToString() => AccountName;
     }
 }

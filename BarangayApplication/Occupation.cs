@@ -5,21 +5,16 @@ using BarangayApplication.Models;
 
 namespace BarangayApplication
 {
-    public partial class Occupation : Form
+    public partial class Backup : Form
     {
         private Resident _resident;
 
-        public Occupation(Resident resident)
+        public Backup(Resident resident)
         {
             InitializeComponent();
             _resident = resident ?? throw new ArgumentNullException(nameof(resident));
 
-            // Alphanumeric for spouse full name
-            txtSpouseName.KeyPress += AlphanumericOnly_KeyPress;
 
-            // Numbers only for spouse contact, 11 digits max (PH phone standard)
-            txtSpouseContact.KeyPress += txtSpouseContact_KeyPress;
-            txtSpouseContact.TextChanged += txtSpouseContact_TextChanged;
 
             LoadFromModel();
         }
@@ -36,18 +31,6 @@ namespace BarangayApplication
             string GetPrevPosition(List<PreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
             string GetPrevLengthOfService(List<PreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].LengthOfService : "";
 
-            // Employment (handle null safely)
-            txtOccCompany.Text = GetCompany(_resident.Employments);
-            txtOccPos1.Text = GetPosition(_resident.Employments);
-            SetYearMonthFromString(GetLengthOfService(_resident.Employments), YearLength1, MonthLength1);
-
-            txtOccPrev.Text = GetPrevCompany(_resident.PreviousEmployments);
-            txtOccPos2.Text = GetPrevPosition(_resident.PreviousEmployments);
-            SetYearMonthFromString(GetPrevLengthOfService(_resident.PreviousEmployments), YearLength2, MonthLength2);
-
-            // Spouse (handle null safely)
-            txtSpouseName.Text = _resident.Spouse?.SpouseName ?? "";
-            txtSpouseContact.Text = _resident.Spouse?.SpousePhone ?? "";
 
             string GetSpouseCompany(List<SpouseEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Company : "";
             string GetSpousePosition(List<SpouseEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
@@ -57,13 +40,6 @@ namespace BarangayApplication
             string GetSpousePrevPosition(List<SpousePreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].Position : "";
             string GetSpousePrevLengthOfService(List<SpousePreviousEmployment> emps) => emps != null && emps.Count > 0 ? emps[0].LengthOfService : "";
 
-            txtSpouseCompany.Text = GetSpouseCompany(_resident.Spouse?.Employments);
-            txtSpousePos1.Text = GetSpousePosition(_resident.Spouse?.Employments);
-            SetYearMonthFromString(GetSpouseLengthOfService(_resident.Spouse?.Employments), YearLength3, MonthLength3);
-
-            txtSpousePrev.Text = GetSpousePrevCompany(_resident.Spouse?.PreviousEmployments);
-            txtSpousePos2.Text = GetSpousePrevPosition(_resident.Spouse?.PreviousEmployments);
-            SetYearMonthFromString(GetSpousePrevLengthOfService(_resident.Spouse?.PreviousEmployments), YearLength4, MonthLength4);
 
             // Local helper: parse "3 years 2 months" type string
             void SetYearMonthFromString(string value, ComboBox yearBox, ComboBox monthBox)
@@ -104,43 +80,31 @@ namespace BarangayApplication
                 _resident.Employments = new List<Employment>();
             if (_resident.Employments.Count == 0)
                 _resident.Employments.Add(new Employment());
-            _resident.Employments[0].Company = txtOccCompany.Text;
-            _resident.Employments[0].Position = txtOccPos1.Text;
-            _resident.Employments[0].LengthOfService = ComposeYearMonth(YearLength1, MonthLength1);
 
             // Previous Employment (create list if null)
             if (_resident.PreviousEmployments == null)
                 _resident.PreviousEmployments = new List<PreviousEmployment>();
             if (_resident.PreviousEmployments.Count == 0)
                 _resident.PreviousEmployments.Add(new PreviousEmployment());
-            _resident.PreviousEmployments[0].Company = txtOccPrev.Text;
-            _resident.PreviousEmployments[0].Position = txtOccPos2.Text;
-            _resident.PreviousEmployments[0].LengthOfService = ComposeYearMonth(YearLength2, MonthLength2);
 
             // Spouse (create if null)
             if (_resident.Spouse == null)
                 _resident.Spouse = new Spouse();
 
-            _resident.Spouse.SpouseName = txtSpouseName.Text;
-            _resident.Spouse.SpousePhone = txtSpouseContact.Text;
+
+
 
             // Spouse Employment (create list if null)
             if (_resident.Spouse.Employments == null)
                 _resident.Spouse.Employments = new List<SpouseEmployment>();
             if (_resident.Spouse.Employments.Count == 0)
                 _resident.Spouse.Employments.Add(new SpouseEmployment());
-            _resident.Spouse.Employments[0].Company = txtSpouseCompany.Text;
-            _resident.Spouse.Employments[0].Position = txtSpousePos1.Text;
-            _resident.Spouse.Employments[0].LengthOfService = ComposeYearMonth(YearLength3, MonthLength3);
 
             // Spouse Previous Employment (create list if null)
             if (_resident.Spouse.PreviousEmployments == null)
                 _resident.Spouse.PreviousEmployments = new List<SpousePreviousEmployment>();
             if (_resident.Spouse.PreviousEmployments.Count == 0)
                 _resident.Spouse.PreviousEmployments.Add(new SpousePreviousEmployment());
-            _resident.Spouse.PreviousEmployments[0].Company = txtSpousePrev.Text;
-            _resident.Spouse.PreviousEmployments[0].Position = txtSpousePos2.Text;
-            _resident.Spouse.PreviousEmployments[0].LengthOfService = ComposeYearMonth(YearLength4, MonthLength4);
         }
         private void AlphanumericOnly_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -154,16 +118,11 @@ namespace BarangayApplication
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
 
-            if (!char.IsControl(e.KeyChar) && txtSpouseContact.Text.Length >= 11 && txtSpouseContact.SelectionLength == 0)
-                e.Handled = true;
+
         }
 
         private void txtSpouseContact_TextChanged(object sender, EventArgs e)
         {
-            if (txtSpouseContact.Text.Length > 11)
-                txtSpouseContact.Text = txtSpouseContact.Text.Substring(0, 11);
-
-            txtSpouseContact.SelectionStart = txtSpouseContact.Text.Length;
         }
 
         // You can keep this if you use it for other number-only fields
@@ -354,6 +313,11 @@ namespace BarangayApplication
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click_1(object sender, EventArgs e)
         {
 
         }

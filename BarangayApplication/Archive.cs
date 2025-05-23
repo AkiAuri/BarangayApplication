@@ -14,7 +14,7 @@ namespace BarangayApplication
         // --- PAGINATION FIELDS ---
         private int currentPage = 1;
         private int totalPages = 0;
-        private const int rowsPerPage = 37; // You can adjust this if you want
+        private const int rowsPerPage = 28; // You can adjust this if you want
         private List<Resident> archivedResidentsCache = null; // For paging/filtering
 
         public Archive()
@@ -89,6 +89,8 @@ namespace BarangayApplication
             }
         }
 
+        private List<Resident> allArchivedResidents = null; // MASTER copy, never filtered
+
         /// <summary>
         /// Reads archived resident data from the repository, creates a DataTable,
         /// populates it with select resident details, and displays the data in the DataGrid.
@@ -96,7 +98,8 @@ namespace BarangayApplication
         private void ReadArchivedResidents()
         {
             var repo = new ResidentsRepository();
-            archivedResidentsCache = repo.GetArchivedResidents();
+            allArchivedResidents = repo.GetArchivedResidents();
+            archivedResidentsCache = new List<Resident>(allArchivedResidents); // Start unfiltered
             CalculateTotalPages();
             LoadDataForPage(1);
         }
@@ -214,18 +217,16 @@ namespace BarangayApplication
         {
             var SearchBar = sender as TextBox;
             string query = SearchBar.Text.Trim();
-            if (archivedResidentsCache == null)
-            {
-                var repo = new ResidentsRepository();
-                archivedResidentsCache = repo.GetArchivedResidents();
-            }
 
-            List<Resident> baseResidents = archivedResidentsCache;
+            // Always filter from MASTER list
+            List<Resident> baseResidents = allArchivedResidents ?? new List<Resident>();
+
             IEnumerable<Resident> filtered = baseResidents;
 
             if (string.IsNullOrWhiteSpace(query))
             {
-                // Show all with paging
+                // Reset to show all residents
+                archivedResidentsCache = new List<Resident>(allArchivedResidents);
                 CalculateTotalPages();
                 currentPage = 1;
                 LoadDataForPage(currentPage);

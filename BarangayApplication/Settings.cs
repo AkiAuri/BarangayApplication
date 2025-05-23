@@ -13,8 +13,8 @@ namespace BarangayApplication
         private const string ChangeCountFile = "change_count.txt";
         private const string LastBackupFile = "last_backup.txt";
         private const string BackupLocationFile = "backup_location.txt";
-        private const string DatabaseName = "sybau_database";
-        private const string ServerName = @"localhost,1433";
+        private const string DatabaseName = "NewestDatabase";
+        private const string ServerName = @".";
         public const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog="+ DatabaseName + ";Integrated Security=True";
 
         public Settings()

@@ -184,5 +184,91 @@ namespace BarangayApplication
         {
             // Optional: your startup logic
         }
+
+        // Add this method to highlight required fields with red border and return validity
+        public bool CheckRequiredFieldsAndHighlight()
+        {
+            bool allValid = true;
+
+            // Residence Type (comboBox1) is required
+            allValid &= HighlightIfEmpty(comboBox1);
+
+            // Purpose (comboBox2) is required
+            allValid &= HighlightIfEmpty(comboBox2);
+
+            // If Purpose is "OTHER", txtOthers is required
+            if (comboBox2.Text == "OTHER")
+                allValid &= HighlightIfEmpty(txtOthers);
+            else
+                ResetHighlight(txtOthers);
+
+            return allValid;
+        }
+
+        // Helper method to highlight a ComboBox if empty
+        private bool HighlightIfEmpty(ComboBox cb)
+        {
+            if (string.IsNullOrWhiteSpace(cb.Text))
+            {
+                cb.BackColor = System.Drawing.Color.MistyRose;
+                cb.FlatStyle = FlatStyle.Popup;
+                cb.SelectedIndexChanged -= ResetComboBoxBorder;
+                cb.SelectedIndexChanged += ResetComboBoxBorder;
+                return false;
+            }
+            else
+            {
+                cb.BackColor = System.Drawing.SystemColors.Window;
+                cb.FlatStyle = FlatStyle.Standard;
+                cb.SelectedIndexChanged -= ResetComboBoxBorder;
+                return true;
+            }
+        }
+
+        // Helper method to highlight a TextBox if empty
+        private bool HighlightIfEmpty(TextBox tb)
+        {
+            if (string.IsNullOrWhiteSpace(tb.Text))
+            {
+                tb.BackColor = System.Drawing.Color.MistyRose;
+                tb.BorderStyle = BorderStyle.FixedSingle;
+                tb.TextChanged -= ResetTextBoxBorder;
+                tb.TextChanged += ResetTextBoxBorder;
+                return false;
+            }
+            else
+            {
+                tb.BackColor = System.Drawing.SystemColors.Window;
+                tb.BorderStyle = BorderStyle.Fixed3D;
+                tb.TextChanged -= ResetTextBoxBorder;
+                return true;
+            }
+        }
+
+        // Reset border when user starts typing in TextBox
+        private void ResetTextBoxBorder(object sender, EventArgs e)
+        {
+            var tb = sender as TextBox;
+            tb.BackColor = System.Drawing.SystemColors.Window;
+            tb.BorderStyle = BorderStyle.Fixed3D;
+            tb.TextChanged -= ResetTextBoxBorder;
+        }
+
+        // Reset border when user changes ComboBox selection
+        private void ResetComboBoxBorder(object sender, EventArgs e)
+        {
+            var cb = sender as ComboBox;
+            cb.BackColor = System.Drawing.SystemColors.Window;
+            cb.FlatStyle = FlatStyle.Standard;
+            cb.SelectedIndexChanged -= ResetComboBoxBorder;
+        }
+
+        // Helper to reset highlight for a TextBox (used for txtOthers when not required)
+        private void ResetHighlight(TextBox tb)
+        {
+            tb.BackColor = System.Drawing.SystemColors.Window;
+            tb.BorderStyle = BorderStyle.Fixed3D;
+            tb.TextChanged -= ResetTextBoxBorder;
+        }
     }
 }

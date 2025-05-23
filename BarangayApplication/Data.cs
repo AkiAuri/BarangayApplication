@@ -463,5 +463,10 @@ namespace BarangayApplication
             // Extend SearchBar to occupy the space left by the buttons
             SearchBar.Width = this.Width - SearchBar.Left - 20; // Adjust width dynamically
         }
+
+        private void DataGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
 }

@@ -278,6 +278,7 @@
     <None Include="Resources\password.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\member-search.png" />
     <None Include="Resources\secure-backup1.png" />
     <None Include="Resources\settings %281%291.png" />
     <None Include="Resources\time-past.png" />
@@ -315,6 +316,7 @@
     <None Include="Resources\album-collection.png" />
     <None Include="Resources\employee-man.png" />
     <None Include="Resources\circle-ellipsis.png" />
+    <None Include="Resources\add %282%29.png" />
     <Content Include="Resources\Logo.png" />
     <None Include="Resources\Overview.png" />
   </ItemGroup>

@@ -646,3 +646,44 @@ D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Documen
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Drawing.NET.dll
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Words.NET.dll
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.AccountItem.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BarangayApplication.exe.config
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BarangayApplication.exe
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BarangayApplication.pdb
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BCrypt.Net-Next.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Buffers.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Memory.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Document.NET.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Drawing.NET.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Xceed.Words.NET.dll
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\BCrypt.Net-Next.xml
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Buffers.xml
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Memory.xml
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.AssemblyReference.cache
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Collection.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.FormApplication2.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Archive.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Data.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.ExitForms.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Finish.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.FormApplication.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.LoginMenu.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.LogoutConfirm.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.MainMenu.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.MainViewForm.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Overview.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Personalinfo.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Properties.Resources.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Purpose.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Reason.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Settings.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.GenerateResource.cache
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.csproj.CoreCompileInputs.cache
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\Barangay.88A64B8F.Up2Date
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.exe
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.pdb
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Logbook.resources
+C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Backup.resources

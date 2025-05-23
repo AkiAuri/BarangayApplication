@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using BarangayApplication.Models;
 
@@ -19,12 +20,24 @@ namespace BarangayApplication
             txtMname.KeyPress += LetterOnly_KeyPress;
             txtLname.KeyPress += LetterOnly_KeyPress;
 
+            // Reset color on input handlers
+            txtFname.TextChanged += ResetTextBoxColor;
+            txtMname.TextChanged += ResetTextBoxColor;
+            txtLname.TextChanged += ResetTextBoxColor;
+            txtAdd.TextChanged += ResetTextBoxColor;
+            txtPoB.TextChanged += ResetTextBoxColor;
+            txtHeight.TextChanged += ResetTextBoxColor;
+            txtWeight.TextChanged += ResetTextBoxColor;
+            txtTelCel.TextChanged += ResetTextBoxColor;
+            Age.TextChanged += ResetTextBoxColor;
+
+            // ComboBox highlight reset handlers
+            cbxSex.SelectedIndexChanged += ResetComboBoxBorder;
+            cBxCivilStatus.SelectedIndexChanged += ResetComboBoxBorder;
+
             // Specific handlers for input restrictions and max length
             txtTelCel.KeyPress += txtTelCel_KeyPress;
             txtTelCel.TextChanged += txtTelCel_TextChanged;
-
-            txtVoterIdNo.KeyPress += txtVoterIdNo_KeyPress;
-            txtVoterIdNo.TextChanged += txtVoterIdNo_TextChanged;
 
             txtHeight.KeyPress += txtHeight_KeyPress;
             txtWeight.KeyPress += txtWeight_KeyPress;
@@ -59,8 +72,6 @@ namespace BarangayApplication
             Age.Text = _resident.DateOfBirth != DateTime.MinValue ? CalculateAge(_resident.DateOfBirth).ToString() : "";
             txtPoB.Text = _resident.PlaceOfBirth ?? "";
             cBxCivilStatus.Text = _resident.CivilStatus ?? "";
-            txtVoterIdNo.Text = _resident.VoterIDNo ?? "";
-            txtPoll.Text = _resident.PollingPlace ?? "";
         }
 
         // Copy control values into Resident object
@@ -90,8 +101,6 @@ namespace BarangayApplication
 
             _resident.PlaceOfBirth = txtPoB.Text;
             _resident.CivilStatus = cBxCivilStatus.Text;
-            _resident.VoterIDNo = txtVoterIdNo.Text;
-            _resident.PollingPlace = txtPoll.Text;
         }
 
         private int CalculateAge(DateTime dateOfBirth)
@@ -140,14 +149,9 @@ namespace BarangayApplication
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-            if (!char.IsControl(e.KeyChar) && txtVoterIdNo.Text.Length >= 10 && txtVoterIdNo.SelectionLength == 0)
-                e.Handled = true;
         }
         private void txtVoterIdNo_TextChanged(object sender, EventArgs e)
         {
-            if (txtVoterIdNo.Text.Length > 10)
-                txtVoterIdNo.Text = txtVoterIdNo.Text.Substring(0, 10);
-            txtVoterIdNo.SelectionStart = txtVoterIdNo.Text.Length;
         }
         
         // TODO: ERROR X.XX only does X.X, FIX SOON.
@@ -253,8 +257,156 @@ namespace BarangayApplication
             return missingFields.Count == 0;
         }
 
+
+        public bool CheckRequiredFieldsAndHighlight()
+        {
+            bool allValid = true;
+
+            // Helper to highlight controls
+            void Highlight(Control ctrl, bool highlight)
+            {
+                ctrl.BackColor = highlight ? Color.MistyRose : SystemColors.Window;
+                ctrl.Invalidate();
+            }
+
+            // TextBoxes
+            bool fnameEmpty = string.IsNullOrWhiteSpace(txtFname.Text);
+            Highlight(txtFname, fnameEmpty);
+            allValid &= !fnameEmpty;
+
+            bool mnameEmpty = string.IsNullOrWhiteSpace(txtMname.Text);
+            Highlight(txtMname, mnameEmpty);
+            allValid &= !mnameEmpty;
+
+            bool lnameEmpty = string.IsNullOrWhiteSpace(txtLname.Text);
+            Highlight(txtLname, lnameEmpty);
+            allValid &= !lnameEmpty;
+
+            bool addEmpty = string.IsNullOrWhiteSpace(txtAdd.Text);
+            Highlight(txtAdd, addEmpty);
+            allValid &= !addEmpty;
+
+            bool pobEmpty = string.IsNullOrWhiteSpace(txtPoB.Text);
+            Highlight(txtPoB, pobEmpty);
+            allValid &= !pobEmpty;
+
+            bool ageEmpty = string.IsNullOrWhiteSpace(Age.Text);
+            Highlight(Age, ageEmpty);
+            allValid &= !ageEmpty;
+
+            bool heightEmpty = string.IsNullOrWhiteSpace(txtHeight.Text);
+            Highlight(txtHeight, heightEmpty);
+            allValid &= !heightEmpty;
+
+            bool weightEmpty = string.IsNullOrWhiteSpace(txtWeight.Text);
+            Highlight(txtWeight, weightEmpty);
+            allValid &= !weightEmpty;
+
+            bool telCelEmpty = string.IsNullOrWhiteSpace(txtTelCel.Text);
+            Highlight(txtTelCel, telCelEmpty);
+            allValid &= !telCelEmpty;
+
+            // ComboBoxes (use new highlight logic)
+            allValid &= HighlightIfEmptyComboBox(cbxSex);
+            allValid &= HighlightIfEmptyComboBox(cBxCivilStatus);
+
+
+
+            // DateTimePicker (example: you may want to check for a valid range)
+            // Here, we just check if the value is not the default
+            bool dateInvalid = dateTimePicker1.Value == default(DateTime);
+            Highlight(dateTimePicker1, dateInvalid);
+            allValid &= !dateInvalid;
+
+            return allValid;
+        }
+
+        // Helper method to highlight a ComboBox if empty (like in Collection.cs)
+        private bool HighlightIfEmptyComboBox(ComboBox cb)
+        {
+            if (string.IsNullOrWhiteSpace(cb.Text) || cb.SelectedIndex < 0)
+            {
+                cb.BackColor = System.Drawing.Color.MistyRose;
+                cb.FlatStyle = FlatStyle.Popup;
+                cb.SelectedIndexChanged -= ResetComboBoxBorder;
+                cb.SelectedIndexChanged += ResetComboBoxBorder;
+                return false;
+            }
+            else
+            {
+                cb.BackColor = System.Drawing.SystemColors.Window;
+                cb.FlatStyle = FlatStyle.Standard;
+                cb.SelectedIndexChanged -= ResetComboBoxBorder;
+                return true;
+            }
+        }
+
+        // Reset border when user changes ComboBox selection
+        private void ResetComboBoxBorder(object sender, EventArgs e)
+        {
+            var cb = sender as ComboBox;
+            cb.BackColor = System.Drawing.SystemColors.Window;
+            cb.FlatStyle = FlatStyle.Standard;
+            cb.SelectedIndexChanged -= ResetComboBoxBorder;
+        }
+
+        // Helper method to highlight a TextBox if empty
+        private bool HighlightIfEmpty(TextBox tb)
+        {
+            if (string.IsNullOrWhiteSpace(tb.Text))
+            {
+                tb.BackColor = System.Drawing.Color.MistyRose;
+                tb.BorderStyle = BorderStyle.FixedSingle;
+                tb.Paint += TextBox_PaintRedBorder;
+                tb.TextChanged -= ResetTextBoxBorder;
+                tb.TextChanged += ResetTextBoxBorder;
+                return false;
+            }
+            else
+            {
+                tb.BackColor = System.Drawing.SystemColors.Window;
+                tb.BorderStyle = BorderStyle.Fixed3D;
+                tb.Paint -= TextBox_PaintRedBorder;
+                return true;
+            }
+        }
+
+        // Paint event to draw a red border
+        private void TextBox_PaintRedBorder(object sender, PaintEventArgs e)
+        {
+            var tb = sender as TextBox;
+            var g = e.Graphics;
+            var rect = tb.ClientRectangle;
+            rect.Width -= 1;
+            rect.Height -= 1;
+            using (var pen = new System.Drawing.Pen(System.Drawing.Color.Red, 2))
+            {
+                g.DrawRectangle(pen, rect);
+            }
+        }
+
+        // Reset border when user starts typing
+        private void ResetTextBoxBorder(object sender, EventArgs e)
+        {
+            var tb = sender as TextBox;
+            tb.BackColor = System.Drawing.SystemColors.Window;
+            tb.BorderStyle = BorderStyle.Fixed3D;
+            tb.Paint -= TextBox_PaintRedBorder;
+            tb.TextChanged -= ResetTextBoxBorder;
+        }
+
         private void txtPoll_TextChanged(object sender, EventArgs e)
         {
+        }
+
+        // Resets the textbox color to its original when user inputs text
+        private void ResetTextBoxColor(object sender, EventArgs e)
+        {
+            var tb = sender as TextBox;
+            if (tb != null)
+            {
+                tb.BackColor = System.Drawing.SystemColors.Window;
+            }
         }
     }
 }
