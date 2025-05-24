@@ -15,6 +15,7 @@ namespace BarangayApplication
         /// </summary>
         public BackupRestoreConfirmation(string action = "perform this action")
         {
+            InitializeComponent(); // <-- THIS IS REQUIRED
             lblWarning.Text = $"Are you sure you want to {action}? This action cannot be undone.";
         }
 
