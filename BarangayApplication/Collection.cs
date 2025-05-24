@@ -10,41 +10,43 @@ namespace BarangayApplication
     {
         private Resident _resident;
 
-        // Accept Resident model in the constructor
         public Collection(Resident resident)
         {
             InitializeComponent();
             _resident = resident ?? throw new ArgumentNullException(nameof(resident));
 
-            // Residency drop-down
+            // Residence Type drop-down (binds to ResidenceTypeID)
             comboBox1.Items.Clear();
-            comboBox1.Items.AddRange(new string[] {
-                "OWNED",
-                "RENTED",
-                "BOARDERS/BEDSPACE"
+            comboBox1.Items.AddRange(new object[]
+            {
+                new ComboBoxItem<int>("OWNED", ResidenceTypeIds.Owned),
+                new ComboBoxItem<int>("RENTED", ResidenceTypeIds.Rented),
+                new ComboBoxItem<int>("BOARDERS/BEDSPACE", ResidenceTypeIds.BoardersBedspacer)
             });
 
-            // Purpose drop-down
+            // Purpose drop-down (binds to PurposeTypeID)
             comboBox2.Items.Clear();
-            comboBox2.Items.AddRange(new string[] {
-                "BANK TRANSACTION",
-                "BURIAL",
-                "LOAN",
-                "LOCAL EMPLOYMENT",
-                "MARRIAGE",
-                "MEDICAL",
-                "MERALCO",
-                "POSTAL ID",
-                "RESIDENCY",
-                "SCHOOL",
-                "SENIOR CITIZEN",
-                "TRAVEL ABROAD",
-                "OTHER"
+            comboBox2.Items.AddRange(new object[]
+            {
+                new ComboBoxItem<int>("BANK TRANSACTION", PurposeTypeIds.BankTransaction),
+                new ComboBoxItem<int>("BURIAL", PurposeTypeIds.Burial),
+                new ComboBoxItem<int>("LOAN", PurposeTypeIds.Loan),
+                new ComboBoxItem<int>("LOCAL EMPLOYMENT", PurposeTypeIds.LocalEmployment),
+                new ComboBoxItem<int>("MARRIAGE", PurposeTypeIds.Marriage),
+                new ComboBoxItem<int>("MEDICAL", PurposeTypeIds.Medical),
+                new ComboBoxItem<int>("MERALCO", PurposeTypeIds.Meralco),
+                new ComboBoxItem<int>("POSTAL ID", PurposeTypeIds.PostalID),
+                new ComboBoxItem<int>("RESIDENCY", PurposeTypeIds.Residency),
+                new ComboBoxItem<int>("SCHOOL", PurposeTypeIds.School),
+                new ComboBoxItem<int>("SENIOR CITIZEN", PurposeTypeIds.SeniorCitizen),
+                new ComboBoxItem<int>("TRAVEL ABROAD", PurposeTypeIds.TravelAbroad),
+                new ComboBoxItem<int>("OTHER", PurposeTypeIds.Others)
             });
 
             comboBox2.SelectedIndexChanged += (s, e) =>
             {
-                if (comboBox2.SelectedItem?.ToString() == "OTHER")
+                var selected = comboBox2.SelectedItem as ComboBoxItem<int>;
+                if (selected != null && selected.Value == PurposeTypeIds.Others)
                 {
                     txtOthers.Enabled = true;
                     txtOthers.Visible = true;
@@ -67,39 +69,58 @@ namespace BarangayApplication
         // Populate controls from model
         public void LoadFromModel()
         {
-            comboBox1.Text = _resident.ResidenceType ?? "";
+            // Residence TypeID
+            if (_resident.ResidenceTypeID != 0)
+            {
+                comboBox1.SelectedIndex = -1;
+                foreach (ComboBoxItem<int> item in comboBox1.Items)
+                {
+                    if (item.Value == _resident.ResidenceTypeID)
+                    {
+                        comboBox1.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
 
             // Use normalized Purposes navigation property (List<ResidentPurpose>)
             var purposes = _resident.Purposes;
 
             if (purposes != null && purposes.Any(p => p.PurposeTypeID == PurposeTypeIds.Others && !string.IsNullOrWhiteSpace(p.PurposeOthers)))
             {
-                comboBox2.Text = "OTHER";
+                // Set to "OTHER"
+                foreach (ComboBoxItem<int> item in comboBox2.Items)
+                {
+                    if (item.Value == PurposeTypeIds.Others)
+                    {
+                        comboBox2.SelectedItem = item;
+                        break;
+                    }
+                }
                 txtOthers.Text = purposes.First(p => p.PurposeTypeID == PurposeTypeIds.Others).PurposeOthers ?? "";
                 txtOthers.Visible = true;
                 txtOthers.Enabled = true;
             }
             else if (purposes != null && purposes.Count > 0)
             {
-                // Set combo to first matching known purpose, prioritize by order in dropdown
-                string foundPurpose = null;
-                foreach (var item in comboBox2.Items.Cast<string>())
+                // Set combo to first matching known purpose
+                ComboBoxItem<int> foundItem = null;
+                foreach (ComboBoxItem<int> item in comboBox2.Items)
                 {
-                    int? ptid = GetPurposeTypeId(item);
-                    if (ptid != null && purposes.Any(p => p.PurposeTypeID == ptid))
+                    if (purposes.Any(p => p.PurposeTypeID == item.Value))
                     {
-                        foundPurpose = item;
+                        foundItem = item;
                         break;
                     }
                 }
-                comboBox2.Text = foundPurpose ?? "";
+                comboBox2.SelectedItem = foundItem;
                 txtOthers.Visible = false;
                 txtOthers.Enabled = false;
                 txtOthers.Text = "";
             }
             else
             {
-                comboBox2.Text = "";
+                comboBox2.SelectedIndex = -1;
                 txtOthers.Visible = false;
                 txtOthers.Enabled = false;
                 txtOthers.Text = "";
@@ -109,7 +130,11 @@ namespace BarangayApplication
         // Copy values to model
         public void ApplyToModel()
         {
-            _resident.ResidenceType = comboBox1.Text;
+            // Residence TypeID by ComboBox
+            if (comboBox1.SelectedItem is ComboBoxItem<int> resType)
+                _resident.ResidenceTypeID = resType.Value;
+            else
+                _resident.ResidenceTypeID = 0;
 
             // Ensure Purposes exists
             if (_resident.Purposes == null)
@@ -117,72 +142,45 @@ namespace BarangayApplication
             else
                 _resident.Purposes.Clear();
 
-            if (comboBox2.Text == "OTHER")
+            if (comboBox2.SelectedItem is ComboBoxItem<int> purposeItem)
             {
-                if (!string.IsNullOrWhiteSpace(txtOthers.Text))
+                if (purposeItem.Value == PurposeTypeIds.Others)
                 {
-                    _resident.Purposes.Add(new ResidentPurpose
+                    if (!string.IsNullOrWhiteSpace(txtOthers.Text))
                     {
-                        PurposeTypeID = PurposeTypeIds.Others,
-                        PurposeOthers = txtOthers.Text
-                    });
+                        _resident.Purposes.Add(new ResidentPurpose
+                        {
+                            PurposeTypeID = PurposeTypeIds.Others,
+                            PurposeOthers = txtOthers.Text.Trim()
+                        });
+                    }
                 }
-            }
-            else
-            {
-                int? ptid = GetPurposeTypeId(comboBox2.Text);
-                if (ptid.HasValue)
+                else
                 {
                     _resident.Purposes.Add(new ResidentPurpose
                     {
-                        PurposeTypeID = ptid.Value,
+                        PurposeTypeID = purposeItem.Value,
                         PurposeOthers = ""
                     });
                 }
             }
         }
 
-        private int? GetPurposeTypeId(string purpose)
-        {
-            switch (purpose?.ToUpperInvariant())
-            {
-                case "RESIDENCY": return PurposeTypeIds.Residency;
-                case "POSTAL ID": return PurposeTypeIds.PostalID;
-                case "LOCAL EMPLOYMENT": return PurposeTypeIds.LocalEmployment;
-                case "MARRIAGE": return PurposeTypeIds.Marriage;
-                case "LOAN": return PurposeTypeIds.Loan;
-                case "MERALCO": return PurposeTypeIds.Meralco;
-                case "BANK TRANSACTION": return PurposeTypeIds.BankTransaction;
-                case "TRAVEL ABROAD": return PurposeTypeIds.TravelAbroad;
-                case "SENIOR CITIZEN": return PurposeTypeIds.SeniorCitizen;
-                case "SCHOOL": return PurposeTypeIds.School;
-                case "MEDICAL": return PurposeTypeIds.Medical;
-                case "BURIAL": return PurposeTypeIds.Burial;
-                case "OTHER": return PurposeTypeIds.Others;
-                default: return null;
-            }
-        }
-        
         public bool CheckRequiredFields(out string missing)
         {
-            var missingFields = new System.Collections.Generic.List<string>();
+            var missingFields = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(comboBox1.Text))
+            if (comboBox1.SelectedItem == null)
                 missingFields.Add("Residence Type");
 
-            if (string.IsNullOrWhiteSpace(comboBox2.Text))
+            if (comboBox2.SelectedItem == null)
                 missingFields.Add("Purpose");
-            else if (comboBox2.Text == "OTHER" && string.IsNullOrWhiteSpace(txtOthers.Text))
+            else if (comboBox2.SelectedItem is ComboBoxItem<int> item &&
+                     item.Value == PurposeTypeIds.Others && string.IsNullOrWhiteSpace(txtOthers.Text))
                 missingFields.Add("Specify Purpose (Others)");
 
             missing = string.Join(", ", missingFields);
             return missingFields.Count == 0;
-        }
-        
-        //Removing this somehow breaks the thing, so I'm just keeping it, lol.
-        private void Collection_Load(object sender, EventArgs e)
-        {
-            // Optional: your startup logic
         }
 
         // Add this method to highlight required fields with red border and return validity
@@ -190,14 +188,10 @@ namespace BarangayApplication
         {
             bool allValid = true;
 
-            // Residence Type (comboBox1) is required
             allValid &= HighlightIfEmpty(comboBox1);
-
-            // Purpose (comboBox2) is required
             allValid &= HighlightIfEmpty(comboBox2);
 
-            // If Purpose is "OTHER", txtOthers is required
-            if (comboBox2.Text == "OTHER")
+            if (comboBox2.SelectedItem is ComboBoxItem<int> item && item.Value == PurposeTypeIds.Others)
                 allValid &= HighlightIfEmpty(txtOthers);
             else
                 ResetHighlight(txtOthers);
@@ -208,7 +202,7 @@ namespace BarangayApplication
         // Helper method to highlight a ComboBox if empty
         private bool HighlightIfEmpty(ComboBox cb)
         {
-            if (string.IsNullOrWhiteSpace(cb.Text))
+            if (cb.SelectedItem == null)
             {
                 cb.BackColor = System.Drawing.Color.MistyRose;
                 cb.FlatStyle = FlatStyle.Popup;
@@ -245,7 +239,6 @@ namespace BarangayApplication
             }
         }
 
-        // Reset border when user starts typing in TextBox
         private void ResetTextBoxBorder(object sender, EventArgs e)
         {
             var tb = sender as TextBox;
@@ -254,7 +247,6 @@ namespace BarangayApplication
             tb.TextChanged -= ResetTextBoxBorder;
         }
 
-        // Reset border when user changes ComboBox selection
         private void ResetComboBoxBorder(object sender, EventArgs e)
         {
             var cb = sender as ComboBox;
@@ -263,12 +255,16 @@ namespace BarangayApplication
             cb.SelectedIndexChanged -= ResetComboBoxBorder;
         }
 
-        // Helper to reset highlight for a TextBox (used for txtOthers when not required)
         private void ResetHighlight(TextBox tb)
         {
             tb.BackColor = System.Drawing.SystemColors.Window;
             tb.BorderStyle = BorderStyle.Fixed3D;
             tb.TextChanged -= ResetTextBoxBorder;
+        }
+        
+        private void Collection_Load(object sender, EventArgs e)
+        {
+            // Optional: Add any startup logic here or leave empty if not needed. Literally just to fix an error.
         }
     }
 }

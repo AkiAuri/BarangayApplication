@@ -9,12 +9,11 @@ namespace BarangayApplication
     {
         private Resident _resident;
 
-        // Constructor accepts the shared Resident object
         public Personalinfo(Resident resident)
         {
             InitializeComponent();
             _resident = resident ?? throw new ArgumentNullException(nameof(resident));
-            
+
             // Letter-only handlers
             txtFname.KeyPress += LetterOnly_KeyPress;
             txtMname.KeyPress += LetterOnly_KeyPress;
@@ -35,22 +34,30 @@ namespace BarangayApplication
             cbxSex.SelectedIndexChanged += ResetComboBoxBorder;
             cBxCivilStatus.SelectedIndexChanged += ResetComboBoxBorder;
 
-            // Specific handlers for input restrictions and max length
+            // Input restrictions and max length
             txtTelCel.KeyPress += txtTelCel_KeyPress;
             txtTelCel.TextChanged += txtTelCel_TextChanged;
-
             txtHeight.KeyPress += txtHeight_KeyPress;
             txtWeight.KeyPress += txtWeight_KeyPress;
 
-            // Age update on DOB change
             dateTimePicker1.ValueChanged += dateTimePicker1_ValueChanged;
 
-            // Civil status/sex dropdowns (you may want to pre-populate these)
+            // Sex and Civil Status dropdowns (IDs, not just text)
             cbxSex.Items.Clear();
-            cbxSex.Items.AddRange(new string[] { "MALE", "FEMALE" });
+            cbxSex.Items.AddRange(new object[]
+            {
+                new ComboBoxItem<byte>("MALE", SexIds.Male),
+                new ComboBoxItem<byte>("FEMALE", SexIds.Female)
+            });
 
             cBxCivilStatus.Items.Clear();
-            cBxCivilStatus.Items.AddRange(new string[] { "SINGLE", "MARRIED", "WIDOWED", "LEGALLY SEPARATED" });
+            cBxCivilStatus.Items.AddRange(new object[]
+            {
+                new ComboBoxItem<int>("SINGLE", 1),
+                new ComboBoxItem<int>("MARRIED", 2),
+                new ComboBoxItem<int>("WIDOWED", 3),
+                new ComboBoxItem<int>("LEGALLY SEPARATED", 4)
+            });
 
             // Load resident data into controls if editing
             LoadFromModel();
@@ -64,25 +71,44 @@ namespace BarangayApplication
             txtMname.Text = _resident.MiddleName ?? "";
             txtAdd.Text = _resident.Address ?? "";
             txtTelCel.Text = _resident.TelCelNo ?? "";
-            cbxSex.Text = _resident.Sex ?? "";
             txtHeight.Text = _resident.Height > 0 ? _resident.Height.ToString("0.##") : "";
             txtWeight.Text = _resident.Weight > 0 ? _resident.Weight.ToString("0.##") : "";
-            dateTimePicker1.Value = _resident.DateOfBirth == DateTime.MinValue ? DateTime.Today : _resident.DateOfBirth;
-            // Age is not a stored property anymore, so calculate for display if needed
-            Age.Text = _resident.DateOfBirth != DateTime.MinValue ? CalculateAge(_resident.DateOfBirth).ToString() : "";
             txtPoB.Text = _resident.PlaceOfBirth ?? "";
-            cBxCivilStatus.Text = _resident.CivilStatus ?? "";
+
+            dateTimePicker1.Value = _resident.DateOfBirth == DateTime.MinValue ? DateTime.Today : _resident.DateOfBirth;
+            Age.Text = _resident.DateOfBirth != DateTime.MinValue ? CalculateAge(_resident.DateOfBirth).ToString() : "";
+
+            // Sex ComboBox by SexID
+            cbxSex.SelectedIndex = -1;
+            foreach (ComboBoxItem<byte> item in cbxSex.Items)
+            {
+                if (_resident.SexID == item.Value)
+                {
+                    cbxSex.SelectedItem = item;
+                    break;
+                }
+            }
+
+            // Civil Status ComboBox by CivilStatusID
+            cBxCivilStatus.SelectedIndex = -1;
+            foreach (ComboBoxItem<int> item in cBxCivilStatus.Items)
+            {
+                if (_resident.CivilStatusID == item.Value)
+                {
+                    cBxCivilStatus.SelectedItem = item;
+                    break;
+                }
+            }
         }
 
         // Copy control values into Resident object
         public void ApplyToModel()
         {
-            _resident.LastName = txtLname.Text;
-            _resident.FirstName = txtFname.Text;
-            _resident.MiddleName = txtMname.Text;
-            _resident.Address = txtAdd.Text;
-            _resident.TelCelNo = txtTelCel.Text;
-            _resident.Sex = cbxSex.Text;
+            _resident.LastName = txtLname.Text.Trim();
+            _resident.FirstName = txtFname.Text.Trim();
+            _resident.MiddleName = txtMname.Text.Trim();
+            _resident.Address = txtAdd.Text.Trim();
+            _resident.TelCelNo = txtTelCel.Text.Trim();
 
             if (decimal.TryParse(txtHeight.Text, out var height))
                 _resident.Height = height;
@@ -95,12 +121,33 @@ namespace BarangayApplication
                 _resident.Weight = 0;
 
             _resident.DateOfBirth = dateTimePicker1.Value;
+            _resident.PlaceOfBirth = txtPoB.Text.Trim();
 
-            // Remove Age from model - always calculate from DateOfBirth
-            // If needed elsewhere, expose as a property: int Age => CalculateAge(DateOfBirth);
+            // Save SexID and navigation property
+            var sexItem = cbxSex.SelectedItem as ComboBoxItem<byte>;
+            if (sexItem != null)
+            {
+                _resident.SexID = sexItem.Value;
+                _resident.Sex = new Sex { SexID = sexItem.Value, SexDescription = sexItem.Text };
+            }
+            else
+            {
+                _resident.SexID = 0;
+                _resident.Sex = null;
+            }
 
-            _resident.PlaceOfBirth = txtPoB.Text;
-            _resident.CivilStatus = cBxCivilStatus.Text;
+            // Save CivilStatusID and navigation property
+            var civilStatusItem = cBxCivilStatus.SelectedItem as ComboBoxItem<int>;
+            if (civilStatusItem != null)
+            {
+                _resident.CivilStatusID = civilStatusItem.Value;
+                _resident.CivilStatus = new CivilStatus { CivilStatusID = civilStatusItem.Value, CivilStatusDescription = civilStatusItem.Text };
+            }
+            else
+            {
+                _resident.CivilStatusID = 1; // Default to SINGLE
+                _resident.CivilStatus = null;
+            }
         }
 
         private int CalculateAge(DateTime dateOfBirth)
@@ -115,7 +162,6 @@ namespace BarangayApplication
 
         private void LetterOnly_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Allow control chars (backspace, etc.), letters, and spaces
             if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                 e.Handled = true;
         }
@@ -126,13 +172,11 @@ namespace BarangayApplication
                 e.Handled = true;
         }
 
-        // --- Phone number: 11 digits only ---
+        // Phone number: 11 digits only
         private void txtTelCel_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
-
-            // enforce max length
             if (!char.IsControl(e.KeyChar) && txtTelCel.Text.Length >= 11 && txtTelCel.SelectionLength == 0)
                 e.Handled = true;
         }
@@ -140,25 +184,14 @@ namespace BarangayApplication
         {
             if (txtTelCel.Text.Length > 11)
                 txtTelCel.Text = txtTelCel.Text.Substring(0, 11);
-            // Move cursor to end after change
             txtTelCel.SelectionStart = txtTelCel.Text.Length;
         }
 
-        // --- Voter's ID: 10 digits only ---
-        private void txtVoterIdNo_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-                e.Handled = true;
-        }
-        private void txtVoterIdNo_TextChanged(object sender, EventArgs e)
-        {
-        }
-        
-        // TODO: ERROR X.XX only does X.X, FIX SOON.
-        // Height: X.XX format (max 1 digit before, 2 after)
+        // Height: X.XX (max 4 chars including decimal)
         private void txtHeight_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox tb = sender as TextBox;
+            // Allow only control chars, digits, and decimal point
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
                 e.Handled = true;
 
@@ -166,29 +199,20 @@ namespace BarangayApplication
             if (e.KeyChar == '.' && tb.Text.Contains("."))
                 e.Handled = true;
 
-            string[] parts = tb.Text.Split('.');
-            int selectionStart = tb.SelectionStart;
-            int beforeDecimal = parts.Length > 0 ? parts[0].Length : 0;
-            int afterDecimal = parts.Length > 1 ? parts[1].Length : 0;
-            bool hasDecimal = tb.Text.Contains(".");
-
-            // 1 digit before decimal for height
-            if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && (!hasDecimal && beforeDecimal >= 1 && selectionStart <= beforeDecimal))
+            // Enforce max length 4 including decimal (e.g., 9.99)
+            // Allow selection overwrite
+            int selectionLength = tb.SelectionLength;
+            int textLen = tb.Text.Length;
+            if (!char.IsControl(e.KeyChar) &&
+                (textLen - selectionLength + 1) > 4)
                 e.Handled = true;
-
-            // 2 digits after decimal for height
-            if (hasDecimal && selectionStart > tb.Text.IndexOf("."))
-            {
-                if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && afterDecimal >= 2)
-                    e.Handled = true;
-            }
         }
-        
-        // TODO: ERROR XXX.XX only does XXX.X, FIX SOON.
-        // Weight: XXX.XX format (max 3 digits before, 2 after)
+
+        // Weight: YYY.YY (max 6 chars including decimal)
         private void txtWeight_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox tb = sender as TextBox;
+            // Allow only control chars, digits, and decimal point
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
                 e.Handled = true;
 
@@ -196,22 +220,13 @@ namespace BarangayApplication
             if (e.KeyChar == '.' && tb.Text.Contains("."))
                 e.Handled = true;
 
-            string[] parts = tb.Text.Split('.');
-            int selectionStart = tb.SelectionStart;
-            int beforeDecimal = parts.Length > 0 ? parts[0].Length : 0;
-            int afterDecimal = parts.Length > 1 ? parts[1].Length : 0;
-            bool hasDecimal = tb.Text.Contains(".");
-
-            // 3 digits before decimal for weight
-            if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && (!hasDecimal && beforeDecimal >= 3 && selectionStart <= beforeDecimal))
+            // Enforce max length 6 including decimal (e.g., 123.45)
+            // Allow selection overwrite
+            int selectionLength = tb.SelectionLength;
+            int textLen = tb.Text.Length;
+            if (!char.IsControl(e.KeyChar) &&
+                (textLen - selectionLength + 1) > 6)
                 e.Handled = true;
-
-            // 2 digits after decimal for weight
-            if (hasDecimal && selectionStart > tb.Text.IndexOf("."))
-            {
-                if (!char.IsControl(e.KeyChar) && char.IsDigit(e.KeyChar) && afterDecimal >= 2)
-                    e.Handled = true;
-            }
         }
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
@@ -222,7 +237,7 @@ namespace BarangayApplication
             if (dob > today.AddYears(-age)) age--;
             Age.Text = Math.Max(age, 0).ToString();
         }
-        
+
         public bool CheckRequiredFields(out string missing)
         {
             var missingFields = new System.Collections.Generic.List<string>();
@@ -237,8 +252,10 @@ namespace BarangayApplication
                 missingFields.Add("Address");
             if (string.IsNullOrWhiteSpace(txtTelCel.Text))
                 missingFields.Add("Tel/Cel No.");
-            if (string.IsNullOrWhiteSpace(cbxSex.Text))
+            if (cbxSex.SelectedItem == null)
                 missingFields.Add("Sex");
+            if (cBxCivilStatus.SelectedItem == null)
+                missingFields.Add("Civil Status");
             if (string.IsNullOrWhiteSpace(txtPoB.Text))
                 missingFields.Add("Place of Birth");
 
@@ -257,19 +274,15 @@ namespace BarangayApplication
             return missingFields.Count == 0;
         }
 
-
         public bool CheckRequiredFieldsAndHighlight()
         {
             bool allValid = true;
-
-            // Helper to highlight controls
             void Highlight(Control ctrl, bool highlight)
             {
                 ctrl.BackColor = highlight ? Color.MistyRose : SystemColors.Window;
                 ctrl.Invalidate();
             }
 
-            // TextBoxes
             bool fnameEmpty = string.IsNullOrWhiteSpace(txtFname.Text);
             Highlight(txtFname, fnameEmpty);
             allValid &= !fnameEmpty;
@@ -306,14 +319,9 @@ namespace BarangayApplication
             Highlight(txtTelCel, telCelEmpty);
             allValid &= !telCelEmpty;
 
-            // ComboBoxes (use new highlight logic)
             allValid &= HighlightIfEmptyComboBox(cbxSex);
             allValid &= HighlightIfEmptyComboBox(cBxCivilStatus);
 
-
-
-            // DateTimePicker (example: you may want to check for a valid range)
-            // Here, we just check if the value is not the default
             bool dateInvalid = dateTimePicker1.Value == default(DateTime);
             Highlight(dateTimePicker1, dateInvalid);
             allValid &= !dateInvalid;
@@ -321,10 +329,9 @@ namespace BarangayApplication
             return allValid;
         }
 
-        // Helper method to highlight a ComboBox if empty (like in Collection.cs)
         private bool HighlightIfEmptyComboBox(ComboBox cb)
         {
-            if (string.IsNullOrWhiteSpace(cb.Text) || cb.SelectedIndex < 0)
+            if (cb.SelectedItem == null)
             {
                 cb.BackColor = System.Drawing.Color.MistyRose;
                 cb.FlatStyle = FlatStyle.Popup;
@@ -341,7 +348,6 @@ namespace BarangayApplication
             }
         }
 
-        // Reset border when user changes ComboBox selection
         private void ResetComboBoxBorder(object sender, EventArgs e)
         {
             var cb = sender as ComboBox;
@@ -350,7 +356,6 @@ namespace BarangayApplication
             cb.SelectedIndexChanged -= ResetComboBoxBorder;
         }
 
-        // Helper method to highlight a TextBox if empty
         private bool HighlightIfEmpty(TextBox tb)
         {
             if (string.IsNullOrWhiteSpace(tb.Text))
@@ -371,7 +376,6 @@ namespace BarangayApplication
             }
         }
 
-        // Paint event to draw a red border
         private void TextBox_PaintRedBorder(object sender, PaintEventArgs e)
         {
             var tb = sender as TextBox;
@@ -385,7 +389,6 @@ namespace BarangayApplication
             }
         }
 
-        // Reset border when user starts typing
         private void ResetTextBoxBorder(object sender, EventArgs e)
         {
             var tb = sender as TextBox;
@@ -395,11 +398,7 @@ namespace BarangayApplication
             tb.TextChanged -= ResetTextBoxBorder;
         }
 
-        private void txtPoll_TextChanged(object sender, EventArgs e)
-        {
-        }
-
-        // Resets the textbox color to its original when user inputs text
+        private void txtPoll_TextChanged(object sender, EventArgs e) { }
         private void ResetTextBoxColor(object sender, EventArgs e)
         {
             var tb = sender as TextBox;

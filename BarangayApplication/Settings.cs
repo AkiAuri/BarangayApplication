@@ -88,6 +88,14 @@ namespace BarangayApplication
         // Backup all databases
         private void btnBackup_Click(object sender, EventArgs e)
         {
+            // Show confirmation popup
+            var confirmForm = new BackupRestoreConfirmation("backup all databases");
+            if (confirmForm.ShowDialog() != DialogResult.OK || !confirmForm.IsConfirmed)
+            {
+                // User cancelled
+                return;
+            }
+
             string backupDirectory = BackupLoc.Text.Trim();
             if (string.IsNullOrEmpty(backupDirectory) || !Directory.Exists(backupDirectory))
             {
@@ -157,6 +165,14 @@ namespace BarangayApplication
                 return;
             }
 
+            // Show confirmation popup
+            var confirmForm = new BackupRestoreConfirmation($"restore the {displayName} database");
+            if (confirmForm.ShowDialog() != DialogResult.OK || !confirmForm.IsConfirmed)
+            {
+                // User cancelled
+                return;
+            }
+
             string setSingleUser = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
             string restoreQuery = $"RESTORE DATABASE [{dbName}] FROM DISK = '{backupFile}' WITH REPLACE";
             string setMultiUser = $"ALTER DATABASE [{dbName}] SET MULTI_USER";
@@ -197,9 +213,7 @@ namespace BarangayApplication
             }
         }
         
-        //Account shit.
-        
-        // Define a class for display/value pairing
+        //Account stuff, unchanged...
         public class AccountItem
         {
             public int AccountID { get; set; }
@@ -286,7 +300,6 @@ namespace BarangayApplication
 
                 if (updatePassword)
                 {
-                    // BCrypt hash, work factor 16 is strong
                     string hash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 16);
                     cmd.Parameters.AddWithValue("@hash", hash);
                 }
@@ -303,13 +316,12 @@ namespace BarangayApplication
                                       updateName ? "Account name" : "Password";
                         MessageBox.Show($"{what} updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        // Update local ComboBox display if name changed
                         if (updateName)
                         {
                             selected.AccountName = newAccountName;
                             int idx = cmbAccountID.SelectedIndex;
-                            cmbAccountID.Items[idx] = selected; // update display
-                            cmbAccountID.SelectedIndex = idx;   // force redraw
+                            cmbAccountID.Items[idx] = selected;
+                            cmbAccountID.SelectedIndex = idx;
                         }
                     }
                     else
@@ -325,30 +337,10 @@ namespace BarangayApplication
             txtNewPassword.Text = "";
        }
 
-        //Unneeded stuff
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label7_Click(object sender, EventArgs e)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private void label11_Click(object sender, EventArgs e)
-        {
-            throw new System.NotImplementedException();
-        }
+        private void label6_Click(object sender, EventArgs e) { }
+        private void label2_Click(object sender, EventArgs e) { }
+        private void label5_Click(object sender, EventArgs e) { }
+        private void label7_Click(object sender, EventArgs e) { }
+        private void label11_Click(object sender, EventArgs e) { }
     }
 }

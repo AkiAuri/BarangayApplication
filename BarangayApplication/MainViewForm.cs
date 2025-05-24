@@ -25,7 +25,6 @@ namespace BarangayApplication
         // We'll store as strongly-typed for ApplyToModel access
         private Personalinfo _personalForm;
         private Collection _collectionForm;
-        private Backup _occupationForm;
         private Form[] _forms;
 
         // NEW: Constructor for editing existing Residents
@@ -41,18 +40,15 @@ namespace BarangayApplication
 
             _personalForm = new Personalinfo(_resident);
             _collectionForm = new Collection(_resident);
-            _occupationForm = new Backup(_resident);
             _forms = new Form[]
             {
                 _personalForm,
                 _collectionForm,
-                _occupationForm
             };
 
             // Pre-populate all subforms with data
             _personalForm.LoadFromModel();
             _collectionForm.LoadFromModel();
-            _occupationForm.LoadFromModel();
 
             _currentStep = 0;
             loadform(_forms[_currentStep]);
@@ -71,12 +67,10 @@ namespace BarangayApplication
             // Initialize the steps with the shared Residents model
             _personalForm = new Personalinfo(_resident);
             _collectionForm = new Collection(_resident);
-            _occupationForm = new Backup(_resident);
             _forms = new Form[]
             {
                 _personalForm,
                 _collectionForm,
-                _occupationForm
             };
 
             // Show first step
@@ -142,7 +136,6 @@ namespace BarangayApplication
             // Update model from all subforms
             _personalForm.ApplyToModel();
             _collectionForm.ApplyToModel();
-            _occupationForm.ApplyToModel();
 
             var repo = new ResidentsRepository();
             try

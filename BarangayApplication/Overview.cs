@@ -54,16 +54,11 @@ namespace BarangayApplication
                 greeting = "Good Evening";
             }
 
-            // Get the user name from the repository
-            string userName = "";
-            if (!string.IsNullOrEmpty(_currentAccountId))
-            {
-                var repo = new ResidentsRepository();
-                userName = repo.GetLoggedInUserName(_currentAccountId);
-            }
+            // Use the AccountName that was set at login
+            string accountName = LoginMenu.CurrentUser.AccountName;
 
-            if (!string.IsNullOrWhiteSpace(userName) && userName != "Unknown User")
-                greeting += $" {userName}";
+            if (!string.IsNullOrWhiteSpace(accountName))
+                greeting += $" {accountName}";
 
             lblGreeting.Text = greeting;
         }

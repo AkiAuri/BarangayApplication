@@ -232,7 +232,7 @@ namespace BarangayApplication
                     repo.ArchiveResident(residentId);
 
                     // Log the action using the name and reason
-                    repo.AddUserLog(CurrentUser.AccountID, "Archived",
+                    repo.AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "Archived",
                         $"Archived resident: {fullName}. Reason: {archiveReason}");
 
                     ReadResidents();

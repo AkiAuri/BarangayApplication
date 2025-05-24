@@ -1623,7 +1623,7 @@ namespace BarangayApplication.Models.Repositories
                     }
                 }
                 // Add log if needed
-                AddUserLog(CurrentUser.AccountID, "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
+                AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
                 AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)
@@ -1818,7 +1818,7 @@ namespace BarangayApplication.Models.Repositories
                         }
                     }
                 }
-                AddUserLog(CurrentUser.AccountID, "Edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
+                AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "Edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
                 AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)

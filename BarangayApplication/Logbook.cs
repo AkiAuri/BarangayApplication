@@ -16,14 +16,13 @@ namespace BarangayApplication
         private const int rowsPerPage = 28;
         private bool isLogUpdateInProgress = false;
 
+        private readonly ResidentsRepository repo = new ResidentsRepository();
+
         public Logbook()
         {
             InitializeComponent();
 
-            // Add alternating row color (like Archive)
             dgvLog.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.LightGray;
-
-            //Add ALL CAPS text.
             dgvLog.CellFormatting += DgvLog_CellFormatting;
 
             cBxFilterByAction.SelectedIndexChanged += cBxFilterByAction_SelectedIndexChanged;
@@ -32,23 +31,18 @@ namespace BarangayApplication
             cBxFilterByAction.Items.Clear();
             cBxFilterByAction.Items.Add("ALL ACTIONS");
             cBxFilterByAction.Items.AddRange(new string[] {
-                                                    "ADD",
-                                                    "EDIT",
-                                                    "ARCHIVE",
-                                                    "RESTORE",
-                                                    "LOGIN"
+                "ADD", "EDIT", "ARCHIVE", "RESTORE", "LOGIN"
             });
         }
 
         private void DgvLog_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.Value != null && e.Value is string)
+            if (e.Value is string val)
             {
-                e.Value = e.Value.ToString().ToUpper();
+                e.Value = val.ToUpper();
                 e.FormattingApplied = true;
             }
         }
-                                                    
 
         private void Logbook_Load(object sender, EventArgs e)
         {
@@ -64,7 +58,8 @@ namespace BarangayApplication
             cbxUserFilter.Items.Clear();
             cbxUserFilter.Items.Add("ALL USERS");
 
-            using (var conn = new System.Data.SqlClient.SqlConnection(Settings.ConnectionString))
+            // Use the logbook DB for user list
+            using (var conn = new System.Data.SqlClient.SqlConnection("Data Source=localhost,1433;Initial Catalog=ResidentsLogDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True"))
             {
                 string query = "SELECT accountID, accountName FROM users ORDER BY accountName";
                 using (var cmd = new System.Data.SqlClient.SqlCommand(query, conn))
@@ -95,20 +90,16 @@ namespace BarangayApplication
 
         private void CalculateTotalPages()
         {
-            var repo = new ResidentsRepository();
             int totalLogs = repo.GetTotalLogCount();
             totalPages = (int)Math.Ceiling((double)totalLogs / rowsPerPage);
         }
 
         private void LoadDataForPage(int page)
         {
-            var repo = new ResidentsRepository();
             int offset = (page - 1) * rowsPerPage;
-
             var logs = repo.GetLogsForPage(offset, rowsPerPage);
 
             dgvLog.DataSource = logs;
-
             lblPageInfo.Text = $"Page {currentPage} of {totalPages}";
 
             btnFirst.Enabled = btnPrevious.Enabled = (currentPage > 1);
@@ -117,7 +108,6 @@ namespace BarangayApplication
 
         private void LoadFilteredLogs(string action, string userName)
         {
-            var repo = new ResidentsRepository();
             DataTable logs;
 
             bool filterByAction = !string.IsNullOrEmpty(action) && action != "ALL ACTIONS";
@@ -231,10 +221,7 @@ namespace BarangayApplication
 
         private Tuple<int, int> SelectMonthYear()
         {
-            // Query available year/month pairs from the database
-            // Replace with your actual repository call if needed
-            var repo = new ResidentsRepository();
-            var available = repo.GetAvailableLogMonths(); // Returns List<Tuple<int, int>>
+            var available = repo.GetAvailableLogMonths(); // List<Tuple<int, int>>
 
             var availableYears = available.Select(x => x.Item1).Distinct().OrderBy(y => y).ToList();
 
@@ -271,7 +258,6 @@ namespace BarangayApplication
                 form.StartPosition = FormStartPosition.CenterParent;
                 form.ClientSize = new System.Drawing.Size(300, 50);
 
-                // Initial population
                 updateMonths();
 
                 if (form.ShowDialog() == DialogResult.OK)
@@ -315,7 +301,6 @@ namespace BarangayApplication
             if (ym == null) return;
             int month = ym.Item1, year = ym.Item2;
 
-            var repo = new ResidentsRepository();
             var logs = repo.GetLogsForMonth(year, month);
 
             if (logs.Rows.Count == 0)
@@ -324,7 +309,14 @@ namespace BarangayApplication
                 return;
             }
 
-            // Calculate statistics
+            using (var confirmForm = new BackupRestoreConfirmation($"generate a log report for {new DateTime(year, month, 1):MMMM yyyy}"))
+            {
+                if (confirmForm.ShowDialog() != DialogResult.OK || !confirmForm.IsConfirmed)
+                {
+                    return;
+                }
+            }
+
             var stats = new LogStats();
             foreach (DataRow row in logs.Rows)
             {
@@ -343,7 +335,6 @@ namespace BarangayApplication
                         .FontSize(18).Bold().Alignment = Alignment.center;
                     doc.InsertParagraph();
 
-                    // Overall statistics
                     doc.InsertParagraph("Action Counts:").Bold();
                     var table = doc.AddTable(stats.ActionCounts.Count + 1, 2);
                     table.Design = TableDesign.LightGrid;
@@ -359,7 +350,6 @@ namespace BarangayApplication
                     doc.InsertTable(table);
                     doc.InsertParagraph();
 
-                    // Top performers per action
                     doc.InsertParagraph("Top Users per Action:").Bold();
                     foreach (var action in stats.ActionCounts.Keys)
                     {
@@ -374,14 +364,11 @@ namespace BarangayApplication
                     }
                     doc.InsertParagraph();
 
-                    // Log entries table
                     doc.InsertParagraph("Detailed Logs:").Bold();
                     var logTable = doc.AddTable(logs.Rows.Count + 1, logs.Columns.Count);
                     logTable.Design = TableDesign.TableGrid;
-                    // Header
                     for (int c = 0; c < logs.Columns.Count; c++)
                         logTable.Rows[0].Cells[c].Paragraphs[0].Append(logs.Columns[c].ColumnName).Bold();
-                    // Rows
                     for (int i = 0; i < logs.Rows.Count; i++)
                         for (int j = 0; j < logs.Columns.Count; j++)
                             logTable.Rows[i + 1].Cells[j].Paragraphs[0].Append(logs.Rows[i][j].ToString());

@@ -150,16 +150,17 @@
     <Compile Include="Models\AutoBackupHelper.cs" />
     <Compile Include="Models\ChildRelative.cs" />
     <Compile Include="Models\CivilStatusIds.cs" />
+    <Compile Include="Models\ComboBoxItem.cs" />
     <Compile Include="Models\PurposeTypeIds.cs" />
     <Compile Include="Models\Repositories\ResidentsRepository.cs" />
     <Compile Include="Models\ResidenceTypeIds.cs" />
     <Compile Include="Models\Residents.cs" />
     <Compile Include="Models\SexIds.cs" />
-    <Compile Include="Occupation.cs">
+    <Compile Include="BackupRestoreConfirmation.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Occupation.Designer.cs">
-      <DependentUpon>Occupation.cs</DependentUpon>
+    <Compile Include="BackupRestoreConfirmation.Designer.cs">
+      <DependentUpon>BackupRestoreConfirmation.cs</DependentUpon>
     </Compile>
     <Compile Include="Overview.cs">
       <SubType>Form</SubType>
@@ -234,8 +235,8 @@
     <EmbeddedResource Include="MainViewForm.resx">
       <DependentUpon>MainViewForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Occupation.resx">
-      <DependentUpon>Occupation.cs</DependentUpon>
+    <EmbeddedResource Include="BackupRestoreConfirmation.resx">
+      <DependentUpon>BackupRestoreConfirmation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Overview.resx">
       <DependentUpon>Overview.cs</DependentUpon>

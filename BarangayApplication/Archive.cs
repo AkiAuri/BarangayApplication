@@ -52,7 +52,7 @@ namespace BarangayApplication
         {
             AutoCompleteStringCollection autoCompleteCollection = new AutoCompleteStringCollection();
             var repo = new ResidentsRepository();
-            var residents = repo.GetArchivedResidents();
+            var residents = repo.GetArchivedApplicants();
 
             foreach (var r in residents)
             {
@@ -98,7 +98,7 @@ namespace BarangayApplication
         private void ReadArchivedResidents()
         {
             var repo = new ResidentsRepository();
-            allArchivedResidents = repo.GetArchivedResidents();
+            allArchivedResidents = repo.GetArchivedApplicants();
             archivedResidentsCache = new List<Resident>(allArchivedResidents); // Start unfiltered
             CalculateTotalPages();
             LoadDataForPage(1);
@@ -345,7 +345,7 @@ namespace BarangayApplication
                     string restoreReason = reasonForm.ArchiveReason;
                     var repo = new ResidentsRepository();
                     repo.RestoreResident(residentId);
-                    repo.AddUserLog(LoginMenu.CurrentUser.AccountID, "Restored",
+                    repo.AddUserLog(Convert.ToInt32(LoginMenu.CurrentUser.AccountID), "Restored",
                         $"Restored resident: {fullName}. Reason: {restoreReason}");
                     ReadArchivedResidents();
                     SetupSearchBarAutocomplete();

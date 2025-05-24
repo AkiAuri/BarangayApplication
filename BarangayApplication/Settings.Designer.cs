@@ -373,7 +373,6 @@
             this.label12.Size = new System.Drawing.Size(193, 21);
             this.label12.TabIndex = 42;
             this.label12.Text = "ARCHIVED DATABASE @";
-            this.label12.Click += new System.EventHandler(this.label12_Click);
             // 
             // label13
             // 
@@ -386,7 +385,6 @@
             this.label13.Size = new System.Drawing.Size(272, 21);
             this.label13.TabIndex = 43;
             this.label13.Text = "USER AND LOGBOOK DATABASE @";
-            this.label13.Click += new System.EventHandler(this.label13_Click);
             // 
             // cbxRestoreChoice
             // 
