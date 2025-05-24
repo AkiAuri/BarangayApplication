@@ -149,9 +149,12 @@
     </Compile>
     <Compile Include="Models\AutoBackupHelper.cs" />
     <Compile Include="Models\ChildRelative.cs" />
+    <Compile Include="Models\CivilStatusIds.cs" />
     <Compile Include="Models\PurposeTypeIds.cs" />
     <Compile Include="Models\Repositories\ResidentsRepository.cs" />
+    <Compile Include="Models\ResidenceTypeIds.cs" />
     <Compile Include="Models\Residents.cs" />
+    <Compile Include="Models\SexIds.cs" />
     <Compile Include="Occupation.cs">
       <SubType>Form</SubType>
     </Compile>

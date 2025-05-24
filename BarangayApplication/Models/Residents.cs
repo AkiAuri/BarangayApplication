@@ -8,31 +8,47 @@ namespace BarangayApplication.Models
     /// </summary>
     public class Resident
     {
-        // Resident table fields
         public int ResidentID { get; set; }
         public string LastName { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string? MiddleName { get; set; }
         public string Address { get; set; } = string.Empty;
         public string TelCelNo { get; set; } = string.Empty;
-        public string Sex { get; set; } = string.Empty;
+        public byte SexID { get; set; } // BIT in SQL, use byte in C#
         public DateTime DateOfBirth { get; set; }
         public string PlaceOfBirth { get; set; } = string.Empty;
-        public string CivilStatus { get; set; } = string.Empty;
+        public int CivilStatusID { get; set; }
         public string VoterIDNo { get; set; } = string.Empty;
         public string PollingPlace { get; set; } = string.Empty;
-        public string ResidenceType { get; set; } = string.Empty;
-        public decimal PaymentAmount { get; set; }
-        public string PaymentFrequency { get; set; } = string.Empty;
+        public int ResidenceTypeID { get; set; }
         public decimal Height { get; set; }
         public decimal Weight { get; set; }
-        public bool isArchived { get; set; }
 
-        // Navigation properties for related tables
+        // Navigation properties
+        public Sex? Sex { get; set; }
+        public CivilStatus? CivilStatus { get; set; }
+        public ResidenceType? ResidenceType { get; set; }
         public List<Employment> Employments { get; set; } = new();
-        public List<PreviousEmployment> PreviousEmployments { get; set; } = new();
         public Spouse? Spouse { get; set; }
         public List<ResidentPurpose> Purposes { get; set; } = new();
+    }
+
+    public class Sex
+    {
+        public byte SexID { get; set; }
+        public string SexDescription { get; set; } = string.Empty;
+    }
+
+    public class CivilStatus
+    {
+        public int CivilStatusID { get; set; }
+        public string CivilStatusDescription { get; set; } = string.Empty;
+    }
+
+    public class ResidenceType
+    {
+        public int ResidenceTypeID { get; set; }
+        public string ResidenceTypeName { get; set; } = string.Empty;
     }
 
     public class Employment
@@ -44,37 +60,18 @@ namespace BarangayApplication.Models
         public string LengthOfService { get; set; } = string.Empty;
     }
 
-    public class PreviousEmployment
-    {
-        public int PreviousEmploymentID { get; set; }
-        public int ResidentID { get; set; }
-        public string Company { get; set; } = string.Empty;
-        public string Position { get; set; } = string.Empty;
-        public string LengthOfService { get; set; } = string.Empty;
-    }
-
     public class Spouse
     {
         public int SpouseID { get; set; }
         public int ResidentID { get; set; }
         public string SpouseName { get; set; } = string.Empty;
-        public string SpousePhone { get; set; } = string.Empty;
+
         public List<SpouseEmployment> Employments { get; set; } = new();
-        public List<SpousePreviousEmployment> PreviousEmployments { get; set; } = new();
     }
 
     public class SpouseEmployment
     {
         public int SpouseEmploymentID { get; set; }
-        public int SpouseID { get; set; }
-        public string Company { get; set; } = string.Empty;
-        public string Position { get; set; } = string.Empty;
-        public string LengthOfService { get; set; } = string.Empty;
-    }
-
-    public class SpousePreviousEmployment
-    {
-        public int SpousePrevEmploymentID { get; set; }
         public int SpouseID { get; set; }
         public string Company { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
@@ -89,7 +86,7 @@ namespace BarangayApplication.Models
 
     public class ResidentPurpose
     {
-        public int ResidentPurposeID { get; set; }
+        public string TransactionID { get; set; } = string.Empty; // Primary key
         public int ResidentID { get; set; }
         public int PurposeTypeID { get; set; }
         public string? PurposeOthers { get; set; }

@@ -10,22 +10,28 @@ namespace BarangayApplication
 {
     public partial class Settings : Form
     {
-        private const string ChangeCountFile = "change_count.txt";
-        private const string LastBackupFile = "last_backup.txt";
+        private const string LastBackupFilePrefix = "last_backup_";
         private const string BackupLocationFile = "backup_location.txt";
-        private const string DatabaseName = "NewestDatabase";
+        private static readonly string[] DatabaseNames = { "ResidentsDB", "ResidentsArchiveDB", "ResidentsLogDB" };
+        private static readonly string[] DatabaseDisplayNames = { "Main", "Archive", "Logbook" };
         private const string ServerName = @".";
-        public const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog="+ DatabaseName + ";Integrated Security=True";
+        public const string ConnectionStringFormat = "Data Source=" + ServerName + ";Initial Catalog={0};Integrated Security=True";
+        private const string SecurityDbName = "ResidentsLogDB";
+        private const string SecurityConnString = "Data Source=.;Initial Catalog=" + SecurityDbName + ";Integrated Security=True";
+
 
         public Settings()
         {
             InitializeComponent();
             LoadBackupLocation();
-            LoadLastBackup();
+            LoadLastBackupAll();
+            cbxRestoreChoice.Items.Clear();
+            cbxRestoreChoice.Items.AddRange(DatabaseDisplayNames);
+            cbxRestoreChoice.SelectedIndex = 0; // Optional: Select the first item by default
             PopulateAdminAccountIDs();
         }
-        
-        // Backup shit
+
+        // Backup location load/save as before
         private void LoadBackupLocation()
         {
             if (File.Exists(BackupLocationFile))
@@ -33,31 +39,37 @@ namespace BarangayApplication
                 BackupLoc.Text = File.ReadAllText(BackupLocationFile);
             }
         }
-
         private void SaveBackupLocation(string path)
         {
             File.WriteAllText(BackupLocationFile, path);
         }
 
-        private void LoadLastBackup()
+        // Last backup load/save (per-db)
+        private void LoadLastBackupAll()
         {
-            if (File.Exists(LastBackupFile))
-            {
-                lblDateTime.Text = File.ReadAllText(LastBackupFile);
-            }
-            else
-            {
-                lblDateTime.Text = "No backup yet.";
-            }
+            lblDateTimeMain.Text = LoadLastBackup("ResidentsDB");
+            lblDateTimeArchive.Text = LoadLastBackup("ResidentsArchiveDB");
+            lblDateTimeLogbook.Text = LoadLastBackup("ResidentsLogDB");
         }
-
-        private void SaveLastBackup(DateTime dateTime)
+        private string LoadLastBackup(string dbName)
+        {
+            string file = $"{LastBackupFilePrefix}{dbName}.txt";
+            if (File.Exists(file))
+                return File.ReadAllText(file);
+            return "No backup yet.";
+        }
+        private void SaveLastBackup(string dbName, DateTime dateTime)
         {
             string text = dateTime.ToString("yyyy-MM-dd HH:mm:ss");
-            File.WriteAllText(LastBackupFile, text);
-            lblDateTime.Text = text;
+            File.WriteAllText($"{LastBackupFilePrefix}{dbName}.txt", text);
+
+            // Update label if this is from the UI thread
+            if (dbName == "ResidentsDB") lblDateTimeMain.Text = text;
+            else if (dbName == "ResidentsArchiveDB") lblDateTimeArchive.Text = text;
+            else if (dbName == "ResidentsLogDB") lblDateTimeLogbook.Text = text;
         }
 
+        // Choose backup location
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderDlg = new FolderBrowserDialog())
@@ -72,30 +84,8 @@ namespace BarangayApplication
                 }
             }
         }
-        
-        private void EnforceMaxBackups(string backupDirectory, int maxBackups = 20)
-        {
-            var files = Directory.GetFiles(backupDirectory, "*.bak")
-                .Select(f => new FileInfo(f))
-                .OrderBy(f => f.CreationTime)
-                .ToList();
 
-            while (files.Count > maxBackups)
-            {
-                try
-                {
-                    files[0].Delete();
-                    files.RemoveAt(0);
-                }
-                catch (Exception ex)
-                {
-                    // Optionally log deletion error
-                    File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to delete old backup: {ex.Message}\n");
-                    break;
-                }
-            }
-        }
-
+        // Backup all databases
         private void btnBackup_Click(object sender, EventArgs e)
         {
             string backupDirectory = BackupLoc.Text.Trim();
@@ -105,54 +95,83 @@ namespace BarangayApplication
                 return;
             }
 
-            string backupFile = Path.Combine(backupDirectory, $"{DatabaseName}_{DateTime.Now:yyyyMMddHHmmss}.bak");
-            string query = $"BACKUP DATABASE [{DatabaseName}] TO DISK = '{backupFile}'";
+            bool allSuccess = true;
+            string message = "";
 
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            for (int i = 0; i < DatabaseNames.Length; i++)
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    try
-                    {
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                        MessageBox.Show($"Backup successful!\nSaved to: {backupFile}");
-                        SaveLastBackup(DateTime.Now); // Save and update the label
+                string dbName = DatabaseNames[i];
+                string displayName = DatabaseDisplayNames[i];
 
-                        // Enforce maximum backup files after backup
-                        EnforceMaxBackups(backupDirectory, 20);
-                    }
-                    catch (Exception ex)
+                string monthFolder = Path.Combine(backupDirectory, $"{displayName}Backup", DateTime.Now.ToString("MMMM"));
+                Directory.CreateDirectory(monthFolder);
+                string bakFile = Path.Combine(monthFolder, $"Backup_{displayName}_{DateTime.Now:ddMMyyyy}.bak");
+                string query = $"BACKUP DATABASE [{dbName}] TO DISK = '{bakFile}'";
+
+                string connString = string.Format(ConnectionStringFormat, dbName);
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        MessageBox.Show("Backup failed: " + ex.Message);
+                        try
+                        {
+                            conn.Open();
+                            cmd.ExecuteNonQuery();
+                            SaveLastBackup(dbName, DateTime.Now);
+                            message += $"{displayName} backup successful:\n{bakFile}\n\n";
+                        }
+                        catch (Exception ex)
+                        {
+                            message += $"{displayName} backup failed: {ex.Message}\n\n";
+                            allSuccess = false;
+                        }
                     }
                 }
             }
+            MessageBox.Show(message.Trim());
         }
 
+        // Restore a chosen database
         private void btnRestore_Click(object sender, EventArgs e)
         {
+            int dbIndex = cbxRestoreChoice.SelectedIndex;
+            if (dbIndex < 0)
+            {
+                MessageBox.Show("Please select a database to restore.");
+                return;
+            }
+            string dbName = DatabaseNames[dbIndex];
+            string displayName = DatabaseDisplayNames[dbIndex];
+
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Backup Files (*.bak)|*.bak";
-            if (openFileDialog.ShowDialog() != DialogResult.OK)
-                return;
+            if (openFileDialog.ShowDialog() != DialogResult.OK) return;
 
             string backupFile = openFileDialog.FileName;
 
-            // Set single user mode to avoid open connections
-            string setSingleUser = $"ALTER DATABASE [{DatabaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
-            string restoreQuery = $"RESTORE DATABASE [{DatabaseName}] FROM DISK = '{backupFile}' WITH REPLACE";
-            string setMultiUser = $"ALTER DATABASE [{DatabaseName}] SET MULTI_USER";
+            // Simple validation: check filename contains displayName or dbName
+            if (backupFile.IndexOf(displayName, StringComparison.OrdinalIgnoreCase) < 0
+                && backupFile.IndexOf(dbName, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                MessageBox.Show($"Selected file does not appear to be a {displayName} backup file.");
+                return;
+            }
 
+            string setSingleUser = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
+            string restoreQuery = $"RESTORE DATABASE [{dbName}] FROM DISK = '{backupFile}' WITH REPLACE";
+            string setMultiUser = $"ALTER DATABASE [{dbName}] SET MULTI_USER";
             string restoreConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
+
             using (SqlConnection conn = new SqlConnection(restoreConnectionString))
             {
+                conn.Open();
+                SqlTransaction trans = conn.BeginTransaction();
                 using (SqlCommand cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
+                    cmd.Transaction = trans;
                     try
                     {
-                        conn.Open();
                         cmd.CommandText = setSingleUser;
                         cmd.ExecuteNonQuery();
 
@@ -162,11 +181,17 @@ namespace BarangayApplication
                         cmd.CommandText = setMultiUser;
                         cmd.ExecuteNonQuery();
 
-                        MessageBox.Show("Restore successful!");
+                        trans.Commit();
+                        MessageBox.Show($"{displayName} restore successful!");
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Restore failed: " + ex.Message);
+                        try
+                        {
+                            trans.Rollback();
+                        }
+                        catch { /* ignore rollback errors */ }
+                        MessageBox.Show($"{displayName} restore failed: {ex.Message}");
                     }
                 }
             }
@@ -179,55 +204,53 @@ namespace BarangayApplication
         {
             public int AccountID { get; set; }
             public string AccountName { get; set; }
-            public override string ToString() => AccountName; // This will be shown in the ComboBox
+            public override string ToString() => AccountName;
         }
         
         private void PopulateAdminAccountIDs()
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            cmbAccountID.Items.Clear();
+            using (var conn = new SqlConnection(SecurityConnString))
+            using (var cmd = new SqlCommand("SELECT accountID, accountName FROM users WHERE roleID = 2", conn))
             {
-                string query = "SELECT accountID, accountName FROM users WHERE roleID = 2";
-                using (var cmd = new SqlCommand(query, conn))
+                try
                 {
-                    try
+                    conn.Open();
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        conn.Open();
-                        using (var reader = cmd.ExecuteReader())
+                        while (reader.Read())
                         {
-                            cmbAccountID.Items.Clear();
-                            while (reader.Read())
+                            cmbAccountID.Items.Add(new AccountItem
                             {
-                                cmbAccountID.Items.Add(new AccountItem
-                                {
-                                    AccountID = reader.GetInt32(0),
-                                    AccountName = reader.GetString(1)
-                                });
-                            }
+                                AccountID = reader.GetInt32(0),
+                                AccountName = reader.GetString(1)
+                            });
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error loading accounts: " + ex.Message);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading admin accounts: " + ex.Message, "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
         private void cmbAccountID_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selected = cmbAccountID.SelectedItem as AccountItem;
-            if (selected == null) return;
-
-            txtAccountName.Text = selected.AccountName ?? "";
-
-            // Always clear the password box on change
+            if (cmbAccountID.SelectedItem is AccountItem selected)
+            {
+                txtAccountName.Text = selected.AccountName;
+            }
+            else
+            {
+                txtAccountName.Text = "";
+            }
             txtNewPassword.Text = "";
         }
         
        private void btnSetPassword_Click(object sender, EventArgs e)
-        {
-            var selected = cmbAccountID.SelectedItem as AccountItem;
-            if (selected == null)
+       {
+            if (!(cmbAccountID.SelectedItem is AccountItem selected))
             {
                 MessageBox.Show("Please select an account.");
                 return;
@@ -236,7 +259,6 @@ namespace BarangayApplication
             string newAccountName = txtAccountName.Text.Trim();
             string newPassword = txtNewPassword.Text;
 
-            // Build the update SQL dynamically
             bool updateName = !string.IsNullOrEmpty(newAccountName) && newAccountName != selected.AccountName;
             bool updatePassword = !string.IsNullOrEmpty(newPassword);
 
@@ -246,6 +268,7 @@ namespace BarangayApplication
                 return;
             }
 
+            // Build dynamic SQL and parameters
             string setClause = "";
             if (updateName) setClause += "accountName = @name";
             if (updatePassword)
@@ -253,10 +276,9 @@ namespace BarangayApplication
                 if (setClause.Length > 0) setClause += ", ";
                 setClause += "passwordHash = @hash";
             }
-
             string query = $"UPDATE users SET {setClause} WHERE accountID = @accountID";
 
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(SecurityConnString))
             using (var cmd = new SqlCommand(query, conn))
             {
                 if (updateName)
@@ -264,7 +286,7 @@ namespace BarangayApplication
 
                 if (updatePassword)
                 {
-                    // Hash password using bcrypt with work factor 16
+                    // BCrypt hash, work factor 16 is strong
                     string hash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 16);
                     cmd.Parameters.AddWithValue("@hash", hash);
                 }
@@ -279,23 +301,29 @@ namespace BarangayApplication
                     {
                         string what = (updateName && updatePassword) ? "Account name and password" :
                                       updateName ? "Account name" : "Password";
-                        MessageBox.Show($"{what} updated successfully!");
-                        // Optionally update the selected AccountItem's name in the ComboBox
-                        if (updateName) selected.AccountName = newAccountName;
+                        MessageBox.Show($"{what} updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Update local ComboBox display if name changed
+                        if (updateName)
+                        {
+                            selected.AccountName = newAccountName;
+                            int idx = cmbAccountID.SelectedIndex;
+                            cmbAccountID.Items[idx] = selected; // update display
+                            cmbAccountID.SelectedIndex = idx;   // force redraw
+                        }
                     }
                     else
                     {
-                        MessageBox.Show("Failed to update account.");
+                        MessageBox.Show("Failed to update account.", "Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message);
+                    MessageBox.Show("Error updating account: " + ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-
             txtNewPassword.Text = "";
-        }
+       }
 
         //Unneeded stuff
         private void label6_Click(object sender, EventArgs e)
@@ -311,6 +339,16 @@ namespace BarangayApplication
         private void label5_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void label11_Click(object sender, EventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

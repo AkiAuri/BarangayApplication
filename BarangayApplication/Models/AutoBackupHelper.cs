@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
 
 namespace BarangayApplication.Helpers
 {
     public static class AutoBackupHelper
     {
         private const string ChangeCountFile = "change_count.txt";
-        private const string LastBackupFile = "last_backup.txt";
         private const string BackupLocationFile = "backup_location.txt";
-        private const string DatabaseName = "sybau_database";
-        private const string ServerName = @"localhost,1433";
-        private const string ConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
+        private static readonly string[] DatabaseNames = { "ResidentsDB", "ResidentsArchiveDB", "ResidentsLogDB" };
+        private static readonly string[] DatabaseDisplayNames = { "Main", "Archive", "Logbook" };
+        private const string ServerName = @".";
+        private const string LastBackupFilePrefix = "last_backup_";
 
         // Call this after every data change (create, update, delete)
         public static void IncrementChangeCountAndAutoBackup()
@@ -35,13 +34,17 @@ namespace BarangayApplication.Helpers
         public static void CheckAutoBackupOnLogin(string currentUser, bool isSuperAdmin)
         {
             bool needBackup = false;
-            string lastBackupDate = null;
-            if (File.Exists(LastBackupFile))
-                lastBackupDate = File.ReadAllText(LastBackupFile);
+            foreach (var dbName in DatabaseNames)
+            {
+                string lastBackupDate = null;
+                string lastBackupFile = $"{LastBackupFilePrefix}{dbName}.txt";
+                if (File.Exists(lastBackupFile))
+                    lastBackupDate = File.ReadAllText(lastBackupFile);
 
-            string today = DateTime.Now.ToString("yyyy-MM-dd");
-            if (lastBackupDate == null || !lastBackupDate.StartsWith(today))
-                needBackup = true;
+                string today = DateTime.Now.ToString("yyyy-MM-dd");
+                if (lastBackupDate == null || !lastBackupDate.StartsWith(today))
+                    needBackup = true;
+            }
 
             if (isSuperAdmin)
                 needBackup = true;
@@ -52,30 +55,8 @@ namespace BarangayApplication.Helpers
                 File.WriteAllText(ChangeCountFile, "0");
             }
         }
-        
-        private static void EnforceMaxBackups(string backupDirectory, int maxBackups = 20)
-        {
-            var files = Directory.GetFiles(backupDirectory, "*.bak")
-                .Select(f => new FileInfo(f))
-                .OrderBy(f => f.CreationTime)
-                .ToList();
 
-            while (files.Count > maxBackups)
-            {
-                try
-                {
-                    files[0].Delete();
-                    files.RemoveAt(0);
-                }
-                catch (Exception ex)
-                {
-                    // Optionally log deletion error
-                    File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to delete old backup: {ex.Message}\n");
-                    break; // Stop if unable to delete, avoid infinite loop
-                }
-            }
-        }
-
+        // No max backup limit -- simply backup as requested
         private static void PerformAutoBackup(string reason)
         {
             string backupDirectory = "";
@@ -85,34 +66,41 @@ namespace BarangayApplication.Helpers
             if (string.IsNullOrEmpty(backupDirectory) || !Directory.Exists(backupDirectory))
                 return; // No valid backup location
 
-            string backupFile = Path.Combine(backupDirectory, $"{DatabaseName}_{DateTime.Now:yyyyMMddHHmmss}.bak");
-            string query = $"BACKUP DATABASE [{DatabaseName}] TO DISK = '{backupFile}'";
-
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            for (int i = 0; i < DatabaseNames.Length; i++)
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    try
-                    {
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                        SaveLastBackup(DateTime.Now);
-                        File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {reason}\n");
+                string dbName = DatabaseNames[i];
+                string displayName = DatabaseDisplayNames[i];
 
-                        // Enforce maximum backup files
-                        EnforceMaxBackups(backupDirectory, 20);
-                    }
-                    catch (Exception ex)
+                string monthFolder = Path.Combine(backupDirectory, $"{displayName}Backup", DateTime.Now.ToString("MMMM"));
+                Directory.CreateDirectory(monthFolder);
+
+                string bakFile = Path.Combine(monthFolder, $"AutoBackup_{displayName}_{DateTime.Now:ddMMyyyy_HHmmss}.bak");
+                string query = $"BACKUP DATABASE [{dbName}] TO DISK = '{bakFile}'";
+
+                string connString = $"Data Source={ServerName};Initial Catalog={dbName};Integrated Security=True";
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Auto-backup failed: {ex.Message}\n");
+                        try
+                        {
+                            conn.Open();
+                            cmd.ExecuteNonQuery();
+                            SaveLastBackup(dbName, DateTime.Now);
+                            File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {reason} ({displayName})\n");
+                        }
+                        catch (Exception ex)
+                        {
+                            File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Auto-backup failed for {displayName}: {ex.Message}\n");
+                        }
                     }
                 }
             }
         }
 
-        private static void SaveLastBackup(DateTime dateTime)
+        private static void SaveLastBackup(string dbName, DateTime dateTime)
         {
-            File.WriteAllText(LastBackupFile, dateTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            File.WriteAllText($"{LastBackupFilePrefix}{dbName}.txt", dateTime.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 }

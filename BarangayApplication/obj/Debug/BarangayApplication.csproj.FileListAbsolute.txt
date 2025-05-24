@@ -687,3 +687,5 @@ C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLIS
 C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.pdb
 C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Logbook.resources
 C:\Users\Creigh\Downloads\BarangayApplication [May 21, 2025] - 5AM Build UNPOLISHED (1)\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Backup.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Logbook.resources
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Debug\BarangayApplication.Backup.resources

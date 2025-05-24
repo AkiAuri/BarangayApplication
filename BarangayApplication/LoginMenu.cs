@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Data;
-using System.Windows.Forms;
 using System.Data.SqlClient;
-using System.Data.Sql;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using BarangayApplication.Models.Repositories;
 using BCrypt.Net;
 using BarangayApplication.Helpers;
@@ -12,7 +12,7 @@ namespace BarangayApplication
 {
     /// <summary>
     /// Represents the login form for the application.
-    /// Allows users to enter credentials, validate against the database,
+    /// Allows users to enter credentials, validate against the security database,
     /// and navigate to the MainMenu upon a successful login.
     /// </summary>
     public partial class LoginMenu : Form
@@ -20,51 +20,22 @@ namespace BarangayApplication
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn
         (
-            int nLeftRect,     // x-coordinate of upper-left corner
-            int nTopRect,      // y-coordinate of upper-left corner
-            int nRightRect,    // x-coordinate of lower-right corner
-            int nBottomRect,   // y-coordinate of lower-right corner
-            int nWidthEllipse, // height of ellipse
-            int nHeightEllipse // width of ellipse
+            int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse
         );
 
-        // Instance of the MainMenu form that is shown after a successful login.
         MainMenu mainMenu = new MainMenu();
 
-        // Constructor: Initializes the LoginMenu form and populates initial data.
+        // Use the LOGBOOK/SECURITY database for authentication!
+        private const string SecurityDbName = "ResidentsLogDB";
+        private const string SecurityConnString = @"Data Source=.;Initial Catalog=" + SecurityDbName + ";Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
+
         public LoginMenu()
         {
-            InitializeComponent(); // Initializes form components as defined in the designer.
+            InitializeComponent();
             Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
         }
 
-        // Event handler that runs when the form is loaded.
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            // This event handler is currently empty but can be used for additional initialization.
-        }
-
-        // Creates a SqlConnection to the SQL Server database.
-        SqlConnection _conn = new SqlConnection(@"Data Source=.;Initial Catalog=NewestDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=True");
-
-        // Event handler for the checkbox that toggles password visibility.
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            CheckBox checkBox = (CheckBox)sender; // Cast the sender to a CheckBox.
-
-            if (checkBox.Checked)
-            {
-                // When the checkbox is checked, show the password by setting the PasswordChar to '\0'.
-                Password.PasswordChar = '\0';
-            }
-            else
-            {
-                // When unchecked, hide the password by setting the PasswordChar to '*' (or any other masking character).
-                Password.PasswordChar = '*';
-            }
-        }
-
-        // Static class to hold current user's information.
+        // Static class to hold current user's information
         public static class CurrentUser
         {
             public static string AccountID { get; set; }
@@ -73,10 +44,15 @@ namespace BarangayApplication
             public static string RoleName { get; set; }
         }
 
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Password.PasswordChar = ((CheckBox)sender).Checked ? '\0' : '*';
+        }
+
         private void BtnLogin_Click(object sender, EventArgs e)
         {
-            string accountName = AccountID.Text.Trim(); // Use AccountID textbox for username
-            string password = Password.Text;     // This is the password entered by the user
+            string accountName = AccountID.Text.Trim();
+            string password = Password.Text;
 
             if (string.IsNullOrEmpty(accountName) || string.IsNullOrEmpty(password))
             {
@@ -87,83 +63,104 @@ namespace BarangayApplication
 
             try
             {
-                _conn.Open();
-
-                // Query user by username only (do not check password in SQL)
-                string _query = @"SELECT users.accountID, users.accountName, users.roleID, users.passwordHash, UserRoles.roleName
-                                  FROM users 
-                                  INNER JOIN UserRoles ON users.roleID = UserRoles.roleID
-                                  WHERE users.accountName = @accountName";
-                
-                SqlDataAdapter _da = new SqlDataAdapter(_query, _conn);
-                _da.SelectCommand.Parameters.AddWithValue("@accountName", accountName);
-                
-                DataTable _UserTable = new DataTable();
-                _da.Fill(_UserTable);
-
-                if (_UserTable.Rows.Count > 0)
+                using (var conn = new SqlConnection(SecurityConnString))
                 {
-                    string storedHash = _UserTable.Rows[0]["passwordHash"].ToString();
-                    // BCrypt password verification
-                    if (BCrypt.Net.BCrypt.Verify(password, storedHash))
+                    conn.Open();
+                    string query = @"
+                        SELECT u.accountID, u.accountName, u.roleID, u.passwordHash, r.roleName
+                        FROM users u
+                        INNER JOIN UserRoles r ON u.roleID = r.roleID
+                        WHERE u.accountName = @accountName";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        // Save current user info
-                        CurrentUser.AccountID = _UserTable.Rows[0]["accountID"].ToString();
-                        CurrentUser.AccountName = _UserTable.Rows[0]["accountName"].ToString();
-                        CurrentUser.RoleID = Convert.ToInt32(_UserTable.Rows[0]["roleID"]);
-                        CurrentUser.RoleName = _UserTable.Rows[0]["roleName"].ToString();
-
-                        // Log successful login in UserLogs table
-                        string logQuery = @"INSERT INTO UserLogs (Timestamp, UserName, Action, Description)
-                                            VALUES (@Timestamp, @UserName, @Action, @Description)";
-                        using (SqlCommand logCmd = new SqlCommand(logQuery, _conn))
+                        cmd.Parameters.AddWithValue("@accountName", accountName);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            logCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
-                            logCmd.Parameters.AddWithValue("@UserName", CurrentUser.AccountName);
-                            logCmd.Parameters.AddWithValue("@Action", "Login");
-                            logCmd.Parameters.AddWithValue("@Description", $"User '{CurrentUser.AccountName}' logged in successfully with role '{CurrentUser.RoleName}'.");
-                            logCmd.ExecuteNonQuery();
+                            if (reader.Read())
+                            {
+                                string storedHash = reader["passwordHash"].ToString();
+                                if (BCrypt.Net.BCrypt.Verify(password, storedHash))
+                                {
+                                    CurrentUser.AccountID = reader["accountID"].ToString();
+                                    CurrentUser.AccountName = reader["accountName"].ToString();
+                                    CurrentUser.RoleID = Convert.ToInt32(reader["roleID"]);
+                                    CurrentUser.RoleName = reader["roleName"].ToString();
+
+                                    // Log successful login in UserLogs table (use a new connection to avoid issues)
+                                    LogUserLogin(CurrentUser.AccountName, CurrentUser.RoleName);
+
+                                    // --- AUTO-BACKUP ON LOGIN ---
+                                    AutoBackupHelper.CheckAutoBackupOnLogin(
+                                        CurrentUser.AccountName,
+                                        CurrentUser.RoleName.Equals("Superadmin", StringComparison.OrdinalIgnoreCase)
+                                    );
+                                    // ----------------------------
+
+                                    mainMenu.Show();
+                                    this.Hide();
+                                    return;
+                                }
+                            }
                         }
-
-                        // --- AUTO-BACKUP ON LOGIN ---
-                        AutoBackupHelper.CheckAutoBackupOnLogin(
-                            CurrentUser.AccountName,
-                            CurrentUser.RoleName.Equals("Superadmin", StringComparison.OrdinalIgnoreCase)
-                        );
-                        // ----------------------------
-
-                        mainMenu.Show();
-                        this.Hide();
-                        return;
                     }
                 }
 
-                // If we reach here, either Account ID doesn't exist or password is incorrect
-                MessageBox.Show("incorrect Account ID or Password", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Incorrect Account ID or Password", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 AccountID.Clear();
                 Password.Clear();
                 AccountID.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Something went wrong, please try again later or call CS for assistance." + ex,
+                MessageBox.Show("Something went wrong, please try again later or call CS for assistance.\n\n" + ex.Message,
                     "Error - 101", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 AccountID.Clear();
                 Password.Clear();
                 AccountID.Focus();
             }
-            finally
+        }
+
+        private void LogUserLogin(string userName, string roleName)
+        {
+            try
             {
-                _conn.Close();
+                using (var conn = new SqlConnection(SecurityConnString))
+                {
+                    conn.Open();
+                    string logQuery = @"
+                INSERT INTO UserLogs (Timestamp, UserName, Action, Description)
+                VALUES (@Timestamp, @UserName, @Action, @Description)";
+                    using (SqlCommand logCmd = new SqlCommand(logQuery, conn))
+                    {
+                        logCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+                        logCmd.Parameters.AddWithValue("@UserName", userName);
+                        logCmd.Parameters.AddWithValue("@Action", "Login");
+                        logCmd.Parameters.AddWithValue("@Description", $"User '{userName}' logged in successfully with role '{roleName}'.");
+                        logCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    // Log to local file as a fallback, don't block login process
+                    File.AppendAllText("login_error_log.txt",
+                        $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to log user login for '{userName}': {ex.Message}{Environment.NewLine}");
+                }
+                catch
+                {
+                    // Suppress all errors to never block login
+                }
             }
         }
 
-        // Event handler for the Bypass button click.
-        // Allows navigation to MainMenu without credential validation (for testing or demo purposes).
+        // Optional: For testing/demo only. Remove or guard this in production!
         private void Bypass_Click(object sender, EventArgs e)
         {
-            mainMenu.Show(); // Display the MainMenu form.
-            this.Hide();     // Hide the LoginMenu form.
+            mainMenu.Show();
+            this.Hide();
         }
     }
 }
