@@ -687,10 +687,11 @@ namespace BarangayApplication.Models.Repositories
                                 MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName")),
                                 Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address")),
                                 TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo")),
-                                SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                // SexID is a SQL bit, read as bool and convert to int (0/1)
+                                SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                 Sex = new Sex
                                 {
-                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                     SexDescription = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex"))
                                 },
                                 Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
@@ -901,10 +902,10 @@ namespace BarangayApplication.Models.Repositories
                                 MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName")),
                                 Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address")),
                                 TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo")),
-                                SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                 Sex = new Sex
                                 {
-                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                     SexDescription = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex"))
                                 },
                                 Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
@@ -1127,10 +1128,10 @@ namespace BarangayApplication.Models.Repositories
                                     MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName")),
                                     Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address")),
                                     TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo")),
-                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                     Sex = new Sex
                                     {
-                                        SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                        SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                         SexDescription = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex"))
                                     },
                                     Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
@@ -1331,10 +1332,10 @@ namespace BarangayApplication.Models.Repositories
                                     MiddleName = _reader.IsDBNull(_reader.GetOrdinal("MiddleName")) ? null : _reader.GetString(_reader.GetOrdinal("MiddleName")),
                                     Address = _reader.IsDBNull(_reader.GetOrdinal("Address")) ? "" : _reader.GetString(_reader.GetOrdinal("Address")),
                                     TelCelNo = _reader.IsDBNull(_reader.GetOrdinal("TelCelNo")) ? "" : _reader.GetString(_reader.GetOrdinal("TelCelNo")),
-                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                    SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                     Sex = new Sex
                                     {
-                                        SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? (byte)0 : _reader.GetByte(_reader.GetOrdinal("SexID")),
+                                        SexID = _reader.IsDBNull(_reader.GetOrdinal("SexID")) ? 0 : (_reader.GetBoolean(_reader.GetOrdinal("SexID")) ? 1 : 0),
                                         SexDescription = _reader.IsDBNull(_reader.GetOrdinal("Sex")) ? "" : _reader.GetString(_reader.GetOrdinal("Sex"))
                                     },
                                     Height = _reader.IsDBNull(_reader.GetOrdinal("Height")) ? 0.00m : _reader.GetDecimal(_reader.GetOrdinal("Height")),
@@ -1595,16 +1596,11 @@ namespace BarangayApplication.Models.Repositories
                             // 4. Insert into ResidentPurposes (if data provided)
                             if (resident.Purposes != null && resident.Purposes.Count > 0)
                             {
-                                string sqlPurpose = @"
-                                    INSERT INTO ResidentPurposes (
-                                        ResidentID, PurposeTypeID, PurposeOthers
-                                    ) VALUES (
-                                        @ResidentID, @PurposeTypeID, @PurposeOthers
-                                    );";
                                 foreach (var rp in resident.Purposes)
                                 {
-                                    using (SqlCommand cmd = new SqlCommand(sqlPurpose, _conn, transaction))
+                                    using (SqlCommand cmd = new SqlCommand("InsertResidentPurpose", _conn, transaction))
                                     {
+                                        cmd.CommandType = CommandType.StoredProcedure;
                                         cmd.Parameters.AddWithValue("@ResidentID", residentId);
                                         cmd.Parameters.AddWithValue("@PurposeTypeID", rp.PurposeTypeID);
                                         cmd.Parameters.AddWithValue("@PurposeOthers", (object?)rp.PurposeOthers ?? DBNull.Value);
@@ -1623,7 +1619,7 @@ namespace BarangayApplication.Models.Repositories
                     }
                 }
                 // Add log if needed
-                AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "Add", $"Added resident: {resident.FirstName} {resident.LastName}");
+                AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "add", $"Added resident: {resident.FirstName} {resident.LastName}");
                 AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)
@@ -1794,13 +1790,11 @@ namespace BarangayApplication.Models.Repositories
                             }
                             if (resident.Purposes != null && resident.Purposes.Count > 0)
                             {
-                                string insertPurpose = @"
-                                    INSERT INTO ResidentPurposes (ResidentID, PurposeTypeID, PurposeOthers)
-                                    VALUES (@ResidentID, @PurposeTypeID, @PurposeOthers);";
                                 foreach (var rp in resident.Purposes)
                                 {
-                                    using (var cmd = new SqlCommand(insertPurpose, _conn, transaction))
+                                    using (var cmd = new SqlCommand("InsertResidentPurpose", _conn, transaction))
                                     {
+                                        cmd.CommandType = CommandType.StoredProcedure;
                                         cmd.Parameters.AddWithValue("@ResidentID", resident.ResidentID);
                                         cmd.Parameters.AddWithValue("@PurposeTypeID", rp.PurposeTypeID);
                                         cmd.Parameters.AddWithValue("@PurposeOthers", (object?)rp.PurposeOthers ?? DBNull.Value);
@@ -1818,7 +1812,7 @@ namespace BarangayApplication.Models.Repositories
                         }
                     }
                 }
-                AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "Edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
+                AddUserLog(Convert.ToInt32(CurrentUser.AccountID), "edit", $"Edited resident: {resident.FirstName} {resident.LastName}");
                 AutoBackupHelper.IncrementChangeCountAndAutoBackup();
             }
             catch (Exception ex)
@@ -1870,7 +1864,7 @@ namespace BarangayApplication.Models.Repositories
                                             MiddleName = reader.IsDBNull(reader.GetOrdinal("MiddleName")) ? null : reader.GetString(reader.GetOrdinal("MiddleName")),
                                             Address = reader.GetString(reader.GetOrdinal("Address")),
                                             TelCelNo = reader.GetString(reader.GetOrdinal("TelCelNo")),
-                                            SexID = (byte)reader.GetByte(reader.GetOrdinal("SexID")),
+                                            SexID = reader.IsDBNull(reader.GetOrdinal("SexID")) ? 0 : (reader.GetBoolean(reader.GetOrdinal("SexID")) ? 1 : 0),
                                             DateOfBirth = reader.GetDateTime(reader.GetOrdinal("DateOfBirth")),
                                             PlaceOfBirth = reader.GetString(reader.GetOrdinal("PlaceOfBirth")),
                                             CivilStatusID = reader.GetInt32(reader.GetOrdinal("CivilStatusID")),
@@ -2119,7 +2113,7 @@ namespace BarangayApplication.Models.Repositories
                                             MiddleName = reader.IsDBNull(reader.GetOrdinal("MiddleName")) ? null : reader.GetString(reader.GetOrdinal("MiddleName")),
                                             Address = reader.GetString(reader.GetOrdinal("Address")),
                                             TelCelNo = reader.GetString(reader.GetOrdinal("TelCelNo")),
-                                            SexID = (byte)reader.GetByte(reader.GetOrdinal("SexID")),
+                                            SexID = reader.IsDBNull(reader.GetOrdinal("SexID")) ? 0 : (reader.GetBoolean(reader.GetOrdinal("SexID")) ? 1 : 0),
                                             DateOfBirth = reader.GetDateTime(reader.GetOrdinal("DateOfBirth")),
                                             PlaceOfBirth = reader.GetString(reader.GetOrdinal("PlaceOfBirth")),
                                             CivilStatusID = reader.GetInt32(reader.GetOrdinal("CivilStatusID")),

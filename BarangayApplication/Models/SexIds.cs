@@ -2,7 +2,7 @@
 {
     public static class SexIds
     {
-        public const byte Female = 0;
-        public const byte Male = 1;
+        public const int Female = 1;
+        public const int Male = 0;
     }
 }

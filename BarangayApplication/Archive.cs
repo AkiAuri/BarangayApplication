@@ -345,7 +345,7 @@ namespace BarangayApplication
                     string restoreReason = reasonForm.ArchiveReason;
                     var repo = new ResidentsRepository();
                     repo.RestoreResident(residentId);
-                    repo.AddUserLog(Convert.ToInt32(LoginMenu.CurrentUser.AccountID), "Restored",
+                    repo.AddUserLog(Convert.ToInt32(LoginMenu.CurrentUser.AccountID), "restore",
                         $"Restored resident: {fullName}. Reason: {restoreReason}");
                     ReadArchivedResidents();
                     SetupSearchBarAutocomplete();

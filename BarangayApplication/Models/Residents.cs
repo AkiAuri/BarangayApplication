@@ -14,7 +14,7 @@ namespace BarangayApplication.Models
         public string? MiddleName { get; set; }
         public string Address { get; set; } = string.Empty;
         public string TelCelNo { get; set; } = string.Empty;
-        public byte SexID { get; set; } // BIT in SQL, use byte in C#
+        public int SexID { get; set; } // BIT in SQL, use int in C#
         public DateTime DateOfBirth { get; set; }
         public string PlaceOfBirth { get; set; } = string.Empty;
         public int CivilStatusID { get; set; }
@@ -35,7 +35,7 @@ namespace BarangayApplication.Models
 
     public class Sex
     {
-        public byte SexID { get; set; }
+        public int SexID { get; set; }
         public string SexDescription { get; set; } = string.Empty;
     }
 
