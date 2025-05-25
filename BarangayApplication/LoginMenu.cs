@@ -29,8 +29,15 @@ namespace BarangayApplication
         private const string SecurityDbName = "ResidentsLogDB";
         private const string SecurityConnString = @"Data Source=.;Initial Catalog=" + SecurityDbName + ";Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 
+        // AppData directory for all settings and logs
+        private static readonly string AppDataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "BarangayApplication");
+        private static string LoginErrorLogFile => Path.Combine(AppDataDir, "login_error_log.txt");
+
         public LoginMenu()
         {
+            Directory.CreateDirectory(AppDataDir); // Ensure AppData directory exists
             InitializeComponent();
             Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
         }
@@ -156,7 +163,8 @@ namespace BarangayApplication
             {
                 try
                 {
-                    File.AppendAllText("login_error_log.txt",
+                    Directory.CreateDirectory(AppDataDir); // Ensure directory exists in case not created yet
+                    File.AppendAllText(LoginErrorLogFile,
                         $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to log user login for '{userName}': {ex.Message}{Environment.NewLine}");
                 }
                 catch { }

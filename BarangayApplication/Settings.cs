@@ -10,8 +10,15 @@ namespace BarangayApplication
 {
     public partial class Settings : Form
     {
+        // AppData directory for all settings and backup info
+        private static readonly string AppDataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "BarangayApplication");
         private const string LastBackupFilePrefix = "last_backup_";
-        private const string BackupLocationFile = "backup_location.txt";
+        private const string BackupLocationFileName = "backup_location.txt";
+        private static string BackupLocationFile => Path.Combine(AppDataDir, BackupLocationFileName);
+        private static string LastBackupFile(string dbName) => Path.Combine(AppDataDir, $"{LastBackupFilePrefix}{dbName}.txt");
+
         private static readonly string[] DatabaseNames = { "ResidentsDB", "ResidentsArchiveDB", "ResidentsLogDB" };
         private static readonly string[] DatabaseDisplayNames = { "Main", "Archive", "Logbook" };
         private const string ServerName = @".";
@@ -19,9 +26,9 @@ namespace BarangayApplication
         private const string SecurityDbName = "ResidentsLogDB";
         private const string SecurityConnString = "Data Source=.;Initial Catalog=" + SecurityDbName + ";Integrated Security=True";
 
-
         public Settings()
         {
+            Directory.CreateDirectory(AppDataDir); // Ensure directory exists
             InitializeComponent();
             LoadBackupLocation();
             LoadLastBackupAll();
@@ -53,7 +60,7 @@ namespace BarangayApplication
         }
         private string LoadLastBackup(string dbName)
         {
-            string file = $"{LastBackupFilePrefix}{dbName}.txt";
+            string file = LastBackupFile(dbName);
             if (File.Exists(file))
                 return File.ReadAllText(file);
             return "No backup yet.";
@@ -61,7 +68,7 @@ namespace BarangayApplication
         private void SaveLastBackup(string dbName, DateTime dateTime)
         {
             string text = dateTime.ToString("yyyy-MM-dd HH:mm:ss");
-            File.WriteAllText($"{LastBackupFilePrefix}{dbName}.txt", text);
+            File.WriteAllText(LastBackupFile(dbName), text);
 
             // Update label if this is from the UI thread
             if (dbName == "ResidentsDB") lblDateTimeMain.Text = text;
@@ -178,38 +185,32 @@ namespace BarangayApplication
             string setMultiUser = $"ALTER DATABASE [{dbName}] SET MULTI_USER";
             string restoreConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
 
-            using (SqlConnection conn = new SqlConnection(restoreConnectionString))
+            try
             {
-                conn.Open();
-                SqlTransaction trans = conn.BeginTransaction();
-                using (SqlCommand cmd = new SqlCommand())
+                using (SqlConnection conn = new SqlConnection(restoreConnectionString))
                 {
-                    cmd.Connection = conn;
-                    cmd.Transaction = trans;
-                    try
+                    conn.Open();
+                    // 1. Set single user mode
+                    using (SqlCommand cmd = new SqlCommand(setSingleUser, conn))
                     {
-                        cmd.CommandText = setSingleUser;
                         cmd.ExecuteNonQuery();
-
-                        cmd.CommandText = restoreQuery;
-                        cmd.ExecuteNonQuery();
-
-                        cmd.CommandText = setMultiUser;
-                        cmd.ExecuteNonQuery();
-
-                        trans.Commit();
-                        MessageBox.Show($"{displayName} restore successful!");
                     }
-                    catch (Exception ex)
+                    // 2. Restore database
+                    using (SqlCommand cmd = new SqlCommand(restoreQuery, conn))
                     {
-                        try
-                        {
-                            trans.Rollback();
-                        }
-                        catch { /* ignore rollback errors */ }
-                        MessageBox.Show($"{displayName} restore failed: {ex.Message}");
+                        cmd.ExecuteNonQuery();
+                    }
+                    // 3. Set multi user mode
+                    using (SqlCommand cmd = new SqlCommand(setMultiUser, conn))
+                    {
+                        cmd.ExecuteNonQuery();
                     }
                 }
+                MessageBox.Show($"{displayName} restore successful!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{displayName} restore failed: {ex.Message}");
             }
         }
         

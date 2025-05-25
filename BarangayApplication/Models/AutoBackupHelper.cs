@@ -6,12 +6,24 @@ namespace BarangayApplication.Helpers
 {
     public static class AutoBackupHelper
     {
-        private const string ChangeCountFile = "change_count.txt";
-        private const string BackupLocationFile = "backup_location.txt";
+        private static readonly string AppDataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "BarangayApplication");
+
+        private static string ChangeCountFile => Path.Combine(AppDataDir, "change_count.txt");
+        private static string BackupLocationFile => Path.Combine(AppDataDir, "backup_location.txt");
+        private static string AutoBackupLogFile => Path.Combine(AppDataDir, "autobackup_log.txt");
+        private static string LastBackupFile(string dbName) => Path.Combine(AppDataDir, $"{LastBackupFilePrefix}{dbName}.txt");
+
         private static readonly string[] DatabaseNames = { "ResidentsDB", "ResidentsArchiveDB", "ResidentsLogDB" };
         private static readonly string[] DatabaseDisplayNames = { "Main", "Archive", "Logbook" };
         private const string ServerName = @".";
         private const string LastBackupFilePrefix = "last_backup_";
+
+        static AutoBackupHelper()
+        {
+            Directory.CreateDirectory(AppDataDir);
+        }
 
         // Call this after every data change (create, update, delete)
         public static void IncrementChangeCountAndAutoBackup()
@@ -37,7 +49,7 @@ namespace BarangayApplication.Helpers
             foreach (var dbName in DatabaseNames)
             {
                 string lastBackupDate = null;
-                string lastBackupFile = $"{LastBackupFilePrefix}{dbName}.txt";
+                string lastBackupFile = LastBackupFile(dbName);
                 if (File.Exists(lastBackupFile))
                     lastBackupDate = File.ReadAllText(lastBackupFile);
 
@@ -87,11 +99,11 @@ namespace BarangayApplication.Helpers
                             conn.Open();
                             cmd.ExecuteNonQuery();
                             SaveLastBackup(dbName, DateTime.Now);
-                            File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {reason} ({displayName})\n");
+                            File.AppendAllText(AutoBackupLogFile, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {reason} ({displayName})\n");
                         }
                         catch (Exception ex)
                         {
-                            File.AppendAllText("autobackup_log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Auto-backup failed for {displayName}: {ex.Message}\n");
+                            File.AppendAllText(AutoBackupLogFile, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Auto-backup failed for {displayName}: {ex.Message}\n");
                         }
                     }
                 }
@@ -100,7 +112,7 @@ namespace BarangayApplication.Helpers
 
         private static void SaveLastBackup(string dbName, DateTime dateTime)
         {
-            File.WriteAllText($"{LastBackupFilePrefix}{dbName}.txt", dateTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            File.WriteAllText(LastBackupFile(dbName), dateTime.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 }

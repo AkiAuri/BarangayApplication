@@ -407,27 +407,26 @@ namespace BarangayApplication
                 return;
             }
 
-            // Save to text file
+            // Save to text file (user chooses location, so no Program Files access issue)
             using (var saveDlg = new SaveFileDialog
             {
                 Title = "Export old logs to text file",
                 Filter = "Text Files (*.txt)|*.txt",
                 FileName = $"ArchivedLogs_{DateTime.Now:yyyyMMdd_HHmmss}.txt",
-                OverwritePrompt = true
+                OverwritePrompt = true,
+                AddExtension = true,
+                CheckPathExists = true,
+                ValidateNames = true,
+                RestoreDirectory = true,
+                SupportMultiDottedExtensions = false,
+                AutoUpgradeEnabled = true,
+                ShowHelp = false,
+                CreatePrompt = false,
+                DefaultExt = "txt",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
             })
             {
-                saveDlg.AddExtension = true;
-                saveDlg.CheckPathExists = true;
-                saveDlg.ValidateNames = true;
-                saveDlg.RestoreDirectory = true;
-                saveDlg.SupportMultiDottedExtensions = false;
-                saveDlg.AutoUpgradeEnabled = true;
-                saveDlg.ShowHelp = false;
-                saveDlg.CreatePrompt = false;
-                saveDlg.DefaultExt = "txt";
-                saveDlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 // Only OK and Cancel buttons will be shown by default
-
                 if (saveDlg.ShowDialog() != DialogResult.OK)
                     return;
 
