@@ -136,8 +136,8 @@
   <data name="employee-man" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\employee-man.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="users-alt" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\users-alt.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Overview" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Overview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -193,9 +193,6 @@
   <data name="log-file" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\log-file.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="settings (1)1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\settings (1)1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="LogoutWithBackground-fotor-bg-remover-2025032222199" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LogoutWithBackground-fotor-bg-remover-2025032222199.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -226,8 +223,8 @@
   <data name="Logbook" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Logbook.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Overview" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Overview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="users-alt" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\users-alt.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="search" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\search.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -235,19 +232,25 @@
   <data name="50overview" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\50overview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Forum" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Forum.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="secure-backup" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\secure-backup.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Forum" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Forum.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="settings (1)1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\settings (1)1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="paper1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\paper1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="member-search" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\member-search.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="NewOverview" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NewOverview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="member-search" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\member-search.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="circle-ellipsis1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\circle-ellipsis1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

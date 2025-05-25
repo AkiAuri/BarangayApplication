@@ -1,4 +1,5 @@
 ; -- Inno Setup Script for Barangay Application with SQL Server Connection Prompt (Windows Authentication only) --
+; -- Now prompts the user if they want to run the SQL setup script --
 
 [Setup]
 AppName=Barangay Application
@@ -63,19 +64,28 @@ procedure CurStepChanged(CurStep: TSetupStep);
 var
   CmdLine, Server, Port, AuthStr: string;
   ResultCode: Integer;
+  RunSQL: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
-    Server := EdtServer.Text;
-    Port := EdtPort.Text;
-    AuthStr := '-E'; // Windows Authentication
+    RunSQL := MsgBox('Do you want to run the SQL setup script now?'#13#10'(Choose "No" if you have already set up the database before.)', mbConfirmation, MB_YESNO or MB_DEFBUTTON1);
+    if RunSQL = IDYES then
+    begin
+      Server := EdtServer.Text;
+      Port := EdtPort.Text;
+      AuthStr := '-E'; // Windows Authentication
 
-    CmdLine := '-S ' + Server + ',' + Port + ' ' + AuthStr +
-      ' -i "' + ExpandConstant('{app}\setup.sql') + '"';
+      CmdLine := '-S ' + Server + ',' + Port + ' ' + AuthStr +
+        ' -i "' + ExpandConstant('{app}\setup.sql') + '"';
 
-    if not Exec('sqlcmd.exe', CmdLine, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-      MsgBox('Failed to run SQL script. Please ensure SQL Server is running and sqlcmd is installed.', mbError, MB_OK)
+      if not Exec('sqlcmd.exe', CmdLine, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+        MsgBox('Failed to run SQL script. Please ensure SQL Server is running and sqlcmd is installed.', mbError, MB_OK)
+      else
+        MsgBox('Database setup script executed successfully.', mbInformation, MB_OK);
+    end
     else
-      MsgBox('Database setup script executed successfully.', mbInformation, MB_OK);
+    begin
+      MsgBox('SQL setup script was skipped. If you need to run it later, you can do so manually.', mbInformation, MB_OK);
+    end;
   end;
 end;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -36,6 +37,56 @@ namespace BarangayApplication
             cbxRestoreChoice.Items.AddRange(DatabaseDisplayNames);
             cbxRestoreChoice.SelectedIndex = 0; // Optional: Select the first item by default
             PopulateAdminAccountIDs();
+
+            // Apply rounded corners on startup
+            ApplyPanelRoundedCorners();
+
+            // Re-apply rounded corners on resize
+            this.Resize += (s, e) => ApplyPanelRoundedCorners();
+            // If panels can be resized independently, you may also want:
+            panel4.Resize += (s, e) => SetRoundedCorners(panel4, 20);
+            panel5.Resize += (s, e) => SetRoundedCorners(panel5, 20);
+            panel6.Resize += (s, e) => SetRoundedCorners(panel6, 20);
+        }
+
+        private void Settings_Load(object sender, EventArgs e)
+        {
+            // ...existing code...
+
+            // Also apply rounded corners on load
+            ApplyPanelRoundedCorners();
+
+            // ...existing code...
+        }
+
+        /// <summary>
+        /// Helper to apply rounded corners to all target panels.
+        /// </summary>
+        private void ApplyPanelRoundedCorners()
+        {
+            SetRoundedCorners(panel4, 20);
+            SetRoundedCorners(panel5, 20);
+            SetRoundedCorners(panel6, 20);
+        }
+
+        /// <summary>
+        /// Sets rounded corners to a given Panel.
+        /// </summary>
+        /// <param name="panel">The panel to modify.</param>
+        /// <param name="radius">The radius of the corner rounding.</param>
+        private void SetRoundedCorners(Panel panel, int radius)
+        {
+            if (panel.Width > 0 && panel.Height > 0)
+            {
+                GraphicsPath path = new GraphicsPath();
+                path.StartFigure();
+                path.AddArc(new Rectangle(0, 0, radius, radius), 180, 90);
+                path.AddArc(new Rectangle(panel.Width - radius, 0, radius, radius), 270, 90);
+                path.AddArc(new Rectangle(panel.Width - radius, panel.Height - radius, radius, radius), 0, 90);
+                path.AddArc(new Rectangle(0, panel.Height - radius, radius, radius), 90, 90);
+                path.CloseFigure();
+                panel.Region = new Region(path);
+            }
         }
 
         // Backup location load/save as before

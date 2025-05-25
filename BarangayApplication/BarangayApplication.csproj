@@ -371,6 +371,7 @@
     <None Include="Resources\employee-man.png" />
     <None Include="Resources\circle-ellipsis.png" />
     <None Include="Resources\add %282%29.png" />
+    <None Include="Resources\circle-ellipsis1.png" />
     <Content Include="Resources\Logo.png" />
     <None Include="Resources\Overview.png" />
   </ItemGroup>

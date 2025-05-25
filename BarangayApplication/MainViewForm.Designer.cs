@@ -34,12 +34,12 @@
             this.button1 = new System.Windows.Forms.Button();
             this.TopBar = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.collectionBtn = new System.Windows.Forms.Button();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.personalBtn = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.panel10 = new System.Windows.Forms.Panel();
             this.MainPanel = new System.Windows.Forms.Panel();
+            this.collectionBtn = new System.Windows.Forms.Button();
+            this.personalBtn = new System.Windows.Forms.Button();
+            this.panel10 = new System.Windows.Forms.Panel();
             this.TopBar.SuspendLayout();
             this.panel5.SuspendLayout();
             this.SuspendLayout();
@@ -55,16 +55,13 @@
             // 
             // button2
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.BackColor = System.Drawing.Color.Red;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(54, 127);
+            this.button2.Location = new System.Drawing.Point(13, 127);
             this.button2.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(142, 50);
+            this.button2.Size = new System.Drawing.Size(232, 50);
             this.button2.TabIndex = 199;
             this.button2.Text = "CANCEL";
             this.button2.UseVisualStyleBackColor = false;
@@ -72,16 +69,13 @@
             // 
             // button1
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.BackColor = System.Drawing.Color.LawnGreen;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(54, 76);
+            this.button1.Location = new System.Drawing.Point(13, 76);
             this.button1.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(142, 47);
+            this.button1.Size = new System.Drawing.Size(232, 47);
             this.button1.TabIndex = 200;
             this.button1.Text = "OK";
             this.button1.UseVisualStyleBackColor = false;
@@ -113,6 +107,31 @@
             this.panel5.Size = new System.Drawing.Size(252, 200);
             this.panel5.TabIndex = 23;
             // 
+            // panel3
+            // 
+            this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel3.Location = new System.Drawing.Point(0, 261);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(252, 60);
+            this.panel3.TabIndex = 21;
+            // 
+            // panel2
+            // 
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(0, 118);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(252, 60);
+            this.panel2.TabIndex = 20;
+            // 
+            // MainPanel
+            // 
+            this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainPanel.Location = new System.Drawing.Point(252, 0);
+            this.MainPanel.Name = "MainPanel";
+            this.MainPanel.Size = new System.Drawing.Size(978, 648);
+            this.MainPanel.TabIndex = 13;
+            this.MainPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.MainPanel_Paint);
+            // 
             // collectionBtn
             // 
             this.collectionBtn.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -134,14 +153,6 @@
             this.collectionBtn.UseVisualStyleBackColor = true;
             this.collectionBtn.Click += new System.EventHandler(this.collectionBtn_Click);
             // 
-            // panel3
-            // 
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel3.Location = new System.Drawing.Point(0, 261);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(252, 60);
-            this.panel3.TabIndex = 21;
-            // 
             // personalBtn
             // 
             this.personalBtn.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -162,14 +173,6 @@
             this.personalBtn.UseVisualStyleBackColor = true;
             this.personalBtn.Click += new System.EventHandler(this.personalBtn_Click);
             // 
-            // panel2
-            // 
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 118);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(252, 60);
-            this.panel2.TabIndex = 20;
-            // 
             // panel10
             // 
             this.panel10.BackgroundImage = global::BarangayApplication.Properties.Resources.Residence;
@@ -179,15 +182,6 @@
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(252, 118);
             this.panel10.TabIndex = 19;
-            // 
-            // MainPanel
-            // 
-            this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainPanel.Location = new System.Drawing.Point(252, 0);
-            this.MainPanel.Name = "MainPanel";
-            this.MainPanel.Size = new System.Drawing.Size(978, 648);
-            this.MainPanel.TabIndex = 13;
-            this.MainPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.MainPanel_Paint);
             // 
             // MainViewForm
             // 
