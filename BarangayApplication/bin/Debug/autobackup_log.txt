@@ -97,3 +97,12 @@ BACKUP DATABASE is terminating abnormally.
 BACKUP DATABASE is terminating abnormally.
 2025-05-21 20:00:28 - Auto-backup failed: Database 'sybau_database' does not exist. Make sure that the name is entered correctly.
 BACKUP DATABASE is terminating abnormally.
+2025-05-25 17:24:36 - Auto-backup: First login of new day or superadmin login (Main)
+2025-05-25 17:24:37 - Auto-backup: First login of new day or superadmin login (Archive)
+2025-05-25 17:24:37 - Auto-backup: First login of new day or superadmin login (Logbook)
+2025-05-25 18:15:17 - Auto-backup: First login of new day or superadmin login (Main)
+2025-05-25 18:15:18 - Auto-backup: First login of new day or superadmin login (Archive)
+2025-05-25 18:15:19 - Auto-backup: First login of new day or superadmin login (Logbook)
+2025-05-25 19:06:38 - Auto-backup: 10 changes reached (Main)
+2025-05-25 19:06:39 - Auto-backup: 10 changes reached (Archive)
+2025-05-25 19:06:39 - Auto-backup: 10 changes reached (Logbook)

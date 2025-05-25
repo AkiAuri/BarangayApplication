@@ -14,3 +14,43 @@ Invalid column name 'Action'.
 Invalid column name 'Action'.
 2025-05-24 21:11:45 - Failed to log user login for 'superadmin_root': Invalid column name 'UserName'.
 Invalid column name 'Action'.
+2025-05-25 17:24:34 - Failed to log user login for 'superadmin_root': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 17:25:10 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 17:40:08 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 17:47:56 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 17:52:28 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:01:22 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:02:48 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:05:01 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:07:20 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:15:17 - Failed to log user login for 'superadmin_root': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:21:20 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:37:26 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:41:00 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 18:41:43 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 19:04:49 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 19:06:32 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 19:08:08 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 19:10:48 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 19:11:44 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.
+2025-05-25 19:18:51 - Failed to log user login for 'alex': Invalid column name 'UserName'.
+Invalid column name 'Action'.

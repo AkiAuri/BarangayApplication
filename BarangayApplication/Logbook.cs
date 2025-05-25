@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Xceed.Document.NET;
@@ -33,6 +34,10 @@ namespace BarangayApplication
             cBxFilterByAction.Items.AddRange(new string[] {
                 "ADD", "EDIT", "ARCHIVE", "RESTORE", "LOGIN"
             });
+
+            // Hook up the archive button
+            if (this.Controls.ContainsKey("archiveBtn"))
+                this.Controls["archiveBtn"].Click += archiveBtn_Click;
         }
 
         private void DgvLog_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -148,22 +153,180 @@ namespace BarangayApplication
                 return user.AccountName;
             return cbxUserFilter.SelectedItem?.ToString() ?? "ALL USERS";
         }
+        
+        private void ApplyCombinedFilters()
+        {
+            string action = GetCurrentFilterAction();
+            string user = GetCurrentFilterUser();
+            string query = SearchBar.Text.Trim();
 
+            // Start from all logs
+            var allLogs = repo.GetAllLogs();
+
+            // Step 1: filter by action/user if needed
+            IEnumerable<DataRow> rows = allLogs.AsEnumerable();
+            if (action != "ALL ACTIONS")
+                rows = rows.Where(row => row["ACTION"].ToString().Equals(action, StringComparison.OrdinalIgnoreCase));
+            if (user != "ALL USERS")
+                rows = rows.Where(row => row["USER"].ToString().Equals(user, StringComparison.OrdinalIgnoreCase));
+
+            // Step 2: filter by search query (if not empty)
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                // Advanced Multi-Criteria Parsing (reuse your parsing code)
+                var criteria = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                var parts = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string currentPrefix = "";
+                var sb = new System.Text.StringBuilder();
+                foreach (var part in parts)
+                {
+                    if (
+                        (part.Length > 2 && part[1] == ':' && "UuAaDd".Contains(part[0])) ||
+                        (part.Length > 5 && part.StartsWith("Desc:", StringComparison.OrdinalIgnoreCase))
+                    )
+                    {
+                        if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
+                        {
+                            if (!criteria.ContainsKey(currentPrefix))
+                                criteria[currentPrefix] = new List<string>();
+                            criteria[currentPrefix].Add(sb.ToString().Trim());
+                            sb.Clear();
+                        }
+                        if (part.StartsWith("Desc:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            currentPrefix = "DESC:";
+                            sb.Append(part.Substring(5));
+                        }
+                        else
+                        {
+                            currentPrefix = part.Substring(0, 2).ToUpper();
+                            sb.Append(part.Substring(2));
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(currentPrefix))
+                    {
+                        sb.Append(" " + part);
+                    }
+                }
+                if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
+                {
+                    if (!criteria.ContainsKey(currentPrefix))
+                        criteria[currentPrefix] = new List<string>();
+                    criteria[currentPrefix].Add(sb.ToString().Trim());
+                }
+
+                rows = rows.Where(row =>
+                {
+                    bool match = true;
+                    if (criteria.ContainsKey("U:"))
+                    {
+                        foreach (var userQuery in criteria["U:"])
+                        {
+                            var words = userQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            string username = row["USER"].ToString().ToLower();
+                            if (!words.All(w => username.Contains(w)))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (match && criteria.ContainsKey("A:"))
+                    {
+                        foreach (var actionQuery in criteria["A:"])
+                        {
+                            string aq = actionQuery.ToLower();
+                            string actionVal = row["ACTION"].ToString().ToLower();
+                            if (!actionVal.Contains(aq))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (match && criteria.ContainsKey("D:"))
+                    {
+                        foreach (var dateQuery in criteria["D:"])
+                        {
+                            string dq = dateQuery.ToLower();
+                            string date = row["DATE & TIME"].ToString().ToLower();
+                            if (!date.Contains(dq))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (match && criteria.ContainsKey("DESC:"))
+                    {
+                        foreach (var descQuery in criteria["DESC:"])
+                        {
+                            var words = descQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            string desc = row["DESCRIPTION"].ToString().ToLower();
+                            if (!words.All(w => desc.Contains(w)))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (criteria.Count == 0)
+                    {
+                        var words = query.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        string username = row["USER"].ToString().ToLower();
+                        string actionVal = row["ACTION"].ToString().ToLower();
+                        string date = row["DATE & TIME"].ToString().ToLower();
+                        string desc = row["DESCRIPTION"].ToString().ToLower();
+
+                        if (words.All(w =>
+                            username.Contains(w) ||
+                            actionVal.Contains(w) ||
+                            date.Contains(w) ||
+                            desc.Contains(w)
+                        ))
+                        {
+                            match = true;
+                        }
+                        else
+                        {
+                            match = false;
+                        }
+                    }
+                    return match;
+                });
+            }
+
+            // Compose filtered DataTable
+            DataTable dt = allLogs.Clone();
+            foreach (var row in rows)
+                dt.ImportRow(row);
+
+            dgvLog.DataSource = dt;
+            lblPageInfo.Text = $"Filtered ({dt.Rows.Count} records)";
+            btnFirst.Enabled = btnPrevious.Enabled = btnNext.Enabled = btnLast.Enabled = false;
+        }
+        
+        private void SearchBar_TextChanged(object sender, EventArgs e)
+        {
+            ApplyCombinedFilters();
+        }
+        
         private void cBxFilterByAction_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LoadFilteredLogs(GetCurrentFilterAction(), GetCurrentFilterUser());
+            ApplyCombinedFilters();
         }
-
         private void cbxUserFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LoadFilteredLogs(GetCurrentFilterAction(), GetCurrentFilterUser());
+            ApplyCombinedFilters();
         }
-
+        
         private void llClearFilter_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             cBxFilterByAction.SelectedIndex = 0;
             cbxUserFilter.SelectedIndex = 0;
-            LoadDataForPage(currentPage);
+            SearchBar.Text = ""; // Also clear the search bar
+            LoadDataForPage(currentPage); // Restore unfiltered
         }
 
         private void btnFirst_Click(object sender, EventArgs e)
@@ -215,6 +378,78 @@ namespace BarangayApplication
             {
                 isLogUpdateInProgress = false;
             }
+        }
+        
+        // ================== ARCHIVE LOGS OLDER THAN A MONTH =========================
+
+        private void archiveBtn_Click(object sender, EventArgs e)
+        {
+            // Get all logs older than a month (based on current time)
+            var allLogs = repo.GetAllLogs();
+            var cutoffDate = DateTime.Now.AddMonths(-1);
+
+            var oldRows = allLogs.AsEnumerable()
+                .Where(row =>
+                {
+                    string dateRaw = row["DATE & TIME"].ToString();
+                    DateTime logDate;
+                    // TryParseExact for 'yyyy-MM-dd hh:mm:ss tt'
+                    if (DateTime.TryParse(dateRaw, out logDate))
+                    {
+                        return logDate < cutoffDate;
+                    }
+                    return false;
+                }).ToList();
+
+            if (oldRows.Count == 0)
+            {
+                MessageBox.Show("No logs older than a month to archive.");
+                return;
+            }
+
+            // Save to text file
+            using (var saveDlg = new SaveFileDialog
+            {
+                Title = "Export old logs to text file",
+                Filter = "Text Files (*.txt)|*.txt",
+                FileName = $"ArchivedLogs_{DateTime.Now:yyyyMMdd_HHmmss}.txt",
+                OverwritePrompt = true
+            })
+            {
+                saveDlg.AddExtension = true;
+                saveDlg.CheckPathExists = true;
+                saveDlg.ValidateNames = true;
+                saveDlg.RestoreDirectory = true;
+                saveDlg.SupportMultiDottedExtensions = false;
+                saveDlg.AutoUpgradeEnabled = true;
+                saveDlg.ShowHelp = false;
+                saveDlg.CreatePrompt = false;
+                saveDlg.DefaultExt = "txt";
+                saveDlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                // Only OK and Cancel buttons will be shown by default
+
+                if (saveDlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                using (var sw = new StreamWriter(saveDlg.FileName, false))
+                {
+                    // Write header
+                    var cols = allLogs.Columns.Cast<DataColumn>().Select(c => c.ColumnName);
+                    sw.WriteLine(string.Join("\t", cols));
+                    foreach (var row in oldRows)
+                    {
+                        var vals = cols.Select(col => row[col]?.ToString() ?? "");
+                        sw.WriteLine(string.Join("\t", vals));
+                    }
+                }
+            }
+
+            // Remove archived logs from DB
+            repo.DeleteLogsBefore(cutoffDate);
+            MessageBox.Show($"{oldRows.Count} logs archived and removed from the database.");
+            // Refresh log display
+            CalculateTotalPages();
+            LoadDataForPage(1);
         }
 
         // ================== DOCX PRINTER =========================
@@ -297,41 +532,43 @@ namespace BarangayApplication
 
         private void btnLogPrinter_Click(object sender, EventArgs e)
         {
-            var ym = SelectMonthYear();
-            if (ym == null) return;
-            int month = ym.Item1, year = ym.Item2;
+            // Use current filters for the report (not search bar!)
+            string action = GetCurrentFilterAction();
+            string user = GetCurrentFilterUser();
 
-            var logs = repo.GetLogsForMonth(year, month);
+            DataTable logs;
+            if (action != "ALL ACTIONS" && user != "ALL USERS")
+                logs = repo.GetLogsByUserAndAction(user, action);
+            else if (action != "ALL ACTIONS")
+                logs = repo.GetFilteredLogs(action);
+            else if (user != "ALL USERS")
+                logs = repo.GetLogsByUser(user);
+            else
+                logs = repo.GetAllLogs();
 
             if (logs.Rows.Count == 0)
             {
-                MessageBox.Show("No logs found for the selected month.");
+                MessageBox.Show("No logs found for the selected filters.");
                 return;
             }
 
-            using (var confirmForm = new BackupRestoreConfirmation($"generate a log report for {new DateTime(year, month, 1):MMMM yyyy}"))
+            // Only OK/Cancel for SaveFileDialog (this is default)
+            using (var saveDlg = new SaveFileDialog { Filter = "Word Document|*.docx", FileName = $"LogReport_{DateTime.Now:yyyyMMdd}.docx" })
             {
-                if (confirmForm.ShowDialog() != DialogResult.OK || !confirmForm.IsConfirmed)
-                {
+                if (saveDlg.ShowDialog() != DialogResult.OK)
                     return;
+
+                var stats = new LogStats();
+                foreach (DataRow row in logs.Rows)
+                {
+                    string logUser = row["USER"].ToString();
+                    string logAction = row["ACTION"].ToString().ToUpperInvariant();
+                    stats.Add(logUser, logAction);
                 }
-            }
-
-            var stats = new LogStats();
-            foreach (DataRow row in logs.Rows)
-            {
-                string user = row["USER"].ToString();
-                string action = row["ACTION"].ToString().ToUpperInvariant();
-                stats.Add(user, action);
-            }
-
-            using (var saveDlg = new SaveFileDialog { Filter = "Word Document|*.docx", FileName = $"Logs_{year}_{month:00}.docx" })
-            {
-                if (saveDlg.ShowDialog() != DialogResult.OK) return;
 
                 using (var doc = DocX.Create(saveDlg.FileName))
                 {
-                    doc.InsertParagraph($"Log Report for {new DateTime(year, month, 1):MMMM yyyy}")
+                    doc.InsertParagraph($"Log Report ({(action == "ALL ACTIONS" ? "All Actions" : action)}, {(user == "ALL USERS" ? "All Users" : user)})")
                         .FontSize(18).Bold().Alignment = Alignment.center;
                     doc.InsertParagraph();
 
@@ -351,15 +588,15 @@ namespace BarangayApplication
                     doc.InsertParagraph();
 
                     doc.InsertParagraph("Top Users per Action:").Bold();
-                    foreach (var action in stats.ActionCounts.Keys)
+                    foreach (var act in stats.ActionCounts.Keys)
                     {
                         var userList = stats.UserActionCounts
-                            .Where(u => u.Value.ContainsKey(action))
-                            .OrderByDescending(u => u.Value[action])
+                            .Where(u => u.Value.ContainsKey(act))
+                            .OrderByDescending(u => u.Value[act])
                             .ToList();
                         if (userList.Count > 0)
                         {
-                            doc.InsertParagraph($"{action}: {userList[0].Key} ({userList[0].Value[action]} times)");
+                            doc.InsertParagraph($"{act}: {userList[0].Key} ({userList[0].Value[act]} times)");
                         }
                     }
                     doc.InsertParagraph();

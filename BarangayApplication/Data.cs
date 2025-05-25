@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ using static BarangayApplication.LoginMenu;
 using System.IO;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
+using PdfSharp.Pdf;
+using PdfSharp.Drawing;
 
 namespace BarangayApplication
 {
@@ -24,6 +27,8 @@ namespace BarangayApplication
     {
         public Data()
         {
+            PdfSharp.Fonts.GlobalFontSettings.UseWindowsFontsUnderWindows = true;
+            
             InitializeComponent();
             ReadResidents();
             SetupSearchBarAutocomplete(); // Make sure suggestions are ready at start
@@ -34,6 +39,8 @@ namespace BarangayApplication
             // Attach the CellFormatting event for ALL CAPS
             DataGrid.CellFormatting += DataGrid_CellFormatting;
         }
+        
+        private readonly string _mainConn = "Data Source=localhost,1433;Initial Catalog=ResidentsDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 
         // ALL CAPS for all displayed cell data
         private void DataGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -251,14 +258,7 @@ namespace BarangayApplication
 
             var selectedRow = this.DataGrid.SelectedRows[0];
             var idVal = selectedRow.Cells["ID"].Value?.ToString();
-            if (string.IsNullOrWhiteSpace(idVal))
-            {
-                MessageBox.Show("Invalid resident ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            int residentId;
-            if (!int.TryParse(idVal, out residentId))
+            if (string.IsNullOrWhiteSpace(idVal) || !int.TryParse(idVal, out int residentId))
             {
                 MessageBox.Show("Invalid resident ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -272,86 +272,113 @@ namespace BarangayApplication
                 return;
             }
 
-            // Get first purpose (or ask user if multiple)
-            string purposeType = "";
-            if (resident.Purposes != null && resident.Purposes.Count > 0)
-                purposeType = GetPurposeText(resident.Purposes[0]); // or ask user if ambiguity matters
+            // Get TransactionID and Purpose from ResidentPurposes
+            string transactionId = "";
+            string purposeName = "";
+            using (var conn = new SqlConnection(_mainConn))
+            {
+                conn.Open();
+                string sql = @"
+                    SELECT TOP 1 rp.TransactionID, pt.PurposeName, rp.PurposeOthers
+                    FROM ResidentPurposes rp
+                    INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+                    WHERE rp.ResidentID = @ResidentID
+                    ORDER BY rp.TransactionID DESC";
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ResidentID", residentId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            transactionId = reader.GetString(0);
+                            purposeName = reader.GetString(1);
+                            if (!reader.IsDBNull(2) && !string.IsNullOrWhiteSpace(reader.GetString(2)))
+                                purposeName = reader.GetString(2); // Use others if provided
+                        }
+                    }
+                }
+            }
 
-            string address = resident.Address ?? "(Address not specified)";
-            string clearanceNo = resident.ResidentID.ToString();
-            string printDate = DateTime.Now.ToString("MMMM dd, yyyy");
-            string lastName = resident.LastName ?? "";
-            string firstName = resident.FirstName ?? "";
-            string middleName = resident.MiddleName ?? "";
+            // Get Captain's name
+            string captainName = repo.GetBarangayCaptainName();
 
-            // Prompt user where to save
+            // Official date string
+            var now = DateTime.Now;
+            string daySuffix = now.Day % 10 == 1 && now.Day != 11 ? "st" :
+                               now.Day % 10 == 2 && now.Day != 12 ? "nd" :
+                               now.Day % 10 == 3 && now.Day != 13 ? "rd" : "th";
+            string officialDate = $"Given this {now:dddd}, the {now.Day}{daySuffix} day of {now:MMMM}, {now:yyyy}.";
+
+            // Prompt where to save
             using (var saveDlg = new SaveFileDialog())
             {
-                saveDlg.Filter = "Word Document (*.docx)|*.docx";
-                saveDlg.FileName = $"{lastName}_{firstName}_Clearance.docx";
+                saveDlg.Filter = "PDF File (*.pdf)|*.pdf";
+                saveDlg.FileName = $"{resident.LastName}_{resident.FirstName}_Clearance.pdf";
                 if (saveDlg.ShowDialog() != DialogResult.OK)
                     return;
 
                 string filename = saveDlg.FileName;
+                using (var doc = new PdfDocument())
+                {
+                    var page = doc.AddPage();
+                    var gfx = XGraphics.FromPdfPage(page);
 
-                // Create docx
-                var doc = DocX.Create(filename);
+                    var fontHeader = new XFont("Arial", 12, XFontStyleEx.Bold);
+                    var fontBody = new XFont("Arial", 11, XFontStyleEx.Regular);
+                    var fontSmall = new XFont("Arial", 9, XFontStyleEx.Regular);
 
-                // Header: Clearance No. and Date
-                var para1 = doc.InsertParagraph();
-                para1.Append("Clearance No.: ").FontSize(12);
-                para1.Append(clearanceNo).Bold().FontSize(12);
-                para1.SpacingAfter(5);
+                    double y = 40, left = 50;
 
-                doc.InsertParagraph(printDate)
-                    .FontSize(12)
-                    .SpacingAfter(20);
+                    // Series No (top left)
+                    gfx.DrawString($"Series No.: {transactionId}", fontBody, XBrushes.Black, left, y);
+                    y += 30;
 
-                // Centered clearance type header
-                string clearanceHeader = $"{purposeType} Clearance";
-                doc.InsertParagraph(clearanceHeader)
-                    .FontSize(14)
-                    .Bold()
-                    .Alignment = Alignment.center;
+                    // CERTIFICATION
+                    gfx.DrawString("CERTIFICATION", fontHeader, XBrushes.Black, page.Width / 2, y, XStringFormats.TopCenter);
+                    y += 35;
 
-                doc.InsertParagraph(new string('=', 30) + clearanceHeader + new string('=', 30))
-                    .FontSize(10)
-                    .SpacingAfter(20)
-                    .Alignment = Alignment.center;
+                    // To whom it may concern...
+                    gfx.DrawString("TO WHOM IT MAY CONCERN:", fontBody, XBrushes.Black, left, y);
+                    y += 20;
 
-                // Body
-                var p = doc.InsertParagraph();
-                p.Append("To Whom this may Concern,\n\n").FontSize(12);
+                    // "This is to certify that <Name>"
+                    string fullName = $"{resident.FirstName} {resident.MiddleName} {resident.LastName}".Trim();
+                    string certifyLine = $"This is to certify that   {fullName}";
+                    gfx.DrawString(certifyLine, fontBody, XBrushes.Black, left, y);
+                    y += 20;
 
-                p.Append("This certifies that the bearer ").FontSize(12)
-                 .Append(lastName).Bold().FontSize(12)
-                 .Append(", ").FontSize(12)
-                 .Append(firstName).Bold().FontSize(12)
-                 .Append(" ").FontSize(12)
-                 .Append(middleName).Bold().FontSize(12)
-                 .Append(" of ").FontSize(12)
-                 .Append(address).Bold().FontSize(12)
-                 .Append(" has been issued a ").FontSize(12)
-                 .Append(purposeType).Bold().FontSize(12)
-                 .Append(" Clearance.").FontSize(12);
+                    // Address
+                    string address = resident.Address ?? "(Address not specified)";
+                    gfx.DrawString($"is a resident of {address},", fontBody, XBrushes.Black, left, y);
+                    y += 20;
 
-                p.SpacingAfter(25);
+                    // Purpose (just one, not all)
+                    gfx.DrawString($"This certification is being issued upon request of the above person for: {purposeName}.", fontBody, XBrushes.Black, left, y);
+                    y += 30;
 
-                // Footer/Signature
-                doc.InsertParagraph("______________________________")
-                    .FontSize(12)
-                    .SpacingBefore(40)
-                    .Alignment = Alignment.right;
-                doc.InsertParagraph("Authorized Officer")
-                    .FontSize(12)
-                    .Alignment = Alignment.right;
+                    // Official date line
+                    gfx.DrawString(officialDate, fontBody, XBrushes.Black, left, y);
+                    y += 40;
 
-                doc.Save();
+                    // Certified by block (right-aligned, with signature space)
+                    double right = page.Width - left;
+                    gfx.DrawString("Certified by:", fontBody, XBrushes.Black, right, y, XStringFormats.TopRight);
+                    y += 20;
 
-                MessageBox.Show("Clearance document generated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Add space for signature
+                    y += 36; // leaves about half an inch for signature
 
-                // Optionally, open the file automatically
-                if (MessageBox.Show("Open the generated document?", "Open Document", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    gfx.DrawString(captainName, fontHeader, XBrushes.Black, right, y, XStringFormats.TopRight);
+                    y += 18;
+                    gfx.DrawString("Punong Barangay", fontBody, XBrushes.Black, right, y, XStringFormats.TopRight);
+
+                    doc.Save(filename);
+                }
+
+                MessageBox.Show("Clearance PDF generated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Optionally, open the PDF
+                if (MessageBox.Show("Open the generated PDF?", "Open PDF", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     System.Diagnostics.Process.Start(filename);
                 }
@@ -371,45 +398,141 @@ namespace BarangayApplication
             var residents = repo.GetApplicants();
             IEnumerable<Resident> filtered = residents;
 
-            if (query.StartsWith("N:", StringComparison.OrdinalIgnoreCase))
+            // --- Advanced Multi-Criteria Parsing ---
+            // Supports: N:John Doe P:Loan S:Jane Doe A:30 (any order, any combination)
+            // Split by space, parse known prefixes
+            var criteria = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var parts = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            string currentPrefix = "";
+            var sb = new StringBuilder();
+            foreach (var part in parts)
             {
-                string namePart = query.Substring(2).Trim().ToLower();
-                filtered = residents.Where(r =>
-                    (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(namePart)) ||
-                    (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(namePart)) ||
-                    (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(namePart))
-                );
-            }
-            else if (query.StartsWith("A:", StringComparison.OrdinalIgnoreCase))
-            {
-                string agePart = query.Substring(2).Trim();
-                if (int.TryParse(agePart, out int age))
+                if (part.Length > 2 && part[1] == ':' && "NnAaPpSs".Contains(part[0]))
                 {
-                    filtered = residents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age);
+                    // Save previous
+                    if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
+                    {
+                        if (!criteria.ContainsKey(currentPrefix))
+                            criteria[currentPrefix] = new List<string>();
+                        criteria[currentPrefix].Add(sb.ToString().Trim());
+                        sb.Clear();
+                    }
+                    currentPrefix = part.Substring(0, 2).ToUpper(); // e.g. N:
+                    sb.Append(part.Substring(2));
                 }
-                else
+                else if (!string.IsNullOrEmpty(currentPrefix))
                 {
-                    filtered = residents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(agePart));
+                    sb.Append(" " + part);
                 }
             }
-            else if (query.StartsWith("P:", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
             {
-                string purposePart = query.Substring(2).Trim().ToLower();
-                filtered = residents.Where(r =>
-                    r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(purposePart))
-                );
+                if (!criteria.ContainsKey(currentPrefix))
+                    criteria[currentPrefix] = new List<string>();
+                criteria[currentPrefix].Add(sb.ToString().Trim());
             }
-            else
+
+            // Now filter residents
+            filtered = residents.Where(r =>
             {
-                string lower = query.ToLower();
-                filtered = residents.Where(r =>
-                      (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(lower))
-                   || (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(lower))
-                   || (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(lower))
-                   || (r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(lower))
-                   || (r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(lower)))
-                );
-            }
+                bool match = true;
+                // Name (N:)
+                if (criteria.ContainsKey("N:"))
+                {
+                    foreach (var nameQuery in criteria["N:"])
+                    {
+                        var words = nameQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        string fullName = $"{r.FirstName} {r.MiddleName} {r.LastName}".ToLower();
+                        if (!words.All(w => fullName.Contains(w)))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                // Age (A:)
+                if (match && criteria.ContainsKey("A:"))
+                {
+                    foreach (var ageQuery in criteria["A:"])
+                    {
+                        if (int.TryParse(ageQuery, out int age))
+                        {
+                            if (!(r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (!(r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(ageQuery)))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Purpose (P:)
+                if (match && criteria.ContainsKey("P:"))
+                {
+                    foreach (var purposeQuery in criteria["P:"])
+                    {
+                        string pq = purposeQuery.ToLower();
+                        if (!(r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(pq))))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                // Spouse (S:)
+                if (match && criteria.ContainsKey("S:"))
+                {
+                    foreach (var spouseQuery in criteria["S:"])
+                    {
+                        var words = spouseQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        string spouseName = r.Spouse != null && !string.IsNullOrWhiteSpace(r.Spouse.SpouseName)
+                            ? r.Spouse.SpouseName.ToLower()
+                            : "";
+                        if (string.IsNullOrEmpty(spouseName) || !words.All(w => spouseName.Contains(w)))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                // If no criteria matched, fallback to general search (for untagged queries)
+                if (criteria.Count == 0)
+                {
+                    var words = query.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    string fullName = $"{r.FirstName} {r.MiddleName} {r.LastName}".ToLower();
+                    string spouseName = r.Spouse != null && !string.IsNullOrWhiteSpace(r.Spouse.SpouseName)
+                        ? r.Spouse.SpouseName.ToLower()
+                        : "";
+                    string purposes = r.Purposes != null
+                        ? string.Join(" ", r.Purposes.Select(GetPurposeText)).ToLower()
+                        : "";
+                    string age = r.DateOfBirth != DateTime.MinValue ? CalculateAge(r.DateOfBirth).ToString() : "";
+
+                    if (words.All(w =>
+                            fullName.Contains(w) ||
+                            spouseName.Contains(w) ||
+                            purposes.Contains(w) ||
+                            age.Contains(w)
+                        ))
+                    {
+                        match = true;
+                    }
+                    else
+                    {
+                        match = false;
+                    }
+                }
+                return match;
+            });
 
             DataTable dt = new DataTable();
             dt.Columns.Add("ID");

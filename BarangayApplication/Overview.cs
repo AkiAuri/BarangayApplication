@@ -333,11 +333,9 @@ namespace BarangayApplication
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
-                    // Optionally, refresh your residents grid here if you have one.
-                    // For example, if this control is in your Data form, call ReadResidents().
-                    // If not, you can trigger an event or otherwise refresh relevant data.
-                    // Example:
-                    // ReadResidents();
+                    // Refresh overview stats and charts
+                    UpdateResidentAndApplicationCounters();
+                    LoadCurrentChart();
                 }
             }
         }

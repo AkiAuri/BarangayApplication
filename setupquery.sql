@@ -189,11 +189,13 @@ CREATE TABLE UserRoles (
     roleID INT PRIMARY KEY IDENTITY(1,1),
     roleName NVARCHAR(50) NOT NULL UNIQUE
 );
+GO
 
 SET IDENTITY_INSERT UserRoles ON;
 INSERT INTO UserRoles (roleID, roleName) VALUES (1, 'SuperAdmin');
 INSERT INTO UserRoles (roleID, roleName) VALUES (2, 'Admin');
 SET IDENTITY_INSERT UserRoles OFF;
+GO
 
 -- users table
 CREATE TABLE users (
@@ -202,15 +204,36 @@ CREATE TABLE users (
     passwordHash NVARCHAR(64) NOT NULL,
     roleID INT NOT NULL FOREIGN KEY REFERENCES UserRoles(roleID)
 );
+GO
 
--- UserLogs table
+-- UserActions lookup table
+CREATE TABLE UserActions (
+    ActionID INT PRIMARY KEY IDENTITY(1,1),
+    ActionName NVARCHAR(20) NOT NULL UNIQUE
+);
+GO
+
+-- Insert allowed actions
+INSERT INTO UserActions (ActionName) VALUES 
+    ('login'), 
+    ('add'), 
+    ('edit'), 
+    ('archive'), 
+    ('restore');
+GO
+
+-- UserLogs table (normalized, using ActionID as FK)
 CREATE TABLE UserLogs (
     LogID INT IDENTITY(1,1) PRIMARY KEY,
     Timestamp DATETIME NOT NULL,
-    AccountID INT NOT NULL FOREIGN KEY REFERENCES users(accountID),
-    Action NVARCHAR(50) NOT NULL,
-    Description NVARCHAR(500)
+    AccountID INT NOT NULL,
+    ActionID INT NOT NULL,
+    Description NVARCHAR(500),
+    CONSTRAINT FK_UserLogs_AccountID FOREIGN KEY (AccountID) REFERENCES users(accountID),
+    CONSTRAINT FK_UserLogs_ActionID FOREIGN KEY (ActionID) REFERENCES UserActions(ActionID)
 );
+GO
+
 -- DUMMY USERS
 INSERT INTO users (accountName, passwordHash, roleID) VALUES ('admin_alex',   '$2a$16$FfKdgtztEVNEKjOowHOsxeXCk6LJmzYOCNXVWMCmIE3ct8Bke6/lO', 2); -- password: password1
 INSERT INTO users (accountName, passwordHash, roleID) VALUES ('admin_jane',   '$2a$16$EhN27LuzYAskEKl0IiXe1OyT/Fr5gbLpuc12yShodR2P1Wwxcdoze', 2); -- password: admin321
@@ -225,6 +248,9 @@ INSERT INTO users (accountName, passwordHash, roleID) VALUES ('admin_sophia', '$
 
 -- Insert 1 SuperAdmin account (roleID = 1)
 INSERT INTO users (accountName, passwordHash, roleID) VALUES ('superadmin_root', '$2a$16$IxLXznB26GHEBsoxlMmcR.tjl9vhNBE8nXUVMapcdB8Ix1WclmvbW', 1); -- password: admin
+GO
+
+
 
 -- ===========================================================
 -- ResidentsArchiveDB (Archive Database)

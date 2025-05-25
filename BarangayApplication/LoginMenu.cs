@@ -88,7 +88,7 @@ namespace BarangayApplication
                                     CurrentUser.RoleName = reader["roleName"].ToString();
 
                                     // Log successful login in UserLogs table (use a new connection to avoid issues)
-                                    LogUserLogin(CurrentUser.AccountName, CurrentUser.RoleName);
+                                    LogUserLogin(CurrentUser.AccountID, CurrentUser.AccountName, CurrentUser.RoleName);
 
                                     // --- AUTO-BACKUP ON LOGIN ---
                                     AutoBackupHelper.CheckAutoBackupOnLogin(
@@ -121,21 +121,32 @@ namespace BarangayApplication
             }
         }
 
-        private void LogUserLogin(string userName, string roleName)
+        private void LogUserLogin(string accountId, string userName, string roleName)
         {
             try
             {
                 using (var conn = new SqlConnection(SecurityConnString))
                 {
                     conn.Open();
+                    // Get ActionID for 'login'
+                    int actionId;
+                    using (var actionCmd = new SqlCommand("SELECT ActionID FROM UserActions WHERE ActionName = @name", conn))
+                    {
+                        actionCmd.Parameters.AddWithValue("@name", "login");
+                        object result = actionCmd.ExecuteScalar();
+                        if (result == null)
+                            throw new Exception("Action 'login' not found in UserActions table.");
+                        actionId = Convert.ToInt32(result);
+                    }
+
                     string logQuery = @"
-                INSERT INTO UserLogs (Timestamp, UserName, Action, Description)
-                VALUES (@Timestamp, @UserName, @Action, @Description)";
+                INSERT INTO UserLogs (Timestamp, AccountID, ActionID, Description)
+                VALUES (@Timestamp, @AccountID, @ActionID, @Description)";
                     using (SqlCommand logCmd = new SqlCommand(logQuery, conn))
                     {
                         logCmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
-                        logCmd.Parameters.AddWithValue("@UserName", userName);
-                        logCmd.Parameters.AddWithValue("@Action", "Login");
+                        logCmd.Parameters.AddWithValue("@AccountID", int.Parse(accountId)); // must be int
+                        logCmd.Parameters.AddWithValue("@ActionID", actionId);
                         logCmd.Parameters.AddWithValue("@Description", $"User '{userName}' logged in successfully with role '{roleName}'.");
                         logCmd.ExecuteNonQuery();
                     }
@@ -145,14 +156,10 @@ namespace BarangayApplication
             {
                 try
                 {
-                    // Log to local file as a fallback, don't block login process
                     File.AppendAllText("login_error_log.txt",
                         $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Failed to log user login for '{userName}': {ex.Message}{Environment.NewLine}");
                 }
-                catch
-                {
-                    // Suppress all errors to never block login
-                }
+                catch { }
             }
         }
 

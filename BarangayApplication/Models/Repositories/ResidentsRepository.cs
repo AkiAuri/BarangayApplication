@@ -305,7 +305,40 @@ namespace BarangayApplication.Models.Repositories
 
             return dataTable;
         }
-        
+        public DataTable GetAllLogs()
+        {
+            var dataTable = new DataTable();
+            try
+            {
+                using (SqlConnection _conn = new SqlConnection(_logConn))
+                {
+                    _conn.Open();
+                    string sql = @"
+                SELECT
+                    FORMAT(ul.Timestamp, 'yyyy-MM-dd hh:mm:ss tt') AS [DATE & TIME],
+                    u.accountName AS [USER],
+                    a.ActionName AS [ACTION],
+                    ul.Description AS [DESCRIPTION]
+                FROM UserLogs ul
+                INNER JOIN users u ON ul.AccountID = u.accountID
+                INNER JOIN UserActions a ON ul.ActionID = a.ActionID
+                ORDER BY ul.Timestamp DESC
+            ";
+
+                    using (SqlCommand _cmd = new SqlCommand(sql, _conn))
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(_cmd))
+                    {
+                        adapter.Fill(dataTable);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.ToString());
+                throw;
+            }
+            return dataTable;
+        }
         public DataTable GetLogsByUser(string userName)
         {
             var dataTable = new DataTable();
@@ -551,6 +584,33 @@ namespace BarangayApplication.Models.Repositories
             }
         }
         
+        public void DeleteLogsBefore(DateTime cutoff)
+        {
+            try
+            {
+                using (SqlConnection _conn = new SqlConnection(_logConn))
+                {
+                    _conn.Open();
+                    // Delete logs before the cutoff date
+                    string sql = @"
+                DELETE ul
+                FROM UserLogs ul
+                WHERE ul.Timestamp < @CutoffDate
+            ";
+                    using (SqlCommand cmd = new SqlCommand(sql, _conn))
+                    {
+                        cmd.Parameters.AddWithValue("@CutoffDate", cutoff);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception while deleting old logs: " + ex.ToString());
+                throw;
+            }
+        }
+        
         public List<Tuple<int, int>> GetAvailableLogMonths()
         {
             var result = new List<Tuple<int, int>>();
@@ -632,6 +692,21 @@ namespace BarangayApplication.Models.Repositories
             {
                 Console.WriteLine("Exception: " + ex.ToString());
                 throw;
+            }
+        }
+        
+        //For Print code
+        public string GetBarangayCaptainName()
+        {
+            using (SqlConnection _conn = new SqlConnection(_logConn))
+            {
+                _conn.Open();
+                string sql = "SELECT accountName FROM users WHERE accountID = 1"; // 1 = userId1
+                using (SqlCommand cmd = new SqlCommand(sql, _conn))
+                {
+                    object result = cmd.ExecuteScalar();
+                    return result?.ToString() ?? "Christopher Marius SJ. Cortez"; // fallback
+                }
             }
         }
         

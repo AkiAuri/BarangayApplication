@@ -233,45 +233,142 @@ namespace BarangayApplication
                 return;
             }
 
-            if (query.StartsWith("N:", StringComparison.OrdinalIgnoreCase))
+            // --- Advanced Multi-Criteria Parsing ---
+            // Supports: N:John Doe P:Loan S:Jane Doe A:30 (any order, any combination)
+            // Split by space, parse known prefixes
+            var criteria = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var parts = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            string currentPrefix = "";
+            var sb = new System.Text.StringBuilder();
+            foreach (var part in parts)
             {
-                string namePart = query.Substring(2).Trim().ToLower();
-                filtered = baseResidents.Where(r =>
-                    (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(namePart)) ||
-                    (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(namePart)) ||
-                    (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(namePart))
-                );
-            }
-            else if (query.StartsWith("A:", StringComparison.OrdinalIgnoreCase))
-            {
-                string agePart = query.Substring(2).Trim();
-                if (int.TryParse(agePart, out int age))
+                if (part.Length > 2 && part[1] == ':' && "NnAaPpSs".Contains(part[0]))
                 {
-                    filtered = baseResidents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age);
+                    // Save previous
+                    if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
+                    {
+                        if (!criteria.ContainsKey(currentPrefix))
+                            criteria[currentPrefix] = new List<string>();
+                        criteria[currentPrefix].Add(sb.ToString().Trim());
+                        sb.Clear();
+                    }
+                    currentPrefix = part.Substring(0, 2).ToUpper(); // e.g. N:
+                    sb.Append(part.Substring(2));
                 }
-                else
+                else if (!string.IsNullOrEmpty(currentPrefix))
                 {
-                    filtered = baseResidents.Where(r => r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(agePart));
+                    sb.Append(" " + part);
                 }
             }
-            else if (query.StartsWith("P:", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
             {
-                string purposePart = query.Substring(2).Trim().ToLower();
-                filtered = baseResidents.Where(r =>
-                    r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(purposePart))
-                );
+                if (!criteria.ContainsKey(currentPrefix))
+                    criteria[currentPrefix] = new List<string>();
+                criteria[currentPrefix].Add(sb.ToString().Trim());
             }
-            else
+
+            // Now filter residents
+            filtered = baseResidents.Where(r =>
             {
-                string lower = query.ToLower();
-                filtered = baseResidents.Where(r =>
-                      (!string.IsNullOrEmpty(r.LastName) && r.LastName.ToLower().Contains(lower))
-                   || (!string.IsNullOrEmpty(r.FirstName) && r.FirstName.ToLower().Contains(lower))
-                   || (!string.IsNullOrEmpty(r.MiddleName) && r.MiddleName.ToLower().Contains(lower))
-                   || (r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(lower))
-                   || (r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(lower)))
-                );
-            }
+                bool match = true;
+                // Name (N:)
+                if (criteria.ContainsKey("N:"))
+                {
+                    foreach (var nameQuery in criteria["N:"])
+                    {
+                        var words = nameQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        string fullName = $"{r.FirstName} {r.MiddleName} {r.LastName}".ToLower();
+                        if (!words.All(w => fullName.Contains(w)))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                // Age (A:)
+                if (match && criteria.ContainsKey("A:"))
+                {
+                    foreach (var ageQuery in criteria["A:"])
+                    {
+                        if (int.TryParse(ageQuery, out int age))
+                        {
+                            if (!(r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth) == age))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (!(r.DateOfBirth != DateTime.MinValue && CalculateAge(r.DateOfBirth).ToString().Contains(ageQuery)))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Purpose (P:)
+                if (match && criteria.ContainsKey("P:"))
+                {
+                    foreach (var purposeQuery in criteria["P:"])
+                    {
+                        string pq = purposeQuery.ToLower();
+                        if (!(r.Purposes != null && r.Purposes.Any(p => GetPurposeText(p).ToLower().Contains(pq))))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                // Spouse (S:)
+                if (match && criteria.ContainsKey("S:"))
+                {
+                    foreach (var spouseQuery in criteria["S:"])
+                    {
+                        var words = spouseQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        string spouseName = r.Spouse != null && !string.IsNullOrWhiteSpace(r.Spouse.SpouseName)
+                            ? r.Spouse.SpouseName.ToLower()
+                            : "";
+                        if (string.IsNullOrEmpty(spouseName) || !words.All(w => spouseName.Contains(w)))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                // If no criteria matched, fallback to general search (for untagged queries)
+                if (criteria.Count == 0)
+                {
+                    var words = query.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    string fullName = $"{r.FirstName} {r.MiddleName} {r.LastName}".ToLower();
+                    string spouseName = r.Spouse != null && !string.IsNullOrWhiteSpace(r.Spouse.SpouseName)
+                        ? r.Spouse.SpouseName.ToLower()
+                        : "";
+                    string purposes = r.Purposes != null
+                        ? string.Join(" ", r.Purposes.Select(GetPurposeText)).ToLower()
+                        : "";
+                    string age = r.DateOfBirth != DateTime.MinValue ? CalculateAge(r.DateOfBirth).ToString() : "";
+
+                    // All words must match ANY field (not ALL in one field)
+                    if (words.All(w =>
+                        fullName.Contains(w) ||
+                        spouseName.Contains(w) ||
+                        purposes.Contains(w) ||
+                        age.Contains(w)
+                    ))
+                    {
+                        match = true;
+                    }
+                    else
+                    {
+                        match = false;
+                    }
+                }
+                return match;
+            });
 
             // For paging: update cache, recalculate pages, show page 1
             archivedResidentsCache = filtered.ToList();

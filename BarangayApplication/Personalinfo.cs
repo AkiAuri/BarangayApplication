@@ -99,6 +99,67 @@ namespace BarangayApplication
                     break;
                 }
             }
+
+            // --------- EMPLOYMENT (OCCUPATION) ---------
+            if (_resident.Employments != null && _resident.Employments.Count > 0)
+            {
+                var occ = _resident.Employments[0];
+                txtOccCompany.Text = occ.Company ?? "";
+                txtOccPos1.Text = occ.Position ?? "";
+                // Split LengthOfService into years and months if formatted as "X Year/s, Y Month/s"
+                string[] occParts = (occ.LengthOfService ?? "").Split(',');
+                if (occParts.Length > 0)
+                    YearLength1.Text = occParts[0].Trim().Replace("Year/s", "").Trim();
+                else
+                    YearLength1.Text = "";
+                if (occParts.Length > 1)
+                    MonthLength1.Text = occParts[1].Trim().Replace("Month/s", "").Trim();
+                else
+                    MonthLength1.Text = "";
+            }
+            else
+            {
+                txtOccCompany.Text = "";
+                txtOccPos1.Text = "";
+                YearLength1.Text = "";
+                MonthLength1.Text = "";
+            }
+
+            // --------- SPOUSE ---------
+            if (_resident.Spouse != null)
+            {
+                txtSpouseName.Text = _resident.Spouse.SpouseName ?? "";
+                if (_resident.Spouse.Employments != null && _resident.Spouse.Employments.Count > 0)
+                {
+                    var spEmp = _resident.Spouse.Employments[0];
+                    txtSpouseCompany.Text = spEmp.Company ?? "";
+                    txtSpousePos1.Text = spEmp.Position ?? "";
+                    string[] spParts = (spEmp.LengthOfService ?? "").Split(',');
+                    if (spParts.Length > 0)
+                        YearLength3.Text = spParts[0].Trim().Replace("Year/s", "").Trim();
+                    else
+                        YearLength3.Text = "";
+                    if (spParts.Length > 1)
+                        MonthLength3.Text = spParts[1].Trim().Replace("Month/s", "").Trim();
+                    else
+                        MonthLength3.Text = "";
+                }
+                else
+                {
+                    txtSpouseCompany.Text = "";
+                    txtSpousePos1.Text = "";
+                    YearLength3.Text = "";
+                    MonthLength3.Text = "";
+                }
+            }
+            else
+            {
+                txtSpouseName.Text = "";
+                txtSpouseCompany.Text = "";
+                txtSpousePos1.Text = "";
+                YearLength3.Text = "";
+                MonthLength3.Text = "";
+            }
         }
 
         // Copy control values into Resident object
@@ -147,6 +208,82 @@ namespace BarangayApplication
             {
                 _resident.CivilStatusID = 1; // Default to SINGLE
                 _resident.CivilStatus = null;
+            }
+
+            // --------- ADD THIS FOR EMPLOYMENT (OCCUPATION) ----------
+            bool hasOcc = !string.IsNullOrWhiteSpace(txtOccCompany.Text) ||
+                          !string.IsNullOrWhiteSpace(txtOccPos1.Text) ||
+                          !string.IsNullOrWhiteSpace(YearLength1.Text) ||
+                          !string.IsNullOrWhiteSpace(MonthLength1.Text);
+
+            if (hasOcc)
+            {
+                string years = YearLength1.Text.Trim();
+                string months = MonthLength1.Text.Trim();
+                string lengthOfService;
+                if (string.IsNullOrWhiteSpace(years) && string.IsNullOrWhiteSpace(months))
+                    lengthOfService = "";
+                else if (string.IsNullOrWhiteSpace(years))
+                    lengthOfService = $"{months} Month/s";
+                else if (string.IsNullOrWhiteSpace(months))
+                    lengthOfService = $"{years} Year/s";
+                else
+                    lengthOfService = $"{years} Year/s, {months} Month/s";
+
+                _resident.Employments.Clear();
+                _resident.Employments.Add(new Employment
+                {
+                    Company = txtOccCompany.Text.Trim(),
+                    Position = txtOccPos1.Text.Trim(),
+                    LengthOfService = lengthOfService
+                });
+            }
+            else
+            {
+                _resident.Employments.Clear();
+            }
+
+            // --------- ADD THIS FOR SPOUSE ----------
+            bool hasSpouse = !string.IsNullOrWhiteSpace(txtSpouseName.Text);
+
+            if (hasSpouse)
+            {
+                string spouseYears = YearLength3.Text.Trim();
+                string spouseMonths = MonthLength3.Text.Trim();
+                string spouseLengthOfService;
+                if (string.IsNullOrWhiteSpace(spouseYears) && string.IsNullOrWhiteSpace(spouseMonths))
+                    spouseLengthOfService = "";
+                else if (string.IsNullOrWhiteSpace(spouseYears))
+                    spouseLengthOfService = $"{spouseMonths} Month/s";
+                else if (string.IsNullOrWhiteSpace(spouseMonths))
+                    spouseLengthOfService = $"{spouseYears} Year/s";
+                else
+                    spouseLengthOfService = $"{spouseYears} Year/s, {spouseMonths} Month/s";
+
+                var spouse = new Spouse
+                {
+                    SpouseName = txtSpouseName.Text.Trim(),
+                    Employments = new System.Collections.Generic.List<SpouseEmployment>()
+                };
+
+                // Only add spouse employment if any details present
+                if (!string.IsNullOrWhiteSpace(txtSpouseCompany.Text) ||
+                    !string.IsNullOrWhiteSpace(txtSpousePos1.Text) ||
+                    !string.IsNullOrWhiteSpace(spouseLengthOfService))
+                {
+                    spouse.Employments.Add(new SpouseEmployment
+                    {
+                        Company = txtSpouseCompany.Text.Trim(),
+                        Position = txtSpousePos1.Text.Trim(),
+                        LengthOfService = spouseLengthOfService
+                    });
+                }
+
+                _resident.Spouse = spouse;
+            }
+            else
+            {
+                _resident.Spouse = null;
             }
         }
 
@@ -204,7 +341,7 @@ namespace BarangayApplication
             int selectionLength = tb.SelectionLength;
             int textLen = tb.Text.Length;
             if (!char.IsControl(e.KeyChar) &&
-                (textLen - selectionLength + 1) > 4)
+                (textLen - selectionLength + 1) >= 4)
                 e.Handled = true;
         }
 
@@ -225,7 +362,7 @@ namespace BarangayApplication
             int selectionLength = tb.SelectionLength;
             int textLen = tb.Text.Length;
             if (!char.IsControl(e.KeyChar) &&
-                (textLen - selectionLength + 1) > 6)
+                (textLen - selectionLength + 1) >= 6)
                 e.Handled = true;
         }
 
