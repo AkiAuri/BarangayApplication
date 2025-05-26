@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -247,6 +248,14 @@ namespace BarangayApplication
                 }
             }
         }
+        
+        // Helper to load PNG images from the Resources folder (in root, not Properties)
+        private XImage LoadResourceImage(string fileName)
+        {
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            string imagePath = Path.Combine(exeDir, "Resources", fileName);
+            return XImage.FromFile(imagePath);
+        }
 
         private void Viewbtn_Click(object sender, EventArgs e)
         {
@@ -328,56 +337,102 @@ namespace BarangayApplication
                     var fontBody = new XFont("Arial", 11, XFontStyleEx.Regular);
                     var fontSmall = new XFont("Arial", 9, XFontStyleEx.Regular);
 
-                    double y = 40, left = 50;
+                    // Header and footer images
+                    var headerImg = LoadResourceImage("Barangay_Header.png");
+                    double headerWidth = page.Width;
+                    double headerHeight = headerImg.PixelHeight * headerWidth / headerImg.PixelWidth;
+                    gfx.DrawImage(headerImg, 0, 0, headerWidth, headerHeight);
 
-                    // Series No (top left)
-                    gfx.DrawString($"Series No.: {transactionId}", fontBody, XBrushes.Black, left, y);
-                    y += 30;
+                    var footerImg = LoadResourceImage("Barangay_Footer.png");
+                    double footerWidth = page.Width;
+                    double footerHeight = footerImg.PixelHeight * footerWidth / footerImg.PixelWidth;
+                    gfx.DrawImage(footerImg, 0, page.Height - footerHeight, footerWidth, footerHeight);
 
-                    // CERTIFICATION
+                    // Margins and content area
+                    double leftMargin = 60;
+                    double rightMargin = 60;
+                    double y = headerHeight + 28;
+                    double lineSpacing = 23;
+
+                    // --- Series No. (left) and Date block (right) ---
+                    gfx.DrawString($"Series No.: {transactionId}", fontBody, XBrushes.Black, leftMargin, y);
+
+                    // Date block (formatted, with line and label), right-aligned
+                    string dateStr = now.ToString("MMMM dd, yyyy");
+                    double dateBlockX = page.Width - rightMargin;
+                    double dateBlockY = y;
+                    XStringFormat topRight = new XStringFormat { Alignment = XStringAlignment.Far, LineAlignment = XLineAlignment.Near };
+
+                    // Date string
+                    gfx.DrawString(dateStr, fontBody, XBrushes.Black, dateBlockX, dateBlockY, topRight);
+                    // Line under date
+                    gfx.DrawLine(XPens.Black, dateBlockX - 75, dateBlockY + 16, dateBlockX + 10, dateBlockY + 16);
+                    // "DATE" label
+                    gfx.DrawString("DATE", fontSmall, XBrushes.Black, dateBlockX - 33, dateBlockY + 18, topRight);
+
+                    y += lineSpacing * 2;
+
+                    // --- CERTIFICATION (centered) ---
                     gfx.DrawString("CERTIFICATION", fontHeader, XBrushes.Black, page.Width / 2, y, XStringFormats.TopCenter);
-                    y += 35;
+                    y += lineSpacing + 6;
 
-                    // To whom it may concern...
-                    gfx.DrawString("TO WHOM IT MAY CONCERN:", fontBody, XBrushes.Black, left, y);
-                    y += 20;
+                    // --- TO WHOM IT MAY CONCERN (left-aligned for justified look) ---
+                    gfx.DrawString("TO WHOM IT MAY CONCERN:", fontBody, XBrushes.Black, leftMargin, y);
+                    y += lineSpacing;
 
-                    // "This is to certify that <Name>"
+                    // --- Main certificate block (simulate justify with left alignment) ---
                     string fullName = $"{resident.FirstName} {resident.MiddleName} {resident.LastName}".Trim();
-                    string certifyLine = $"This is to certify that   {fullName}";
-                    gfx.DrawString(certifyLine, fontBody, XBrushes.Black, left, y);
-                    y += 20;
-
-                    // Address
                     string address = resident.Address ?? "(Address not specified)";
-                    gfx.DrawString($"is a resident of {address},", fontBody, XBrushes.Black, left, y);
-                    y += 20;
 
-                    // Purpose (just one, not all)
-                    gfx.DrawString($"This certification is being issued upon request of the above person for: {purposeName}.", fontBody, XBrushes.Black, left, y);
-                    y += 30;
+                    // "This is to certify that   <fullName>"
+                    gfx.DrawString("    This is to certify that   " + fullName, fontBody, XBrushes.Black, leftMargin, y); // manually indent for tab
+                    y += lineSpacing;
 
-                    // Official date line
-                    gfx.DrawString(officialDate, fontBody, XBrushes.Black, left, y);
-                    y += 40;
+                    gfx.DrawString("is a resident of " + address + ",", fontBody, XBrushes.Black, leftMargin, y);
+                    y += lineSpacing;
 
-                    // Certified by block (right-aligned, with signature space)
-                    double right = page.Width - left;
-                    gfx.DrawString("Certified by:", fontBody, XBrushes.Black, right, y, XStringFormats.TopRight);
-                    y += 20;
+                    gfx.DrawString("and has stayed in the above address for a period of __________ year/s and __________ month/s.",
+                        fontBody, XBrushes.Black, leftMargin, y);
+                    y += lineSpacing;
 
-                    // Add space for signature
-                    y += 36; // leaves about half an inch for signature
+                    // Purpose with Others handling
+                    string purposeDisplay;
+                    if (purposeName.Trim().ToLower() == "others")
+                        purposeDisplay = "Others: _____________________________";
+                    else if (purposeName.Trim().ToLower().StartsWith("others:"))
+                        purposeDisplay = purposeName;
+                    else
+                        purposeDisplay = purposeName;
 
-                    gfx.DrawString(captainName, fontHeader, XBrushes.Black, right, y, XStringFormats.TopRight);
-                    y += 18;
-                    gfx.DrawString("Punong Barangay", fontBody, XBrushes.Black, right, y, XStringFormats.TopRight);
+                    gfx.DrawString("This certification is being issued upon request of the above person for: " + purposeDisplay + ".",
+                        fontBody, XBrushes.Black, leftMargin, y);
+                    y += lineSpacing * 2;
+
+                    // --- Signature and Verification blocks (swapped positions) ---
+                    double sigBlockY = y + 18;
+                    double sigLineY = sigBlockY + 16;
+                    double sigNameY = sigLineY + 18;
+                    double sigTitleY = sigNameY + 16;
+
+                    double verifyBlockY = sigBlockY;
+                    double verifyX = leftMargin + 3;
+                    double certX = page.Width - rightMargin - 3;
+
+                    // Verification (LEFT)
+                    gfx.DrawString("Verification of submitted documents,", fontSmall, XBrushes.Black, verifyX, verifyBlockY, XStringFormats.TopLeft);
+                    gfx.DrawString("_____________________", fontSmall, XBrushes.Black, verifyX, verifyBlockY + 16, XStringFormats.TopLeft);
+                    gfx.DrawString("Not valid w/ erasures/alterations", fontSmall, XBrushes.Black, verifyX, verifyBlockY + 32, XStringFormats.TopLeft);
+
+                    // Certified by (RIGHT)
+                    gfx.DrawString("Certified by:", fontBody, XBrushes.Black, certX, sigBlockY, XStringFormats.TopRight);
+                    gfx.DrawString("_________________________", fontBody, XBrushes.Black, certX, sigLineY, XStringFormats.TopRight);
+                    gfx.DrawString(captainName, fontHeader, XBrushes.Black, certX, sigNameY, XStringFormats.TopRight);
+                    gfx.DrawString("Punong Barangay", fontBody, XBrushes.Black, certX, sigTitleY, XStringFormats.TopRight);
 
                     doc.Save(filename);
                 }
 
                 MessageBox.Show("Clearance PDF generated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                // Optionally, open the PDF
                 if (MessageBox.Show("Open the generated PDF?", "Open PDF", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     System.Diagnostics.Process.Start(filename);

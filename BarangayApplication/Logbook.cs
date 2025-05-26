@@ -48,14 +48,22 @@ namespace BarangayApplication
                 e.FormattingApplied = true;
             }
         }
+        
+        private bool isInitializing = false;
 
         private void Logbook_Load(object sender, EventArgs e)
         {
+            isInitializing = true; // <--- Prevent filter logic during setup
+
             Bar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             PopulateUserFilter();
             CalculateTotalPages();
             LoadDataForPage(currentPage);
+
             cBxFilterByAction.SelectedIndex = 0;
+            cbxUserFilter.SelectedIndex = 0;
+
+            isInitializing = false; // <--- Allow filter logic now
         }
 
         private void PopulateUserFilter()
@@ -314,10 +322,12 @@ namespace BarangayApplication
         
         private void cBxFilterByAction_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
             ApplyCombinedFilters();
         }
         private void cbxUserFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
             ApplyCombinedFilters();
         }
         

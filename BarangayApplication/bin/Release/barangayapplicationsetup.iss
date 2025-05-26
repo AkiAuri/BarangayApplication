@@ -1,5 +1,4 @@
-; -- Inno Setup Script for Barangay Application with SQL Server Connection Prompt (Windows Authentication only) --
-; -- Now prompts the user if they want to run the SQL setup script --
+; -- Inno Setup Script for Barangay Application with SQL Server Connection Prompt and SQL Server prerequisite check --
 
 [Setup]
 AppName=Barangay Application
@@ -20,17 +19,76 @@ Source: "setup.sql"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{group}\Barangay Application"; Filename: "{app}\BarangayApplication.exe"
 
-[Run]
-Filename: "{tmp}\SQL2022-SSEI-Expr.exe"; Description: "Install SQL Server Express 2022 (required if not already installed)"; Flags: nowait postinstall runascurrentuser unchecked
-
 [Code]
 var
   SQLPage: TWizardPage;
   EdtServer, EdtPort: TEdit;
   LblServer, LblPort: TLabel;
 
+// Checks for two most common SQL Server instance names in registry
+function IsSQLServerInstalled: Boolean;
+var
+  Dummy: String;
+begin
+  // 64-bit registry
+  Result :=
+    RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL', 'MSSQLSERVER', Dummy) or
+    RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL', 'SQLEXPRESS', Dummy);
+
+  // 32-bit registry view on 64-bit Windows
+  if not Result and IsWin64 then
+    Result :=
+      RegQueryStringValue(HKLM, 'SOFTWARE\Wow6432Node\Microsoft\Microsoft SQL Server\Instance Names\SQL', 'MSSQLSERVER', Dummy) or
+      RegQueryStringValue(HKLM, 'SOFTWARE\Wow6432Node\Microsoft\Microsoft SQL Server\Instance Names\SQL', 'SQLEXPRESS', Dummy);
+end;
+
+function SilentInstallSQLServer: Boolean;
+var
+  ResultCode: Integer;
+begin
+  // Run SQL Express installer with silent args
+  Result := Exec(ExpandConstant('{tmp}\SQL2022-SSEI-Expr.exe'),
+    '/Q /ACTION=Install /FEATURES=SQLEngine /INSTANCENAME=SQLEXPRESS /IACCEPTSQLSERVERLICENSETERMS /SQLSVCACCOUNT="NT AUTHORITY\NETWORK SERVICE" /ADDCURRENTUSERASSQLADMIN',
+    '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+end;
+
 procedure InitializeWizard;
 begin
+  // SQL Server check and install
+  if not IsSQLServerInstalled then
+  begin
+    if MsgBox('Microsoft SQL Server was not detected on this computer.'#13#10 +
+              'The application requires SQL Server Express to function.'#13#10#13#10 +
+              'Would you like to install SQL Server Express now?', mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDYES
+    then
+    begin
+      if not SilentInstallSQLServer then
+      begin
+        MsgBox('Failed to launch SQL Server Express installer. Setup will now exit.', mbCriticalError, MB_OK);
+        WizardForm.Close;
+        Exit;
+      end
+      else
+      begin
+        MsgBox('SQL Server installation started. Please wait for it to complete. The application setup will continue after.', mbInformation, MB_OK);
+        // Wait or check again after install
+        if not IsSQLServerInstalled then
+        begin
+          MsgBox('SQL Server installation did not complete or was unsuccessful. Setup will now exit.', mbCriticalError, MB_OK);
+          WizardForm.Close;
+          Exit;
+        end;
+      end;
+    end
+    else
+    begin
+      MsgBox('Setup cannot continue without SQL Server. The installer will now exit.', mbCriticalError, MB_OK);
+      WizardForm.Close;
+      Exit;
+    end;
+  end;
+
+  // Normal wizard continues
   SQLPage := CreateCustomPage(wpSelectDir, 'SQL Server Connection', 'Enter SQL Server connection details');
 
   LblServer := TLabel.Create(SQLPage);

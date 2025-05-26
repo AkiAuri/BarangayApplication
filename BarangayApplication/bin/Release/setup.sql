@@ -247,7 +247,7 @@ INSERT INTO users (accountName, passwordHash, roleID) VALUES ('admin_liam',   '$
 INSERT INTO users (accountName, passwordHash, roleID) VALUES ('admin_sophia', '$2a$16$ElL6FZnspDvY7ecBDNi3ievx/.YrJz3cLNsZ2n.xp/9ynzV8RgPlm', 2); -- password: qwertyuiop
 
 -- Insert 1 SuperAdmin account (roleID = 1)
-INSERT INTO users (accountName, passwordHash, roleID) VALUES ('superadmin_root', '$2a$16$IxLXznB26GHEBsoxlMmcR.tjl9vhNBE8nXUVMapcdB8Ix1WclmvbW', 1); -- password: admin
+INSERT INTO users (accountName, passwordHash, roleID) VALUES ('Monozakii', '$2a$16$CMZiSLaup1GSIAJtGkGSvubAah5jDLFM.PfyivAnABlY0Vp5KU7Zy', 1); -- password: admin
 GO
 
 

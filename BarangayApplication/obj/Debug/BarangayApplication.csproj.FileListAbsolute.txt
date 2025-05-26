@@ -818,3 +818,5 @@ C:\Users\Creigh\Downloads\BarangayApplication [May 25, 2025] - Final run\Baranga
 C:\Users\Creigh\Downloads\BarangayApplication [May 25, 2025] - Final run\BarangayApplication\obj\Debug\Barangay.88A64B8F.Up2Date
 C:\Users\Creigh\Downloads\BarangayApplication [May 25, 2025] - Final run\BarangayApplication\obj\Debug\BarangayApplication.exe
 C:\Users\Creigh\Downloads\BarangayApplication [May 25, 2025] - Final run\BarangayApplication\obj\Debug\BarangayApplication.pdb
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Resources\Barangay_Footer.png
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Debug\Resources\Barangay_Header.png

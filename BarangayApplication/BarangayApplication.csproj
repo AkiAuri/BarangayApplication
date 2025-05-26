@@ -9,6 +9,7 @@
     <RootNamespace>BarangayApplication</RootNamespace>
     <AssemblyName>BarangayApplication</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -372,6 +373,13 @@
     <None Include="Resources\circle-ellipsis.png" />
     <None Include="Resources\add %282%29.png" />
     <None Include="Resources\circle-ellipsis1.png" />
+    <Content Include="Resources\AppIcon.ico" />
+    <Content Include="Resources\Barangay_Footer.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Barangay_Header.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Logo.png" />
     <None Include="Resources\Overview.png" />
   </ItemGroup>
