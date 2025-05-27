@@ -86,3 +86,5 @@ D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Release\BarangayApp
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\obj\Release\BarangayApplication.pdb
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Release\Resources\Barangay_Footer.png
 D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Release\Resources\Barangay_Header.png
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Release\Resources\Barangay_Footer_old.png
+D:\BarangayApplication [May 6, 2025]\BarangayApplication\bin\Release\Resources\logo1.png

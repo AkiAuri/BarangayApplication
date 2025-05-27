@@ -256,12 +256,119 @@ namespace BarangayApplication
             string imagePath = Path.Combine(exeDir, "Resources", fileName);
             return XImage.FromFile(imagePath);
         }
+        
+        // Helper to wrap text with bold substrings.
+        // boldSegments is a List of (substring, font) that will be bolded as a whole segment (not by word).
+        private double DrawWrappedCertificateText(XGraphics gfx, string text, XFont regular, XFont bold, List<(string, XFont)> boldSegments, double x, double y, double maxWidth, double lineHeight)
+        {
+            // Split text into runs (regular/bold) by substring match
+            List<(string, XFont)> runs = new List<(string, XFont)>();
+            int idx = 0;
+            while (idx < text.Length)
+            {
+                // Find the next match (start index, segment text, font)
+                var match = boldSegments
+                    .Select(seg => (start: text.IndexOf(seg.Item1, idx, StringComparison.Ordinal), segment: seg.Item1, font: seg.Item2))
+                    .Where(m => m.start >= idx)
+                    .OrderBy(m => m.start)
+                    .FirstOrDefault();
+
+                if (match.segment == null || match.start == -1)
+                {
+                    // No more bold segments found; add the rest as regular
+                    string reg = text.Substring(idx);
+                    if (!string.IsNullOrEmpty(reg))
+                        runs.Add((reg, regular));
+                    break;
+                }
+
+                if (match.start > idx)
+                {
+                    // Add regular text up to the bold segment
+                    string reg = text.Substring(idx, match.start - idx);
+                    if (!string.IsNullOrEmpty(reg))
+                        runs.Add((reg, regular));
+                }
+                // Add the bold segment
+                runs.Add((match.segment, match.font));
+                idx = match.start + match.segment.Length;
+            }
+
+            // Now wrap into lines
+            List<List<(string, XFont)>> lines = new List<List<(string, XFont)>>();
+            List<(string, XFont)> currLine = new List<(string, XFont)>();
+            double lineW = 0;
+            foreach (var (seg, font) in runs)
+            {
+                var words = seg.Split(new[] { ' ' }, StringSplitOptions.None);
+                foreach (var word in words)
+                {
+                    string wordToAdd = (currLine.Count > 0 ? " " : "") + word;
+                    double wordW = gfx.MeasureString(wordToAdd, font).Width;
+                    if (lineW + wordW > maxWidth && currLine.Count > 0)
+                    {
+                        lines.Add(currLine);
+                        currLine = new List<(string, XFont)>();
+                        lineW = 0;
+                        wordToAdd = word; // No leading space on new line
+                        wordW = gfx.MeasureString(wordToAdd, font).Width;
+                    }
+                    currLine.Add((wordToAdd, font));
+                    lineW += wordW;
+                }
+            }
+            if (currLine.Count > 0) lines.Add(currLine);
+
+            // Draw each line
+            foreach (var line in lines)
+            {
+                double lx = x;
+                foreach (var (part, font) in line)
+                {
+                    gfx.DrawString(part, font, XBrushes.Black, lx, y);
+                    lx += gfx.MeasureString(part, font).Width;
+                }
+                y += lineHeight;
+            }
+            return y;
+        }
+        
+        // Add this helper to your class
+        private XImage LoadTransparentWatermark(string fileName, float opacity)
+        {
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            string imagePath = Path.Combine(exeDir, "Resources", fileName);
+
+            using (var original = new Bitmap(imagePath))
+            using (var bmp = new Bitmap(original.Width, original.Height))
+            using (var g = Graphics.FromImage(bmp))
+            {
+                ColorMatrix matrix = new ColorMatrix();
+                matrix.Matrix33 = opacity; // Set alpha
+                ImageAttributes attributes = new ImageAttributes();
+                attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+                g.DrawImage(original,
+                    new Rectangle(0, 0, bmp.Width, bmp.Height),
+                    0, 0, original.Width, original.Height,
+                    GraphicsUnit.Pixel,
+                    attributes);
+
+                using (var ms = new MemoryStream())
+                {
+                    bmp.Save(ms, ImageFormat.Png);
+                    ms.Position = 0;
+                    return XImage.FromStream(ms);
+                }
+            }
+        }
 
         private void Viewbtn_Click(object sender, EventArgs e)
         {
             if (this.DataGrid.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a resident to view/print.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please select a resident to view/print.", "Validation Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return;
             }
 
@@ -288,11 +395,11 @@ namespace BarangayApplication
             {
                 conn.Open();
                 string sql = @"
-                    SELECT TOP 1 rp.TransactionID, pt.PurposeName, rp.PurposeOthers
-                    FROM ResidentPurposes rp
-                    INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
-                    WHERE rp.ResidentID = @ResidentID
-                    ORDER BY rp.TransactionID DESC";
+            SELECT TOP 1 rp.TransactionID, pt.PurposeName, rp.PurposeOthers
+            FROM ResidentPurposes rp
+            INNER JOIN PurposeTypes pt ON rp.PurposeTypeID = pt.PurposeTypeID
+            WHERE rp.ResidentID = @ResidentID
+            ORDER BY rp.TransactionID DESC";
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@ResidentID", residentId);
@@ -314,10 +421,6 @@ namespace BarangayApplication
 
             // Official date string
             var now = DateTime.Now;
-            string daySuffix = now.Day % 10 == 1 && now.Day != 11 ? "st" :
-                               now.Day % 10 == 2 && now.Day != 12 ? "nd" :
-                               now.Day % 10 == 3 && now.Day != 13 ? "rd" : "th";
-            string officialDate = $"Given this {now:dddd}, the {now.Day}{daySuffix} day of {now:MMMM}, {now:yyyy}.";
 
             // Prompt where to save
             using (var saveDlg = new SaveFileDialog())
@@ -332,9 +435,19 @@ namespace BarangayApplication
                 {
                     var page = doc.AddPage();
                     var gfx = XGraphics.FromPdfPage(page);
+                    
+                    // --- ADD WATERMARK LOGO (very faint, centered, big) ---
+                    var watermarkImg = LoadTransparentWatermark("logo1.png", 0.07f); // 0.07 = very faint
+                    double watermarkWidth = page.Width * 0.65;
+                    double watermarkHeight = watermarkImg.PixelHeight * watermarkWidth / watermarkImg.PixelWidth;
+                    double watermarkX = (page.Width - watermarkWidth) / 2;
+                    double watermarkY = (page.Height - watermarkHeight) / 2;
+                    gfx.DrawImage(watermarkImg, watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+                    // --- END WATERMARK LOGO ---
 
                     var fontHeader = new XFont("Arial", 12, XFontStyleEx.Bold);
                     var fontBody = new XFont("Arial", 11, XFontStyleEx.Regular);
+                    var fontBodyBold = new XFont("Arial", 11, XFontStyleEx.Bold);
                     var fontSmall = new XFont("Arial", 9, XFontStyleEx.Regular);
 
                     // Header and footer images
@@ -348,54 +461,78 @@ namespace BarangayApplication
                     double footerHeight = footerImg.PixelHeight * footerWidth / footerImg.PixelWidth;
                     gfx.DrawImage(footerImg, 0, page.Height - footerHeight, footerWidth, footerHeight);
 
-                    // Margins and content area
+                    // Margins and initial y:
                     double leftMargin = 60;
                     double rightMargin = 60;
+                    double contentWidth = page.Width - leftMargin - rightMargin;
                     double y = headerHeight + 28;
                     double lineSpacing = 23;
 
-                    // --- Series No. (left) and Date block (right) ---
+                    // --- Series No. (left) and Date block (right with centered underline and DATE label) ---
                     gfx.DrawString($"Series No.: {transactionId}", fontBody, XBrushes.Black, leftMargin, y);
 
-                    // Date block (formatted, with line and label), right-aligned
                     string dateStr = now.ToString("MMMM dd, yyyy");
-                    double dateBlockX = page.Width - rightMargin;
+                    double dateStrWidth = gfx.MeasureString(dateStr, fontBody).Width;
+                    double dateBlockX = page.Width - rightMargin; // right margin anchor
                     double dateBlockY = y;
-                    XStringFormat topRight = new XStringFormat { Alignment = XStringAlignment.Far, LineAlignment = XLineAlignment.Near };
 
-                    // Date string
-                    gfx.DrawString(dateStr, fontBody, XBrushes.Black, dateBlockX, dateBlockY, topRight);
-                    // Line under date
-                    gfx.DrawLine(XPens.Black, dateBlockX - 75, dateBlockY + 16, dateBlockX + 10, dateBlockY + 16);
-                    // "DATE" label
-                    gfx.DrawString("DATE", fontSmall, XBrushes.Black, dateBlockX - 33, dateBlockY + 18, topRight);
+                    // Position the date string so that it is right-aligned to the margin
+                    gfx.DrawString(dateStr, fontBody, XBrushes.Black, dateBlockX, dateBlockY, XStringFormats.TopRight);
+
+                    // Calculate the x-center of the date string (for centering underline and DATE label)
+                    double dateRightX = dateBlockX;
+                    double dateLeftX = dateRightX - dateStrWidth;
+                    double underlineY = dateBlockY + 16;
+
+                    // Draw underline exactly under the date string
+                    gfx.DrawLine(XPens.Black, dateLeftX, underlineY, dateRightX, underlineY);
+
+                    // Draw the "DATE" label centered under the underline
+                    string dateLabel = "DATE";
+                    double dateLabelWidth = gfx.MeasureString(dateLabel, fontSmall).Width;
+                    double dateLabelX = dateLeftX + (dateStrWidth / 2) - (dateLabelWidth / 2);
+                    double dateLabelY = underlineY + 2;
+                    gfx.DrawString(dateLabel, fontSmall, XBrushes.Black, dateLabelX, dateLabelY, XStringFormats.TopLeft);
 
                     y += lineSpacing * 2;
 
-                    // --- CERTIFICATION (centered) ---
-                    gfx.DrawString("CERTIFICATION", fontHeader, XBrushes.Black, page.Width / 2, y, XStringFormats.TopCenter);
-                    y += lineSpacing + 6;
+                    // --- CERTIFICATION (spaced, large, bold, underlined, centered, with more space above and below) ---
+                    double certFontSize = fontHeader.Size * 1.2; // e.g., 18pt if fontHeader is 12pt
+                    var certFont = new XFont("Arial", certFontSize, XFontStyleEx.Bold);
 
-                    // --- TO WHOM IT MAY CONCERN (left-aligned for justified look) ---
+                    // Add spaces between letters (one space each, not double)
+                    string certTitle = string.Join(" ", "CERTIFICATION".ToCharArray());
+
+                    // Measure width for centering and underline
+                    double certTitleWidth = gfx.MeasureString(certTitle, certFont).Width;
+                    double certTitleX = (page.Width - certTitleWidth) / 2;
+
+                    // Add extra space above (e.g., 18px)
+                    y -= 18;
+
+                    // Draw the spaced, large, bold, centered title
+                    double certTitleY = y;
+                    gfx.DrawString(certTitle, certFont, XBrushes.Black, page.Width / 2, certTitleY, XStringFormats.TopCenter);
+
+                    // Draw a thicker underline directly below the text, a little distance below text baseline
+                    double certUnderlineOffset = certFont.Size * 0.25; // distance between text and underline
+                    double certUnderlineY = certTitleY + certFont.Size + certUnderlineOffset;
+                    var underlinePen = new XPen(XColors.Black, 2.2); // Thicker underline (2.2pt)
+                    gfx.DrawLine(underlinePen, certTitleX, certUnderlineY, certTitleX + certTitleWidth, certUnderlineY);
+
+                    // Add extra space below (e.g., 18px)
+                    y = certUnderlineY + 36;
+
+
+                    // --- TO WHOM IT MAY CONCERN (left-aligned) ---
                     gfx.DrawString("TO WHOM IT MAY CONCERN:", fontBody, XBrushes.Black, leftMargin, y);
                     y += lineSpacing;
 
-                    // --- Main certificate block (simulate justify with left alignment) ---
+                    // --- Main certificate block (continuous sentence, wrapped and bolded) ---
                     string fullName = $"{resident.FirstName} {resident.MiddleName} {resident.LastName}".Trim();
                     string address = resident.Address ?? "(Address not specified)";
-
-                    // "This is to certify that   <fullName>"
-                    gfx.DrawString("    This is to certify that   " + fullName, fontBody, XBrushes.Black, leftMargin, y); // manually indent for tab
-                    y += lineSpacing;
-
-                    gfx.DrawString("is a resident of " + address + ",", fontBody, XBrushes.Black, leftMargin, y);
-                    y += lineSpacing;
-
-                    gfx.DrawString("and has stayed in the above address for a period of __________ year/s and __________ month/s.",
-                        fontBody, XBrushes.Black, leftMargin, y);
-                    y += lineSpacing;
-
-                    // Purpose with Others handling
+                    string yearBlank = "__________";
+                    string monthBlank = "__________";
                     string purposeDisplay;
                     if (purposeName.Trim().ToLower() == "others")
                         purposeDisplay = "Others: _____________________________";
@@ -404,11 +541,24 @@ namespace BarangayApplication
                     else
                         purposeDisplay = purposeName;
 
-                    gfx.DrawString("This certification is being issued upon request of the above person for: " + purposeDisplay + ".",
-                        fontBody, XBrushes.Black, leftMargin, y);
-                    y += lineSpacing * 2;
+                    string certText =
+                        $"This is to certify that {fullName} is a resident of {address}, and has stayed in the above address for a period of {yearBlank} year/s and {monthBlank} month/s. This certification is being issued upon request of the above person for: {purposeDisplay}.";
+                    
+                    // Mark bolded segments: fullName, address (as one), yearBlank, monthBlank, purposeDisplay
+                    var boldInserts = new List<(string, XFont)>
+                    {
+                        (fullName, fontBodyBold),
+                        (address, fontBodyBold),
+                        (yearBlank, fontBodyBold),
+                        (monthBlank, fontBodyBold),
+                        (purposeDisplay, fontBodyBold)
+                    };
 
-                    // --- Signature and Verification blocks (swapped positions) ---
+                    y = DrawWrappedCertificateText(gfx, certText, fontBody, fontBodyBold, boldInserts, leftMargin, y,
+                        contentWidth, lineSpacing);
+                    y += lineSpacing;
+
+                    // --- Verification and Certified by blocks ---
                     double sigBlockY = y + 18;
                     double sigLineY = sigBlockY + 16;
                     double sigNameY = sigLineY + 18;
@@ -419,26 +569,63 @@ namespace BarangayApplication
                     double certX = page.Width - rightMargin - 3;
 
                     // Verification (LEFT)
-                    gfx.DrawString("Verification of submitted documents,", fontSmall, XBrushes.Black, verifyX, verifyBlockY, XStringFormats.TopLeft);
-                    gfx.DrawString("_____________________", fontSmall, XBrushes.Black, verifyX, verifyBlockY + 16, XStringFormats.TopLeft);
-                    gfx.DrawString("Not valid w/ erasures/alterations", fontSmall, XBrushes.Black, verifyX, verifyBlockY + 32, XStringFormats.TopLeft);
+                    string verifyLabel = "Verification of submitted documents,";
+                    string verifyLineLabel = "Not valid w/ erasures/alterations";
+                    gfx.DrawString(verifyLabel, fontBody, XBrushes.Black, verifyX, verifyBlockY, XStringFormats.TopLeft);
+
+                    // Calculate underline width and position for "Not valid w/ erasures/alterations"
+                    double verifyTextWidth = gfx.MeasureString(verifyLineLabel, fontBody).Width;
+                    double verifyLineStartX = verifyX;
+                    double verifyLineEndX = verifyX + verifyTextWidth;
+                    double verifyTextY = verifyBlockY + 32;
+                    double verifyLineY = verifyTextY - 2; // 2px above the text baseline for a tight underline
+
+                    // Draw the underline above the text
+                    gfx.DrawLine(XPens.Black, verifyLineStartX, verifyLineY, verifyLineEndX, verifyLineY);
+                    // Draw the text just under the line
+                    gfx.DrawString(verifyLineLabel, fontBody, XBrushes.Black, verifyX, verifyTextY, XStringFormats.TopLeft);
 
                     // Certified by (RIGHT)
-                    gfx.DrawString("Certified by:", fontBody, XBrushes.Black, certX, sigBlockY, XStringFormats.TopRight);
-                    gfx.DrawString("_________________________", fontBody, XBrushes.Black, certX, sigLineY, XStringFormats.TopRight);
-                    gfx.DrawString(captainName, fontHeader, XBrushes.Black, certX, sigNameY, XStringFormats.TopRight);
-                    gfx.DrawString("Punong Barangay", fontBody, XBrushes.Black, certX, sigTitleY, XStringFormats.TopRight);
+                    string certifiedLabel = "Certified by:";
+                    string captainNameCaps = captainName.ToUpperInvariant();
+                    gfx.DrawString(certifiedLabel, fontBody, XBrushes.Black, certX, sigBlockY, XStringFormats.TopRight);
+
+                    // Calculate underline width and position for the captain's name
+                    double certTextWidth = gfx.MeasureString(captainNameCaps, fontHeader).Width;
+                    double certTextX = certX - certTextWidth; // right-aligned
+                    double certTextY = sigNameY;
+                    double certLineY = certTextY - 2; // 2px above the text baseline for the underline
+
+                    // Draw the underline above the ALL CAPS captain's name
+                    gfx.DrawLine(XPens.Black, certTextX, certLineY, certTextX + certTextWidth, certLineY);
+                    // Draw the ALL CAPS captain's name just under the line, right-aligned
+                    gfx.DrawString(captainNameCaps, fontHeader, XBrushes.Black, certX, certTextY, XStringFormats.TopRight);
+
+                    // Center "Punong Barangay" under the captain's name
+                    double nameWidth = gfx.MeasureString(captainNameCaps, fontHeader).Width;
+                    double punongX = certX - (nameWidth / 2);
+                    gfx.DrawString("Punong Barangay", fontBody, XBrushes.Black, punongX, sigTitleY, XStringFormats.TopCenter);
+
+                    // --- O.R. No. and Amount above purple line, sentence case, left ---
+                    double orY = page.Height - footerHeight - 38;
+                    gfx.DrawString("O.R. No.: ______________     Amount ₱: ___________", fontBody, XBrushes.Black,
+                        leftMargin,
+                        orY);
 
                     doc.Save(filename);
                 }
 
-                MessageBox.Show("Clearance PDF generated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (MessageBox.Show("Open the generated PDF?", "Open PDF", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                MessageBox.Show("Clearance PDF generated successfully!", "Success", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                if (MessageBox.Show("Open the generated PDF?", "Open PDF", MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question) ==
+                    DialogResult.Yes)
                 {
                     System.Diagnostics.Process.Start(filename);
                 }
             }
         }
+
 
         private void SearchBar_TextChanged(object sender, EventArgs e)
         {
