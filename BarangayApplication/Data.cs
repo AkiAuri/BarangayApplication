@@ -53,7 +53,7 @@ namespace BarangayApplication
             }
         }
 
-        // Call this in your Data() constructor or Data_Load
+        // --- AUTOCOMPLETE: ADD ADDRESS TAGGING ---
         private void SetupSearchBarAutocomplete()
         {
             AutoCompleteStringCollection autoCompleteCollection = new AutoCompleteStringCollection();
@@ -86,6 +86,16 @@ namespace BarangayApplication
             foreach (var purpose in allPurposeNames)
             {
                 autoCompleteCollection.Add("P:" + purpose);
+            }
+
+            // --- ADDRESS-BASED SUGGESTIONS (all unique, nonempty) ---
+            var allAddresses = residents
+                .Where(r => !string.IsNullOrWhiteSpace(r.Address))
+                .Select(r => r.Address.Trim())
+                .Distinct();
+            foreach (var address in allAddresses)
+            {
+                autoCompleteCollection.Add("D:" + address); // D for address (from "Direksyon"/"Dwelling")
             }
 
             // Remove duplicates
@@ -627,6 +637,7 @@ namespace BarangayApplication
         }
 
 
+        // --- SEARCHBAR: SUPPORT ADDRESS FILTERING ---
         private void SearchBar_TextChanged(object sender, EventArgs e)
         {
             string query = SearchBar.Text.Trim();
@@ -641,7 +652,7 @@ namespace BarangayApplication
             IEnumerable<Resident> filtered = residents;
 
             // --- Advanced Multi-Criteria Parsing ---
-            // Supports: N:John Doe P:Loan S:Jane Doe A:30 (any order, any combination)
+            // Supports: N:John Doe P:Loan S:Jane Doe A:30 D:StreetName (any order, any combination)
             // Split by space, parse known prefixes
             var criteria = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var parts = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -650,7 +661,7 @@ namespace BarangayApplication
             var sb = new StringBuilder();
             foreach (var part in parts)
             {
-                if (part.Length > 2 && part[1] == ':' && "NnAaPpSs".Contains(part[0]))
+                if (part.Length > 2 && part[1] == ':' && "NnAaPpSsDd".Contains(part[0]))
                 {
                     // Save previous
                     if (!string.IsNullOrEmpty(currentPrefix) && sb.Length > 0)
@@ -745,6 +756,20 @@ namespace BarangayApplication
                         }
                     }
                 }
+                // --- Address (D:) ---
+                if (match && criteria.ContainsKey("D:"))
+                {
+                    foreach (var addressQuery in criteria["D:"])
+                    {
+                        string addr = r.Address != null ? r.Address.ToLower() : "";
+                        var words = addressQuery.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (string.IsNullOrWhiteSpace(addr) || !words.All(w => addr.Contains(w)))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
                 // If no criteria matched, fallback to general search (for untagged queries)
                 if (criteria.Count == 0)
                 {
@@ -758,12 +783,14 @@ namespace BarangayApplication
                         ? string.Join(" ", r.Purposes.Select(GetPurposeText)).ToLower()
                         : "";
                     string age = r.DateOfBirth != DateTime.MinValue ? CalculateAge(r.DateOfBirth).ToString() : "";
+                    string addr = r.Address != null ? r.Address.ToLower() : "";
 
                     if (words.All(w =>
                             fullName.Contains(w) ||
                             spouseName.Contains(w) ||
                             purposes.Contains(w) ||
-                            age.Contains(w)
+                            age.Contains(w) ||
+                            addr.Contains(w)
                         ))
                     {
                         match = true;

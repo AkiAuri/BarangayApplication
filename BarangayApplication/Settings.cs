@@ -15,17 +15,25 @@ namespace BarangayApplication
         private static readonly string AppDataDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "BarangayApplication");
+
         private const string LastBackupFilePrefix = "last_backup_";
         private const string BackupLocationFileName = "backup_location.txt";
         private static string BackupLocationFile => Path.Combine(AppDataDir, BackupLocationFileName);
-        private static string LastBackupFile(string dbName) => Path.Combine(AppDataDir, $"{LastBackupFilePrefix}{dbName}.txt");
+
+        private static string LastBackupFile(string dbName) =>
+            Path.Combine(AppDataDir, $"{LastBackupFilePrefix}{dbName}.txt");
 
         private static readonly string[] DatabaseNames = { "ResidentsDB", "ResidentsArchiveDB", "ResidentsLogDB" };
         private static readonly string[] DatabaseDisplayNames = { "Main", "Archive", "Logbook" };
         private const string ServerName = @".";
-        public const string ConnectionStringFormat = "Data Source=" + ServerName + ";Initial Catalog={0};Integrated Security=True";
+
+        public const string ConnectionStringFormat =
+            "Data Source=" + ServerName + ";Initial Catalog={0};Integrated Security=True";
+
         private const string SecurityDbName = "ResidentsLogDB";
-        private const string SecurityConnString = "Data Source=.;Initial Catalog=" + SecurityDbName + ";Integrated Security=True";
+
+        private const string SecurityConnString =
+            "Data Source=.;Initial Catalog=" + SecurityDbName + ";Integrated Security=True";
 
         public Settings()
         {
@@ -97,6 +105,7 @@ namespace BarangayApplication
                 BackupLoc.Text = File.ReadAllText(BackupLocationFile);
             }
         }
+
         private void SaveBackupLocation(string path)
         {
             File.WriteAllText(BackupLocationFile, path);
@@ -109,6 +118,7 @@ namespace BarangayApplication
             lblDateTimeArchive.Text = LoadLastBackup("ResidentsArchiveDB");
             lblDateTimeLogbook.Text = LoadLastBackup("ResidentsLogDB");
         }
+
         private string LoadLastBackup(string dbName)
         {
             string file = LastBackupFile(dbName);
@@ -116,6 +126,7 @@ namespace BarangayApplication
                 return File.ReadAllText(file);
             return "No backup yet.";
         }
+
         private void SaveLastBackup(string dbName, DateTime dateTime)
         {
             string text = dateTime.ToString("yyyy-MM-dd HH:mm:ss");
@@ -169,7 +180,8 @@ namespace BarangayApplication
                 string dbName = DatabaseNames[i];
                 string displayName = DatabaseDisplayNames[i];
 
-                string monthFolder = Path.Combine(backupDirectory, $"{displayName}Backup", DateTime.Now.ToString("MMMM"));
+                string monthFolder =
+                    Path.Combine(backupDirectory, $"{displayName}Backup", DateTime.Now.ToString("MMMM"));
                 Directory.CreateDirectory(monthFolder);
                 string bakFile = Path.Combine(monthFolder, $"Backup_{displayName}_{DateTime.Now:ddMMyyyy}.bak");
                 string query = $"BACKUP DATABASE [{dbName}] TO DISK = '{bakFile}'";
@@ -194,6 +206,7 @@ namespace BarangayApplication
                     }
                 }
             }
+
             MessageBox.Show(message.Trim());
         }
 
@@ -206,6 +219,7 @@ namespace BarangayApplication
                 MessageBox.Show("Please select a database to restore.");
                 return;
             }
+
             string dbName = DatabaseNames[dbIndex];
             string displayName = DatabaseDisplayNames[dbIndex];
 
@@ -234,7 +248,8 @@ namespace BarangayApplication
             string setSingleUser = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
             string restoreQuery = $"RESTORE DATABASE [{dbName}] FROM DISK = '{backupFile}' WITH REPLACE";
             string setMultiUser = $"ALTER DATABASE [{dbName}] SET MULTI_USER";
-            string restoreConnectionString = "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
+            string restoreConnectionString =
+                "Data Source=" + ServerName + ";Initial Catalog=master;Integrated Security=True";
 
             try
             {
@@ -246,17 +261,20 @@ namespace BarangayApplication
                     {
                         cmd.ExecuteNonQuery();
                     }
+
                     // 2. Restore database
                     using (SqlCommand cmd = new SqlCommand(restoreQuery, conn))
                     {
                         cmd.ExecuteNonQuery();
                     }
+
                     // 3. Set multi user mode
                     using (SqlCommand cmd = new SqlCommand(setMultiUser, conn))
                     {
                         cmd.ExecuteNonQuery();
                     }
                 }
+
                 MessageBox.Show($"{displayName} restore successful!");
             }
             catch (Exception ex)
@@ -264,20 +282,28 @@ namespace BarangayApplication
                 MessageBox.Show($"{displayName} restore failed: {ex.Message}");
             }
         }
-        
-        //Account stuff, unchanged...
+
+        // Extended AccountItem to store availability
         public class AccountItem
         {
             public int AccountID { get; set; }
             public string AccountName { get; set; }
-            public override string ToString() => AccountName;
+            public int AccountAvailability { get; set; } // 1 = active, 0 = inactive
+
+            public override string ToString()
+            {
+                string status = AccountAvailability == 1 ? "active" : "inactive";
+                return $"{AccountName} - {status}";
+            }
         }
-        
+
+        // Populate with status label
         private void PopulateAdminAccountIDs()
         {
             cmbAccountID.Items.Clear();
             using (var conn = new SqlConnection(SecurityConnString))
-            using (var cmd = new SqlCommand("SELECT accountID, accountName FROM users WHERE roleID = 2", conn))
+            using (var cmd = new SqlCommand(
+                       "SELECT accountID, accountName, accountAvailability FROM users WHERE roleID = 2", conn))
             {
                 try
                 {
@@ -289,14 +315,16 @@ namespace BarangayApplication
                             cmbAccountID.Items.Add(new AccountItem
                             {
                                 AccountID = reader.GetInt32(0),
-                                AccountName = reader.GetString(1)
+                                AccountName = reader.GetString(1),
+                                AccountAvailability = reader.GetInt32(2)
                             });
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading admin accounts: " + ex.Message, "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error loading admin accounts: " + ex.Message, "Load Error", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
         }
@@ -306,16 +334,123 @@ namespace BarangayApplication
             if (cmbAccountID.SelectedItem is AccountItem selected)
             {
                 txtAccountName.Text = selected.AccountName;
+                // Set the button text according to account availability
+                btnSetActivation.Text = selected.AccountAvailability == 1 ? "Deactivate" : "Activate";
             }
             else
             {
                 txtAccountName.Text = "";
+                btnSetActivation.Text = "Activate/Deactivate";
             }
+
             txtNewPassword.Text = "";
         }
-        
-       private void btnSetPassword_Click(object sender, EventArgs e)
-       {
+
+        private void btnSetActivation_Click(object sender, EventArgs e)
+        {
+            if (!(cmbAccountID.SelectedItem is AccountItem selected))
+            {
+                MessageBox.Show("Please select an account.");
+                return;
+            }
+
+            int newAvailability = selected.AccountAvailability == 1 ? 0 : 1;
+            string action = newAvailability == 1 ? "activate" : "deactivate";
+
+            // If activating, require a new password
+            if (newAvailability == 1)
+            {
+                string newPassword = txtNewPassword.Text;
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
+                    MessageBox.Show("To activate an account, you must set a new password.",
+                        "Activation Requires Password", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtNewPassword.Focus();
+                    return;
+                }
+
+                string hash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 16);
+
+                using (var conn = new SqlConnection(SecurityConnString))
+                using (var cmd = new SqlCommand(
+                           "UPDATE users SET accountAvailability = 1, passwordHash = @hash WHERE accountID = @accountID",
+                           conn))
+                {
+                    cmd.Parameters.AddWithValue("@hash", hash);
+                    cmd.Parameters.AddWithValue("@accountID", selected.AccountID);
+                    try
+                    {
+                        conn.Open();
+                        int rows = cmd.ExecuteNonQuery();
+                        if (rows > 0)
+                        {
+                            MessageBox.Show("Account activated and password updated.", "Success", MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                            selected.AccountAvailability = 1;
+                            // update combobox item display
+                            int idx = cmbAccountID.SelectedIndex;
+                            cmbAccountID.Items[idx] = selected;
+                            cmbAccountID.SelectedIndex = idx;
+                            btnSetActivation.Text = "Deactivate";
+                        }
+                        else
+                        {
+                            MessageBox.Show("Failed to activate account.", "Activation Failed", MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error activating account: " + ex.Message, "Activation Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else // Deactivate
+            {
+                var confirm = MessageBox.Show("Are you sure you want to deactivate this account?",
+                    "Confirm Deactivation", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (confirm != DialogResult.Yes)
+                    return;
+
+                using (var conn = new SqlConnection(SecurityConnString))
+                using (var cmd = new SqlCommand("UPDATE users SET accountAvailability = 0 WHERE accountID = @accountID",
+                           conn))
+                {
+                    cmd.Parameters.AddWithValue("@accountID", selected.AccountID);
+                    try
+                    {
+                        conn.Open();
+                        int rows = cmd.ExecuteNonQuery();
+                        if (rows > 0)
+                        {
+                            MessageBox.Show("Account deactivated.", "Success", MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                            selected.AccountAvailability = 0;
+                            int idx = cmbAccountID.SelectedIndex;
+                            cmbAccountID.Items[idx] = selected;
+                            cmbAccountID.SelectedIndex = idx;
+                            btnSetActivation.Text = "Activate";
+                        }
+                        else
+                        {
+                            MessageBox.Show("Failed to deactivate account.", "Deactivation Failed",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error deactivating account: " + ex.Message, "Deactivation Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+
+            txtNewPassword.Text = "";
+        }
+
+        private void btnSetPassword_Click(object sender, EventArgs e)
+        {
             if (!(cmbAccountID.SelectedItem is AccountItem selected))
             {
                 MessageBox.Show("Please select an account.");
@@ -342,6 +477,7 @@ namespace BarangayApplication
                 if (setClause.Length > 0) setClause += ", ";
                 setClause += "passwordHash = @hash";
             }
+
             string query = $"UPDATE users SET {setClause} WHERE accountID = @accountID";
 
             using (var conn = new SqlConnection(SecurityConnString))
@@ -365,8 +501,9 @@ namespace BarangayApplication
                     if (rows > 0)
                     {
                         string what = (updateName && updatePassword) ? "Account name and password" :
-                                      updateName ? "Account name" : "Password";
-                        MessageBox.Show($"{what} updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            updateName ? "Account name" : "Password";
+                        MessageBox.Show($"{what} updated successfully!", "Success", MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
 
                         if (updateName)
                         {
@@ -378,21 +515,38 @@ namespace BarangayApplication
                     }
                     else
                     {
-                        MessageBox.Show("Failed to update account.", "Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Failed to update account.", "Update Failed", MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error updating account: " + ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error updating account: " + ex.Message, "Update Error", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
-            txtNewPassword.Text = "";
-       }
 
-        private void label6_Click(object sender, EventArgs e) { }
-        private void label2_Click(object sender, EventArgs e) { }
-        private void label5_Click(object sender, EventArgs e) { }
-        private void label7_Click(object sender, EventArgs e) { }
-        private void label11_Click(object sender, EventArgs e) { }
+            txtNewPassword.Text = "";
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void label11_Click(object sender, EventArgs e)
+        {
+        }
     }
 }

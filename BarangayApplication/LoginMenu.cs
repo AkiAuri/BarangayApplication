@@ -37,9 +37,35 @@ namespace BarangayApplication
 
         public LoginMenu()
         {
-            Directory.CreateDirectory(AppDataDir); // Ensure AppData directory exists
+            Directory.CreateDirectory(AppDataDir);
             InitializeComponent();
             Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
+
+            // Add key handlers for Enter on textboxes
+            AccountID.KeyDown += AccountID_KeyDown;
+            Password.KeyDown += Password_KeyDown;
+        }
+        
+        // 1. Move focus to password when Enter is pressed on AccountID
+        private void AccountID_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                Password.Focus();
+            }
+        }
+
+        // 2. Trigger login when Enter is pressed on Password
+        private void Password_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                BtnLogin_Click(sender, e); // Simulate login button click
+            }
         }
 
         // Static class to hold current user's information
@@ -74,7 +100,7 @@ namespace BarangayApplication
                 {
                     conn.Open();
                     string query = @"
-                        SELECT u.accountID, u.accountName, u.roleID, u.passwordHash, r.roleName
+                        SELECT u.accountID, u.accountName, u.roleID, u.passwordHash, u.accountAvailability, r.roleName
                         FROM users u
                         INNER JOIN UserRoles r ON u.roleID = r.roleID
                         WHERE u.accountName = @accountName";
@@ -86,6 +112,18 @@ namespace BarangayApplication
                         {
                             if (reader.Read())
                             {
+                                int availability = Convert.ToInt32(reader["accountAvailability"]);
+
+                                if (availability == 0)
+                                {
+                                    // Show feedback for inactive account
+                                    MessageBox.Show("Your account is currently inactive. Please contact an administrator.", "Account Inactive", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                    AccountID.Clear();
+                                    Password.Clear();
+                                    AccountID.Focus();
+                                    return;
+                                }
+
                                 string storedHash = reader["passwordHash"].ToString();
                                 if (BCrypt.Net.BCrypt.Verify(password, storedHash))
                                 {
@@ -108,12 +146,21 @@ namespace BarangayApplication
                                     this.Hide();
                                     return;
                                 }
+                                else
+                                {
+                                    // Password incorrect, but account is active
+                                    MessageBox.Show("Incorrect Account ID or Password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }
+                            else
+                            {
+                                // No such account
+                                MessageBox.Show("Incorrect Account ID or Password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     }
                 }
 
-                MessageBox.Show("Incorrect Account ID or Password", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 AccountID.Clear();
                 Password.Clear();
                 AccountID.Focus();
